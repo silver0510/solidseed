@@ -47,3 +47,14 @@ next-env.d.ts
 # IDE
 .vscode/
 .idea/
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+
+# PWA
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map

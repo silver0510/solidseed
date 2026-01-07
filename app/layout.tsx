@@ -6,6 +6,12 @@ export const metadata: Metadata = {
   description: 'Modern CRM platform for real estate professionals',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
   themeColor: '#0070f3',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Korella CRM',
+  },
 };
 
 export default function RootLayout({
