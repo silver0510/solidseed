@@ -16,6 +16,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Database & Backend
 
 **Supabase (PostgreSQL)**
+
 - **Version**: Latest (to be determined on project creation)
 - **Purpose**: Managed PostgreSQL database hosting
 - **Features Used**:
@@ -29,21 +30,24 @@ The project is in requirements and planning phase. No application code has been 
 
 **Database Schema (Planned):**
 
-*Authentication Tables (5):*
+_Authentication Tables (5):_
+
 1. `users` - User accounts with subscription tiers
 2. `oauth_providers` - Social login mappings
 3. `password_resets` - Password reset tokens
 4. `email_verifications` - Email verification tokens
 5. `auth_logs` - Security audit trail
 
-*Client Hub Tables (5):*
+_Client Hub Tables (5):_
+
 1. `clients` - Client profiles
 2. `client_tags` - Tag-based organization
 3. `client_documents` - Document storage
 4. `client_notes` - Activity notes
 5. `client_tasks` - Task management
 
-*Email Marketing Tables (4) - Phase 2:*
+_Email Marketing Tables (4) - Phase 2:_
+
 1. `email_campaigns` - Campaign management
 2. `campaign_recipients` - Recipient tracking
 3. `campaign_stats` - Aggregated analytics
@@ -54,6 +58,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Authentication
 
 **Better Auth Library**
+
 - **Purpose**: Authentication framework
 - **Features**:
   - OAuth 2.0 integration (Google, Microsoft)
@@ -67,6 +72,7 @@ The project is in requirements and planning phase. No application code has been 
 - **Configuration**: `config/better-auth.config.ts` (to be created)
 
 **OAuth Providers:**
+
 - **Google OAuth 2.0**
   - Google Cloud Platform project required
   - Scopes: email, profile
@@ -79,23 +85,27 @@ The project is in requirements and planning phase. No application code has been 
 ### Security
 
 **Password Security:**
+
 - Bcrypt hashing with cost factor 12
 - Complexity requirements: 8+ chars, uppercase, lowercase, number, symbol
 - Account lockout: 5 failed attempts → 30-minute lock
 - Security audit logging (7-day retention)
 
 **Session Management:**
+
 - JWT tokens (HS256 algorithm)
 - 3-day default expiration
 - 30-day expiration with "remember me"
 - Subscription tier stored in token
 
 **Rate Limiting:**
+
 - Login: 10 attempts per minute per IP
 - Password reset: 3 requests per hour per email
 - Email verification: TBD
 
 **Security Headers (Planned):**
+
 - Strict-Transport-Security (HSTS)
 - X-Content-Type-Options: nosniff
 - X-Frame-Options: DENY
@@ -105,6 +115,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Storage
 
 **Supabase Storage**
+
 - **Purpose**: Client document storage (PDFs, images, contracts)
 - **Features**:
   - 1GB free storage
@@ -118,6 +129,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Frontend Framework
 
 **Next.js 15 (App Router)**
+
 - **Version**: 15.x (latest stable)
 - **Purpose**: Full-stack React framework
 - **Features Used**:
@@ -128,11 +140,12 @@ The project is in requirements and planning phase. No application code has been 
   - Automatic code splitting
   - TypeScript support
 - **Bundle Size**: ~85KB (gzipped base)
-- **Deployment**: Vercel (recommended), or any Node.js hosting
+- **Deployment**: Vercel
 
 ### UI Framework
 
 **Tailwind CSS v4 + shadcn/ui**
+
 - **Tailwind CSS**: Utility-first CSS framework
   - Mobile-first responsive design
   - Custom breakpoints: xs (375px), sm (640px), md (768px), lg (1024px)
@@ -148,6 +161,7 @@ The project is in requirements and planning phase. No application code has been 
 ### State Management
 
 **TanStack Query v5 + Zustand**
+
 - **TanStack Query**: Server state management
   - **Purpose**: API data caching, refetching, synchronization
   - **Features**: Auto-caching, retry logic, optimistic updates, suspense support
@@ -162,6 +176,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Form Handling
 
 **React Hook Form v7 + Zod**
+
 - **React Hook Form**: Form state and validation
   - 10x faster than Formik (dirty fields only)
   - Minimal re-renders
@@ -177,6 +192,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Development Tools
 
 **CCPM (Claude Code Project Management)**
+
 - **Version**: Custom implementation
 - **Purpose**: Project management system
 - **Location**: `.claude/` directory
@@ -189,6 +205,7 @@ The project is in requirements and planning phase. No application code has been 
   - Context management
 
 **Supabase CLI**
+
 - **Installation**: `npm install -g supabase`
 - **Purpose**: Database migrations and management
 - **Commands**:
@@ -198,6 +215,7 @@ The project is in requirements and planning phase. No application code has been 
   - `supabase link` - Connect to remote project
 
 **Skills Automation:**
+
 - Better Auth initialization (Python scripts)
 - Tailwind configuration generation
 - shadcn/ui component addition
@@ -206,6 +224,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Email Services
 
 **Resend (Transactional Emails)**
+
 - **Purpose**: System emails (verification, password reset, notifications)
 - **Features**:
   - React Email for JSX-based templates
@@ -220,6 +239,7 @@ The project is in requirements and planning phase. No application code has been 
   - Welcome emails
 
 **Nylas (Marketing Emails - Phase 2)**
+
 - **Purpose**: Gmail/Outlook integration for bulk email campaigns
 - **Features**:
   - OAuth-based connection (no DNS configuration)
@@ -240,6 +260,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Job Queue & Workflows
 
 **Inngest (Phase 2 - Email Marketing)**
+
 - **Purpose**: Serverless job queue and workflow automation
 - **Features**:
   - Scheduled execution (cron, delays, specific datetime)
@@ -258,6 +279,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Testing
 
 **Vitest**
+
 - **Purpose**: Unit and integration testing
 - **Features**:
   - 50% faster than Jest (native ESM)
@@ -268,6 +290,7 @@ The project is in requirements and planning phase. No application code has been 
 - **Bundle Size**: 0KB (development only)
 
 **Playwright**
+
 - **Purpose**: End-to-end testing
 - **Features**:
   - Cross-browser testing (Chrome, Firefox, Safari)
@@ -281,6 +304,7 @@ The project is in requirements and planning phase. No application code has been 
   - Cross-browser compatibility
 
 **Test Types:**
+
 1. Unit tests (Vitest) - auth logic, business rules
 2. Integration tests (Vitest) - API endpoints, database operations
 3. E2E tests (Playwright) - critical user flows
@@ -291,6 +315,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Monitoring & Error Tracking
 
 **Sentry**
+
 - **Purpose**: Error tracking and performance monitoring
 - **Features**:
   - Error tracking with stack traces
@@ -309,6 +334,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Additional Tools
 
 **next-pwa (Progressive Web App)**
+
 - **Purpose**: Offline capability and mobile app experience
 - **Features**:
   - Service worker for offline viewing
@@ -318,6 +344,7 @@ The project is in requirements and planning phase. No application code has been 
 - **Bundle Size**: ~2KB
 
 **date-fns**
+
 - **Purpose**: Date/time manipulation and formatting
 - **Features**:
   - Tree-shakable (only import needed functions)
@@ -327,6 +354,7 @@ The project is in requirements and planning phase. No application code has been 
 - **Bundle Size**: ~7KB (only imported functions)
 
 **Native Fetch API**
+
 - **Purpose**: HTTP client for API calls
 - **Features**:
   - Zero dependencies (built into browsers and Node.js)
@@ -338,6 +366,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Deployment
 
 **Hosting: Vercel (Recommended)**
+
 - **Why Vercel**:
   - Built by Next.js creators
   - Zero-config deployment
@@ -352,11 +381,13 @@ The project is in requirements and planning phase. No application code has been 
   - No credit card required
 
 **Environments:**
+
 - Development: `http://localhost:3000`
 - Staging: `https://korella-staging.vercel.app`
 - Production: `https://app.korella.com`
 
 **Infrastructure:**
+
 - **Frontend**: Vercel
 - **Database**: Supabase (managed PostgreSQL)
 - **Storage**: Supabase Storage
@@ -370,6 +401,7 @@ The project is in requirements and planning phase. No application code has been 
 ### Environment Variables
 
 **Required for MVP (Phase 1):**
+
 ```bash
 # Application
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -400,6 +432,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 ```
 
 **Additional for Phase 2 (Email Marketing):**
+
 ```bash
 # Nylas Email Integration
 NYLAS_API_KEY=nyk_xxxxxxxxxxxx
@@ -411,6 +444,7 @@ INNGEST_SIGNING_KEY=your-signing-key
 ```
 
 **Not Set Up Yet:**
+
 - Supabase project doesn't exist
 - OAuth applications not registered
 - Better Auth secret not generated
@@ -421,6 +455,7 @@ INNGEST_SIGNING_KEY=your-signing-key
 ### Dependencies
 
 **Core Dependencies (Phase 1):**
+
 ```json
 {
   "dependencies": {
@@ -444,6 +479,7 @@ INNGEST_SIGNING_KEY=your-signing-key
 ```
 
 **Additional Dependencies (Phase 2 - Email Marketing):**
+
 ```json
 {
   "dependencies": {
@@ -454,6 +490,7 @@ INNGEST_SIGNING_KEY=your-signing-key
 ```
 
 **Development Dependencies:**
+
 ```json
 {
   "devDependencies": {
@@ -475,6 +512,7 @@ INNGEST_SIGNING_KEY=your-signing-key
 ```
 
 **Total Bundle Size (Production):**
+
 - Next.js base: ~85KB
 - React: included
 - State management: ~15KB (TanStack + Zustand)
@@ -486,6 +524,7 @@ INNGEST_SIGNING_KEY=your-signing-key
 - **Total: ~185KB gzipped**
 
 **Not Installed Yet:**
+
 - No `package.json` exists
 - No dependencies installed
 - Need to run `npm create next-app@latest` to initialize
@@ -493,6 +532,7 @@ INNGEST_SIGNING_KEY=your-signing-key
 ### Data Flow (Planned Architecture)
 
 **Registration Flow:**
+
 1. User submits registration form
 2. Frontend validates input
 3. API endpoint creates user (pending_verification status)
@@ -502,6 +542,7 @@ INNGEST_SIGNING_KEY=your-signing-key
 7. Account activated, trial period starts (14 days)
 
 **Login Flow:**
+
 1. User submits credentials
 2. Backend validates against database
 3. Check account status (active, locked, etc.)
@@ -511,6 +552,7 @@ INNGEST_SIGNING_KEY=your-signing-key
 7. Frontend stores token, redirects to dashboard
 
 **OAuth Flow:**
+
 1. User clicks "Sign in with Google/Microsoft"
 2. Redirect to OAuth provider
 3. User approves consent
@@ -526,12 +568,14 @@ INNGEST_SIGNING_KEY=your-signing-key
 ### Supabase Setup
 
 **Prerequisites:**
+
 1. Supabase account (free tier available)
 2. Create project at https://app.supabase.com
 3. Note project reference ID
 4. Copy connection credentials
 
 **Initial Setup:**
+
 ```bash
 # Install CLI
 npm install -g supabase
@@ -546,6 +590,7 @@ supabase link --project-ref your-ref-id
 ### OAuth Provider Setup
 
 **Google Cloud Platform:**
+
 1. Create project
 2. Enable Google+ API
 3. Create OAuth 2.0 Client ID
@@ -553,6 +598,7 @@ supabase link --project-ref your-ref-id
 5. Add redirect URIs for all environments
 
 **Microsoft Azure AD:**
+
 1. Register application
 2. Configure redirect URIs
 3. Add API permissions (email, profile)
@@ -562,6 +608,7 @@ supabase link --project-ref your-ref-id
 ### Project Structure
 
 **Recommended Directory Structure:**
+
 ```
 korella-crm/
 ├── app/                           # Next.js App Router
@@ -609,12 +656,14 @@ korella-crm/
 ## Development Workflow
 
 **Current Workflow:**
+
 1. Create PRDs using `/pm:prd-new`
 2. Convert to epics using `/pm:prd-parse`
 3. Decompose to tasks using `/pm:epic-decompose`
 4. Track progress locally or sync to GitHub
 
 **Future Development Workflow:**
+
 1. Select task from epic
 2. Create feature branch
 3. Implement code
@@ -627,6 +676,7 @@ korella-crm/
 ## Monitoring & Analytics
 
 **Error Tracking: Sentry**
+
 - Runtime errors with stack traces
 - Frontend and API errors
 - User context (user ID, session)
@@ -635,6 +685,7 @@ korella-crm/
 - Source maps for debugging
 
 **Performance Monitoring: Sentry Performance**
+
 - API endpoint response times
 - Database query performance
 - Frontend page load times
@@ -642,6 +693,7 @@ korella-crm/
 - User flow tracking
 
 **Application Metrics to Track:**
+
 - Registration conversion rate
 - Login success vs failure rate
 - OAuth vs email/password split
@@ -653,6 +705,7 @@ korella-crm/
 - Feature usage statistics
 
 **Security Monitoring:**
+
 - Failed login attempts (via auth_logs table)
 - Account lockout events
 - Password reset frequency
@@ -661,6 +714,7 @@ korella-crm/
 - OAuth failures
 
 **Database Monitoring: Supabase Dashboard**
+
 - Query performance
 - Connection pooling stats
 - Database size and growth
@@ -670,17 +724,20 @@ korella-crm/
 ## Performance Targets
 
 **Response Times:**
+
 - Login: <2 seconds
 - Registration: <3 seconds
 - OAuth flow: <5 seconds end-to-end
 - API endpoints: <500ms average
 
 **Scalability:**
+
 - Support 100+ concurrent logins
 - Handle 1000+ active users
 - Maintain performance with 10,000+ client records per user
 
 **Availability:**
+
 - 99.9% uptime target
 - Supabase SLA: 99.9%
 - OAuth provider dependency managed
@@ -688,6 +745,7 @@ korella-crm/
 ## Cost Analysis
 
 ### MVP Testing (10 agents)
+
 - **Vercel**: Free (unlimited personal projects)
 - **Supabase**: Free (500MB DB, 50K MAU, 1GB storage)
 - **Resend**: Free (3K emails/mo)
@@ -697,6 +755,7 @@ korella-crm/
 - **Total**: ~$22.50/month
 
 ### Growth Phase (50 agents)
+
 - **Vercel**: Free (still within limits)
 - **Supabase**: Free or $25/mo (depends on usage)
 - **Resend**: Free (3K emails/mo)
@@ -706,6 +765,7 @@ korella-crm/
 - **Total**: ~$158.50/month
 
 ### Scale Phase (100 agents)
+
 - **Vercel**: Free (100GB bandwidth)
 - **Supabase Pro**: $25/mo (>50K API requests)
 - **Resend**: $20/mo (50K emails)
@@ -715,6 +775,7 @@ korella-crm/
 - **Total**: ~$253.50/month
 
 ### Large Scale (500 agents)
+
 - **Vercel Pro**: $20/mo (may need for bandwidth)
 - **Supabase Pro**: $25/mo
 - **Resend**: $20/mo
@@ -724,6 +785,7 @@ korella-crm/
 - **Total**: ~$898.50/month
 
 ### Revenue vs Cost (at $49/mo subscription)
+
 - **50 agents**: $2,450 revenue - $158.50 costs = **$2,291.50 profit (94% margin)**
 - **100 agents**: $4,900 revenue - $253.50 costs = **$4,646.50 profit (95% margin)**
 - **500 agents**: $24,500 revenue - $898.50 costs = **$23,601.50 profit (96% margin)**
