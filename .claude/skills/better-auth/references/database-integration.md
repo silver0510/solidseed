@@ -15,30 +15,30 @@ Better Auth supports multiple databases and ORMs for flexible data persistence.
 ### SQLite
 
 ```ts
-import { betterAuth } from "better-auth";
-import Database from "better-sqlite3";
+import { betterAuth } from 'better-auth';
+import Database from 'better-sqlite3';
 
 export const auth = betterAuth({
-  database: new Database("./sqlite.db"),
+  database: new Database('./sqlite.db'),
   // or
-  database: new Database(":memory:"), // In-memory for testing
+  database: new Database(':memory:'), // In-memory for testing
 });
 ```
 
 ### PostgreSQL
 
 ```ts
-import { betterAuth } from "better-auth";
-import { Pool } from "pg";
+import { betterAuth } from 'better-auth';
+import { Pool } from 'pg';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   // or explicit config
-  host: "localhost",
+  host: 'localhost',
   port: 5432,
-  user: "postgres",
-  password: "password",
-  database: "myapp",
+  user: 'postgres',
+  password: 'password',
+  database: 'myapp',
 });
 
 export const auth = betterAuth({
@@ -49,14 +49,14 @@ export const auth = betterAuth({
 ### MySQL
 
 ```ts
-import { betterAuth } from "better-auth";
-import { createPool } from "mysql2/promise";
+import { betterAuth } from 'better-auth';
+import { createPool } from 'mysql2/promise';
 
 const pool = createPool({
-  host: "localhost",
-  user: "root",
-  password: "password",
-  database: "myapp",
+  host: 'localhost',
+  user: 'root',
+  password: 'password',
+  database: 'myapp',
   waitForConnections: true,
   connectionLimit: 10,
 });
@@ -79,10 +79,10 @@ npm install drizzle-orm better-auth
 **Setup:**
 
 ```ts
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -92,13 +92,13 @@ const db = drizzle(pool);
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: "pg", // "pg" | "mysql" | "sqlite"
+    provider: 'pg', // "pg" | "mysql" | "sqlite"
     schema: {
       // Optional: custom table names
-      user: "users",
-      session: "sessions",
-      account: "accounts",
-      verification: "verifications",
+      user: 'users',
+      session: 'sessions',
+      account: 'accounts',
+      verification: 'verifications',
     },
   }),
 });
@@ -121,15 +121,15 @@ npm install @prisma/client better-auth
 **Setup:**
 
 ```ts
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { PrismaClient } from "@prisma/client";
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: "postgresql", // "postgresql" | "mysql" | "sqlite"
+    provider: 'postgresql', // "postgresql" | "mysql" | "sqlite"
   }),
 });
 ```
@@ -159,10 +159,10 @@ npm install kysely better-auth
 **Setup:**
 
 ```ts
-import { betterAuth } from "better-auth";
-import { kyselyAdapter } from "better-auth/adapters/kysely";
-import { Kysely, PostgresDialect } from "kysely";
-import { Pool } from "pg";
+import { betterAuth } from 'better-auth';
+import { kyselyAdapter } from 'better-auth/adapters/kysely';
+import { Kysely, PostgresDialect } from 'kysely';
+import { Pool } from 'pg';
 
 const db = new Kysely({
   dialect: new PostgresDialect({
@@ -174,7 +174,7 @@ const db = new Kysely({
 
 export const auth = betterAuth({
   database: kyselyAdapter(db, {
-    provider: "pg",
+    provider: 'pg',
   }),
 });
 ```
@@ -196,16 +196,16 @@ npm install mongodb better-auth
 **Setup:**
 
 ```ts
-import { betterAuth } from "better-auth";
-import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { MongoClient } from "mongodb";
+import { betterAuth } from 'better-auth';
+import { mongodbAdapter } from 'better-auth/adapters/mongodb';
+import { MongoClient } from 'mongodb';
 
 const client = new MongoClient(process.env.MONGODB_URI!);
 await client.connect();
 
 export const auth = betterAuth({
   database: mongodbAdapter(client, {
-    databaseName: "myapp",
+    databaseName: 'myapp',
   }),
 });
 ```
@@ -314,16 +314,16 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       role: {
-        type: "string",
+        type: 'string',
         required: false,
-        defaultValue: "user",
+        defaultValue: 'user',
       },
       phoneNumber: {
-        type: "string",
+        type: 'string',
         required: false,
       },
       subscriptionTier: {
-        type: "string",
+        type: 'string',
         required: false,
       },
     },
@@ -341,8 +341,8 @@ Update user with custom fields:
 
 ```ts
 await authClient.updateUser({
-  role: "admin",
-  phoneNumber: "+1234567890",
+  role: 'admin',
+  phoneNumber: '+1234567890',
 });
 ```
 
@@ -410,7 +410,7 @@ npx @better-auth/cli migrate
 ### PostgreSQL
 
 ```ts
-import { Pool } from "pg";
+import { Pool } from 'pg';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -423,7 +423,7 @@ const pool = new Pool({
 ### MySQL
 
 ```ts
-import { createPool } from "mysql2/promise";
+import { createPool } from 'mysql2/promise';
 
 const pool = createPool({
   connectionString: process.env.DATABASE_URL,
@@ -493,7 +493,7 @@ CREATE INDEX idx_user_created ON user(createdAt);
 export const auth = betterAuth({
   advanced: {
     defaultCookieAttributes: {
-      sameSite: "lax",
+      sameSite: 'lax',
       secure: true,
       httpOnly: true,
     },

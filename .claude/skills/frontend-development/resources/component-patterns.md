@@ -61,16 +61,16 @@ Lazy load components that are:
 ### How to Lazy Load
 
 ```typescript
-import React from "react";
+import React from 'react';
 
 // Lazy load heavy component
-const PostDataGrid = React.lazy(() => import("./grids/PostDataGrid"));
+const PostDataGrid = React.lazy(() => import('./grids/PostDataGrid'));
 
 // For named exports
 const MyComponent = React.lazy(() =>
-  import("./MyComponent").then((module) => ({
+  import('./MyComponent').then((module) => ({
     default: module.MyComponent,
-  })),
+  }))
 );
 ```
 
@@ -110,9 +110,9 @@ export default PostTable;
 **Import:**
 
 ```typescript
-import { SuspenseLoader } from "~components/SuspenseLoader";
+import { SuspenseLoader } from '~components/SuspenseLoader';
 // Or
-import { SuspenseLoader } from "@/components/SuspenseLoader";
+import { SuspenseLoader } from '@/components/SuspenseLoader';
 ```
 
 **Usage:**
@@ -377,9 +377,9 @@ export default MyComponent;
 
 ```typescript
 const MyComponent = React.lazy(() =>
-  import("./MyComponent").then((module) => ({
+  import('./MyComponent').then((module) => ({
     default: module.MyComponent,
-  })),
+  }))
 );
 ```
 

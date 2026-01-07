@@ -57,12 +57,12 @@ kubectl rollout resume deployment/api
 **Impact:** 90% fewer deployment failures when combined with canary
 
 ```typescript
-import { LaunchDarkly } from "launchdarkly-node-server-sdk";
+import { LaunchDarkly } from 'launchdarkly-node-server-sdk';
 
 const client = LaunchDarkly.init(process.env.LD_SDK_KEY);
 
 // Check feature flag
-const showNewCheckout = await client.variation("new-checkout", user, false);
+const showNewCheckout = await client.variation('new-checkout', user, false);
 
 if (showNewCheckout) {
   return newCheckoutFlow(req, res);
@@ -118,13 +118,13 @@ CMD ["node", "dist/main.js"]
 ### Docker Compose (Local Development)
 
 ```yaml
-version: "3.8"
+version: '3.8'
 
 services:
   api:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/myapp
       - REDIS_URL=redis://redis:6379
@@ -143,7 +143,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
 
 volumes:
   postgres-data:
@@ -181,11 +181,11 @@ spec:
                   key: url
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "250m"
+              memory: '256Mi'
+              cpu: '250m'
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: '512Mi'
+              cpu: '500m'
           livenessProbe:
             httpGet:
               path: /health
@@ -245,8 +245,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -301,20 +301,20 @@ jobs:
 **1. Metrics (Prometheus + Grafana)**
 
 ```typescript
-import { Counter, Histogram, register } from "prom-client";
+import { Counter, Histogram, register } from 'prom-client';
 
 // Request counter
 const httpRequestTotal = new Counter({
-  name: "http_requests_total",
-  help: "Total HTTP requests",
-  labelNames: ["method", "route", "status"],
+  name: 'http_requests_total',
+  help: 'Total HTTP requests',
+  labelNames: ['method', 'route', 'status'],
 });
 
 // Response time histogram
 const httpRequestDuration = new Histogram({
-  name: "http_request_duration_seconds",
-  help: "HTTP request duration",
-  labelNames: ["method", "route"],
+  name: 'http_request_duration_seconds',
+  help: 'HTTP request duration',
+  labelNames: ['method', 'route'],
   buckets: [0.1, 0.5, 1, 2, 5],
 });
 
@@ -322,25 +322,22 @@ const httpRequestDuration = new Histogram({
 app.use((req, res, next) => {
   const start = Date.now();
 
-  res.on("finish", () => {
+  res.on('finish', () => {
     const duration = (Date.now() - start) / 1000;
     httpRequestTotal.inc({
       method: req.method,
       route: req.route?.path,
       status: res.statusCode,
     });
-    httpRequestDuration.observe(
-      { method: req.method, route: req.route?.path },
-      duration,
-    );
+    httpRequestDuration.observe({ method: req.method, route: req.route?.path }, duration);
   });
 
   next();
 });
 
 // Metrics endpoint
-app.get("/metrics", async (req, res) => {
-  res.set("Content-Type", register.contentType);
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
   res.end(await register.metrics());
 });
 ```
@@ -348,42 +345,42 @@ app.get("/metrics", async (req, res) => {
 **2. Logs (ELK Stack - Elasticsearch, Logstash, Kibana)**
 
 ```typescript
-import winston from "winston";
-import { ElasticsearchTransport } from "winston-elasticsearch";
+import winston from 'winston';
+import { ElasticsearchTransport } from 'winston-elasticsearch';
 
 const logger = winston.createLogger({
-  level: "info",
+  level: 'info',
   format: winston.format.json(),
   transports: [
     new winston.transports.Console(),
     new ElasticsearchTransport({
-      level: "info",
-      clientOpts: { node: "http://localhost:9200" },
-      index: "logs",
+      level: 'info',
+      clientOpts: { node: 'http://localhost:9200' },
+      index: 'logs',
     }),
   ],
 });
 
 // Structured logging
-logger.info("User created", {
+logger.info('User created', {
   userId: user.id,
   email: user.email,
   ipAddress: req.ip,
-  userAgent: req.headers["user-agent"],
+  userAgent: req.headers['user-agent'],
 });
 ```
 
 **3. Traces (Jaeger/OpenTelemetry)**
 
 ```typescript
-import { NodeSDK } from "@opentelemetry/sdk-node";
-import { JaegerExporter } from "@opentelemetry/exporter-jaeger";
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
 
 const sdk = new NodeSDK({
   traceExporter: new JaegerExporter({
-    endpoint: "http://localhost:14268/api/traces",
+    endpoint: 'http://localhost:14268/api/traces',
   }),
-  serviceName: "api-service",
+  serviceName: 'api-service',
 });
 
 sdk.start();
@@ -395,12 +392,12 @@ sdk.start();
 
 ```typescript
 // Liveness probe - Is the app running?
-app.get("/health/liveness", (req, res) => {
-  res.status(200).json({ status: "ok", timestamp: Date.now() });
+app.get('/health/liveness', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: Date.now() });
 });
 
 // Readiness probe - Is the app ready to serve traffic?
-app.get("/health/readiness", async (req, res) => {
+app.get('/health/readiness', async (req, res) => {
   const checks = {
     database: await checkDatabase(),
     redis: await checkRedis(),
@@ -409,14 +406,14 @@ app.get("/health/readiness", async (req, res) => {
 
   const isReady = Object.values(checks).every(Boolean);
   res.status(isReady ? 200 : 503).json({
-    status: isReady ? "ready" : "not ready",
+    status: isReady ? 'ready' : 'not ready',
     checks,
   });
 });
 
 async function checkDatabase() {
   try {
-    await db.query("SELECT 1");
+    await db.query('SELECT 1');
     return true;
   } catch {
     return false;

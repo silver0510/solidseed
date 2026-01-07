@@ -45,7 +45,7 @@ WHERE user_id = 123 AND created_at > '2025-01-01';
 
 ```typescript
 // PostgreSQL with pg-pool
-import { Pool } from "pg";
+import { Pool } from 'pg';
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -59,7 +59,7 @@ const pool = new Pool({
 });
 
 // Use pool for queries
-const result = await pool.query("SELECT * FROM users WHERE id = $1", [userId]);
+const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
 ```
 
 **Recommended Pool Sizes:**
@@ -85,7 +85,7 @@ for (const post of posts) {
 ```typescript
 // Single query with JOIN
 const posts = await Post.findAll({
-  include: [{ model: User, as: "author" }],
+  include: [{ model: User, as: 'author' }],
 });
 ```
 
@@ -138,7 +138,7 @@ async function deleteUser(userId: string) {
 }
 
 // Pattern-based invalidation
-await redis.keys("user:*").then((keys) => redis.del(...keys));
+await redis.keys('user:*').then((keys) => redis.del(...keys));
 ```
 
 ### Cache Layers
@@ -198,7 +198,7 @@ upstream backend {
 
 ```typescript
 // Express health check endpoint
-app.get("/health", async (req, res) => {
+app.get('/health', async (req, res) => {
   const checks = {
     uptime: process.uptime(),
     timestamp: Date.now(),
@@ -218,19 +218,19 @@ app.get("/health", async (req, res) => {
 
 ```typescript
 // Producer - Add job to queue
-import Queue from "bull";
+import Queue from 'bull';
 
-const emailQueue = new Queue("email", {
-  redis: { host: "localhost", port: 6379 },
+const emailQueue = new Queue('email', {
+  redis: { host: 'localhost', port: 6379 },
 });
 
-await emailQueue.add("send-welcome", {
+await emailQueue.add('send-welcome', {
   userId: user.id,
   email: user.email,
 });
 
 // Consumer - Process jobs
-emailQueue.process("send-welcome", async (job) => {
+emailQueue.process('send-welcome', async (job) => {
   await sendWelcomeEmail(job.data.email);
 });
 ```
@@ -251,9 +251,9 @@ emailQueue.process("send-welcome", async (job) => {
 
 ```typescript
 // Cache-Control headers
-res.setHeader("Cache-Control", "public, max-age=31536000, immutable"); // Static assets
-res.setHeader("Cache-Control", "public, max-age=3600"); // API responses
-res.setHeader("Cache-Control", "private, no-cache"); // User-specific data
+res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // Static assets
+res.setHeader('Cache-Control', 'public, max-age=3600'); // API responses
+res.setHeader('Cache-Control', 'private, no-cache'); // User-specific data
 ```
 
 **CDN Providers:**

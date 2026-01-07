@@ -50,7 +50,7 @@ function handleData(data: MyData) {
 
 // ✅ Or use unknown for truly unknown data
 function handleUnknown(data: unknown) {
-  if (typeof data === "object" && data !== null && "something" in data) {
+  if (typeof data === 'object' && data !== null && 'something' in data) {
     return (data as MyData).something;
   }
 }
@@ -109,12 +109,12 @@ function useMyData(id: number): { data: Data; isLoading: boolean } {
 
 ```typescript
 // ✅ CORRECT - Explicitly mark as type import
-import type { User } from "~types/user";
-import type { Post } from "~types/post";
-import type { SxProps, Theme } from "@mui/material";
+import type { User } from '~types/user';
+import type { Post } from '~types/post';
+import type { SxProps, Theme } from '@mui/material';
 
 // ❌ AVOID - Mixed value and type imports
-import { User } from "~types/user"; // Unclear if type or value
+import { User } from '~types/user'; // Unclear if type or value
 ```
 
 **Benefits:**
@@ -203,12 +203,12 @@ function updateUser(id: number, updates: Partial<User>) {
 
 ```typescript
 // Select specific properties
-type UserPreview = Pick<User, "id" | "name" | "email">;
+type UserPreview = Pick<User, 'id' | 'name' | 'email'>;
 
 const preview: UserPreview = {
   id: 1,
-  name: "John",
-  email: "john@example.com",
+  name: 'John',
+  email: 'john@example.com',
   // Other User properties not allowed
 };
 ```
@@ -217,12 +217,12 @@ const preview: UserPreview = {
 
 ```typescript
 // Exclude specific properties
-type UserWithoutPassword = Omit<User, "password" | "passwordHash">;
+type UserWithoutPassword = Omit<User, 'password' | 'passwordHash'>;
 
 const publicUser: UserWithoutPassword = {
   id: 1,
-  name: "John",
-  email: "john@example.com",
+  name: 'John',
+  email: 'john@example.com',
   // password and passwordHash not allowed
 };
 ```
@@ -239,12 +239,12 @@ type RequiredConfig = Required<Config>; // All optional props become required
 ```typescript
 // Type-safe object/map
 const userMap: Record<string, User> = {
-  user1: { id: 1, name: "John" },
-  user2: { id: 2, name: "Jane" },
+  user1: { id: 1, name: 'John' },
+  user2: { id: 2, name: 'Jane' },
 };
 
 // For styles
-import type { SxProps, Theme } from "@mui/material";
+import type { SxProps, Theme } from '@mui/material';
 
 const styles: Record<string, SxProps<Theme>> = {
   container: { p: 2 },
@@ -260,9 +260,7 @@ const styles: Record<string, SxProps<Theme>> = {
 
 ```typescript
 function isUser(data: unknown): data is User {
-  return (
-    typeof data === "object" && data !== null && "id" in data && "name" in data
-  );
+  return typeof data === 'object' && data !== null && 'id' in data && 'name' in data;
 }
 
 // Usage
@@ -343,7 +341,7 @@ export function List<T>({ items, renderItem }: ListProps<T>): React.ReactElement
 
 ```typescript
 // ✅ OK - When you know more than TypeScript
-const element = document.getElementById("my-element") as HTMLInputElement;
+const element = document.getElementById('my-element') as HTMLInputElement;
 const value = element.value;
 
 // ✅ OK - API response that you've validated
@@ -379,7 +377,7 @@ const name = user && user.profile && user.profile.name;
 
 ```typescript
 // ✅ CORRECT
-const displayName = user?.name ?? "Anonymous";
+const displayName = user?.name ?? 'Anonymous';
 
 // Only uses default if null or undefined
 // (Different from || which triggers on '', 0, false)
@@ -389,11 +387,11 @@ const displayName = user?.name ?? "Anonymous";
 
 ```typescript
 // ✅ OK - When you're certain value exists
-const data = queryClient.getQueryData<Data>(["data"])!;
+const data = queryClient.getQueryData<Data>(['data'])!;
 
 // ⚠️ CAREFUL - Only use when you KNOW it's not null
 // Better to check explicitly:
-const data = queryClient.getQueryData<Data>(["data"]);
+const data = queryClient.getQueryData<Data>(['data']);
 if (data) {
   // Use data
 }

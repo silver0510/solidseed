@@ -7,7 +7,7 @@ Config file structure, custom utilities, plugins, and theme extensions.
 Modern approach to customize Tailwind using CSS:
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   /* Custom colors */
@@ -16,8 +16,8 @@ Modern approach to customize Tailwind using CSS:
   --color-brand-900: oklch(0.25 0.15 264);
 
   /* Custom fonts */
-  --font-display: "Satoshi", "Inter", sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
+  --font-display: 'Satoshi', 'Inter', sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
 
   /* Custom spacing */
   --spacing-18: calc(var(--spacing) * 18);
@@ -38,9 +38,7 @@ Modern approach to customize Tailwind using CSS:
 **Usage:**
 
 ```html
-<div class="bg-brand-500 font-display shadow-glow rounded-large">
-  Custom themed element
-</div>
+<div class="bg-brand-500 font-display shadow-glow rounded-large">Custom themed element</div>
 
 <div class="tablet:grid-cols-2 3xl:grid-cols-6">Custom breakpoints</div>
 ```
@@ -88,10 +86,10 @@ Modern approach to customize Tailwind using CSS:
 
 ```css
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-serif: "Merriweather", Georgia, serif;
-  --font-mono: "JetBrains Mono", Consolas, monospace;
-  --font-display: "Playfair Display", serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Merriweather', Georgia, serif;
+  --font-mono: 'JetBrains Mono', Consolas, monospace;
+  --font-display: 'Playfair Display', serif;
 }
 ```
 
@@ -202,7 +200,7 @@ Organize CSS into layers:
   }
 
   a {
-    @apply text-blue-600 hover:text-blue-700 underline-offset-4 hover:underline;
+    @apply text-blue-600 underline-offset-4 hover:text-blue-700 hover:underline;
   }
 
   body {
@@ -212,7 +210,7 @@ Organize CSS into layers:
 
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors;
+    @apply rounded-lg px-4 py-2 font-medium transition-colors;
   }
 
   .btn-primary {
@@ -224,11 +222,11 @@ Organize CSS into layers:
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow;
+    @apply rounded-xl bg-white p-6 shadow-md transition-shadow hover:shadow-lg;
   }
 
   .input {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+    @apply w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500;
   }
 }
 
@@ -253,15 +251,15 @@ Extract repeated utility patterns:
 
 ```css
 .btn-primary {
-  @apply bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300;
+  @apply rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-blue-700 hover:shadow-lg focus:ring-4 focus:ring-blue-300 focus:outline-none active:bg-blue-800;
 }
 
 .input-field {
-  @apply w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed;
+  @apply w-full rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100;
 }
 
 .section-container {
-  @apply container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+  @apply container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
 }
 ```
 
@@ -285,9 +283,9 @@ npm install -D @tailwindcss/typography @tailwindcss/forms @tailwindcss/container
 // tailwind.config.js
 export default {
   plugins: [
-    require("@tailwindcss/typography"),
-    require("@tailwindcss/forms"),
-    require("@tailwindcss/container-queries"),
+    require('@tailwindcss/typography'),
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/container-queries'),
   ],
 };
 ```
@@ -314,28 +312,28 @@ export default {
 
 ```javascript
 // tailwind.config.js
-const plugin = require("tailwindcss/plugin");
+const plugin = require('tailwindcss/plugin');
 
 export default {
   plugins: [
     plugin(function ({ addUtilities, addComponents, theme }) {
       // Add utilities
       addUtilities({
-        ".text-shadow": {
-          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.1)",
+        '.text-shadow': {
+          textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
         },
-        ".text-shadow-lg": {
-          textShadow: "4px 4px 8px rgba(0, 0, 0, 0.2)",
+        '.text-shadow-lg': {
+          textShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)',
         },
       });
 
       // Add components
       addComponents({
-        ".card-custom": {
-          backgroundColor: theme("colors.white"),
-          borderRadius: theme("borderRadius.lg"),
-          padding: theme("spacing.6"),
-          boxShadow: theme("boxShadow.md"),
+        '.card-custom': {
+          backgroundColor: theme('colors.white'),
+          borderRadius: theme('borderRadius.lg'),
+          padding: theme('spacing.6'),
+          boxShadow: theme('boxShadow.md'),
         },
       });
     }),
@@ -419,7 +417,7 @@ export default config
 ```javascript
 // tailwind.config.js
 export default {
-  darkMode: ["class"], // or "media" for automatic
+  darkMode: ['class'], // or "media" for automatic
   // ...
 };
 ```
@@ -433,9 +431,7 @@ export default {
 </html>
 
 <!-- Media query-based -->
-<div class="bg-white dark:bg-gray-900">
-  Responds to system preference automatically
-</div>
+<div class="bg-white dark:bg-gray-900">Responds to system preference automatically</div>
 ```
 
 ## Content Configuration
@@ -446,10 +442,10 @@ Specify files to scan for classes:
 // tailwind.config.js
 export default {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
-    "./app/**/*.{js,jsx,ts,tsx}",
-    "./components/**/*.{js,jsx,ts,tsx}",
-    "./pages/**/*.{js,jsx,ts,tsx}",
+    './src/**/*.{js,jsx,ts,tsx}',
+    './app/**/*.{js,jsx,ts,tsx}',
+    './components/**/*.{js,jsx,ts,tsx}',
+    './pages/**/*.{js,jsx,ts,tsx}',
   ],
   // ...
 };
@@ -462,9 +458,9 @@ Preserve dynamic classes:
 ```javascript
 export default {
   safelist: [
-    "bg-red-500",
-    "bg-green-500",
-    "bg-blue-500",
+    'bg-red-500',
+    'bg-green-500',
+    'bg-blue-500',
     {
       pattern: /bg-(red|green|blue)-(100|500|900)/,
     },

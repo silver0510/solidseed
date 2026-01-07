@@ -34,8 +34,8 @@ Sizes: `default | sm | lg | icon`
 ### Input
 
 ```tsx
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 <div className="space-y-2">
   <Label htmlFor="email">Email</Label>
@@ -46,9 +46,9 @@ import { Label } from "@/components/ui/label";
 ### Form (with React Hook Form + Zod)
 
 ```tsx
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import {
   Form,
   FormControl,
@@ -56,9 +56,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const schema = z.object({
   username: z.string().min(2).max(50),
@@ -68,7 +68,7 @@ const schema = z.object({
 function ProfileForm() {
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { username: "", email: "" },
+    defaultValues: { username: '', email: '' },
   });
 
   return (
@@ -103,7 +103,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 <Select>
   <SelectTrigger className="w-[180px]">
@@ -120,8 +120,8 @@ import {
 ### Checkbox
 
 ```tsx
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 <div className="flex items-center space-x-2">
   <Checkbox id="terms" />
@@ -132,8 +132,8 @@ import { Label } from "@/components/ui/label";
 ### Radio Group
 
 ```tsx
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 <RadioGroup defaultValue="option-one">
   <div className="flex items-center space-x-2">
@@ -150,7 +150,7 @@ import { Label } from "@/components/ui/label";
 ### Textarea
 
 ```tsx
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from '@/components/ui/textarea';
 
 <Textarea placeholder="Type your message here." />;
 ```
@@ -158,8 +158,8 @@ import { Textarea } from "@/components/ui/textarea";
 ### Switch
 
 ```tsx
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 <div className="flex items-center space-x-2">
   <Switch id="airplane-mode" />
@@ -204,7 +204,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 
 <Card>
   <CardHeader>
@@ -223,7 +223,7 @@ import {
 ### Tabs
 
 ```tsx
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 <Tabs defaultValue="account">
   <TabsList>
@@ -243,20 +243,16 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
 
 <Accordion type="single" collapsible>
   <AccordionItem value="item-1">
     <AccordionTrigger>Is it accessible?</AccordionTrigger>
-    <AccordionContent>
-      Yes. It adheres to WAI-ARIA design pattern.
-    </AccordionContent>
+    <AccordionContent>Yes. It adheres to WAI-ARIA design pattern.</AccordionContent>
   </AccordionItem>
   <AccordionItem value="item-2">
     <AccordionTrigger>Is it styled?</AccordionTrigger>
-    <AccordionContent>
-      Yes. Comes with default styles customizable with Tailwind.
-    </AccordionContent>
+    <AccordionContent>Yes. Comes with default styles customizable with Tailwind.</AccordionContent>
   </AccordionItem>
 </Accordion>;
 ```
@@ -271,7 +267,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+} from '@/components/ui/navigation-menu';
 
 <NavigationMenu>
   <NavigationMenuList>
@@ -298,7 +294,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 <Dialog>
   <DialogTrigger asChild>
@@ -325,7 +321,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer";
+} from '@/components/ui/drawer';
 
 <Drawer>
   <DrawerTrigger>Open</DrawerTrigger>
@@ -345,11 +341,7 @@ import {
 ### Popover
 
 ```tsx
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 <Popover>
   <PopoverTrigger>Open</PopoverTrigger>
@@ -385,7 +377,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from '@/components/ui/command';
 
 <Command>
   <CommandInput placeholder="Type a command or search..." />
@@ -413,7 +405,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 <AlertDialog>
   <AlertDialogTrigger asChild>
@@ -455,7 +447,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 ### Progress
 
 ```tsx
-import { Progress } from "@/components/ui/progress";
+import { Progress } from '@/components/ui/progress';
 
 <Progress value={33} />;
 ```
@@ -463,7 +455,7 @@ import { Progress } from "@/components/ui/progress";
 ### Skeleton
 
 ```tsx
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
 
 <div className="flex items-center space-x-4">
   <Skeleton className="h-12 w-12 rounded-full" />
@@ -487,7 +479,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 <Table>
   <TableCaption>Recent invoices</TableCaption>
@@ -511,7 +503,7 @@ import {
 ### Avatar
 
 ```tsx
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 <Avatar>
   <AvatarImage src="https://github.com/shadcn.png" />

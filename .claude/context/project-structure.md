@@ -91,6 +91,7 @@ The `.claude/` directory is the heart of the CCPM (Claude Code Project Managemen
 ### `.claude/prds/` - Requirements
 
 Product Requirements Documents that define features from a user perspective:
+
 - Business value and problem statements
 - User stories and personas
 - Acceptance criteria
@@ -102,6 +103,7 @@ Product Requirements Documents that define features from a user perspective:
 ### `.claude/epics/` - Technical Plans
 
 Each epic is a subdirectory containing:
+
 - `epic.md` - Overall technical plan, architecture decisions, API designs
 - `###.md` - Individual implementation tasks (001.md, 002.md, etc.)
 
@@ -110,6 +112,7 @@ Each epic is a subdirectory containing:
 ### `.claude/commands/` - Slash Commands
 
 Custom commands organized by category:
+
 - `pm/` - Project management (prd-new, epic-decompose, status, etc.)
 - `context/` - Context system (create, prime, update)
 - `testing/` - Test execution (run, prime)
@@ -119,6 +122,7 @@ Each command is a markdown file with frontmatter defining allowed tools.
 ### `.claude/rules/` - Development Standards
 
 Guidelines that all code and commands must follow:
+
 - `datetime.md` - Always use real system time, ISO 8601 format
 - `path-standards.md` - Use relative paths, never expose local structure
 - `github-operations.md` - GitHub CLI patterns and protections
@@ -127,6 +131,7 @@ Guidelines that all code and commands must follow:
 ### `.claude/skills/` - Automation Skills
 
 Reusable automation scripts for common tasks:
+
 - `better-auth/` - Better Auth initialization scripts
 - `ui-styling/` - Tailwind and shadcn/ui automation
 - Python-based scripts with tests
@@ -134,6 +139,7 @@ Reusable automation scripts for common tasks:
 ### `.claude/context/` - Living Documentation
 
 Project knowledge base that evolves with the codebase:
+
 - Current progress and status
 - Technical context and dependencies
 - Architecture patterns
@@ -145,6 +151,7 @@ Project knowledge base that evolves with the codebase:
 ### Frontmatter Files
 
 All PRDs, epics, and tasks use YAML frontmatter:
+
 ```yaml
 ---
 name: feature-name
@@ -157,6 +164,7 @@ updated: 2026-01-06T09:03:33Z
 ### Task Numbering
 
 Tasks within epics are zero-padded three-digit numbers:
+
 - `001.md` - First task (usually database/foundation)
 - `002.md` - Second task
 - `010.md` - Tenth task
@@ -175,6 +183,7 @@ Allows for up to 999 tasks per epic (typically 5-15 tasks).
 ### Project Management (`.claude/commands/pm/`)
 
 40+ commands organized functionally:
+
 - PRD lifecycle: `prd-new`, `prd-parse`, `prd-list`, `prd-edit`, `prd-status`
 - Epic management: `epic-decompose`, `epic-sync`, `epic-show`, `epic-status`
 - Issue tracking: `issue-start`, `issue-sync`, `issue-close`, `issue-analyze`
@@ -184,6 +193,7 @@ Allows for up to 999 tasks per epic (typically 5-15 tasks).
 ### Context System (`.claude/commands/context/`)
 
 3 core commands:
+
 - `create` - Initialize project context
 - `prime` - Load context for new session
 - `update` - Refresh context after changes
@@ -191,6 +201,7 @@ Allows for up to 999 tasks per epic (typically 5-15 tasks).
 ### Agents (`.claude/agents/`)
 
 Specialized agent configurations for:
+
 - Backend development
 - Better Auth setup
 - Code analysis
@@ -394,6 +405,7 @@ Route groups don't affect URLs but allow different layouts.
 ### Feature Modules
 
 Each feature in `features/` follows this structure:
+
 ```
 feature-name/
 ├── components/     # Feature-specific components
@@ -407,6 +419,7 @@ This keeps related code together and enables easy feature extraction.
 ### API Routes
 
 RESTful API structure:
+
 - `GET /api/clients` - List all clients
 - `POST /api/clients` - Create client
 - `GET /api/clients/[id]` - Get single client
@@ -432,6 +445,7 @@ Components are copied into the codebase (not npm packages) for full customizatio
 ### Mobile-First Design
 
 All components designed for:
+
 - Minimum width: 375px (iPhone SE)
 - Touch targets: 44x44px minimum
 - Responsive breakpoints: xs, sm, md, lg

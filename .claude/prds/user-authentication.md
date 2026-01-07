@@ -45,6 +45,7 @@ Real estate agents need secure, reliable access to their client data without the
 ### Primary User Personas
 
 **Persona 1: Sarah - New Agent Trying Korella**
+
 - 35 years old, independent real estate agent
 - Heard about Korella from colleague, wants to try it
 - Uses Gmail for business communication
@@ -53,6 +54,7 @@ Real estate agents need secure, reliable access to their client data without the
 - Needs immediate access to evaluate the platform
 
 **Persona 2: Michael - Experienced Agent Switching from Competitor**
+
 - 42 years old, switching from FollowUpBoss
 - Has 1,200+ clients to import
 - Uses Microsoft 365 for business
@@ -61,6 +63,7 @@ Real estate agents need secure, reliable access to their client data without the
 - Expects professional-grade security
 
 **Persona 3: Jennifer - Loan Officer Juggling Multiple Platforms**
+
 - 38 years old, loan officer managing 800+ clients
 - Already logged into Google on all her devices
 - Frequently forgets passwords across multiple platforms
@@ -87,6 +90,7 @@ Real estate agents need secure, reliable access to their client data without the
 12. Trial period starts (14 days or as defined)
 
 **Pain Points Addressed**:
+
 - Quick registration process (under 2 minutes)
 - Real-time password validation prevents submission errors
 - Email verification ensures valid contact information
@@ -110,6 +114,7 @@ Real estate agents need secure, reliable access to their client data without the
 12. Jennifer is logged in, trial period starts
 
 **Pain Points Addressed**:
+
 - No password to remember (uses Google authentication)
 - Instant email verification (Google email trusted)
 - Faster registration (3 fields vs. traditional 8+ field forms)
@@ -132,6 +137,7 @@ Real estate agents need secure, reliable access to their client data without the
 11. Michael continues work without re-authentication
 
 **Pain Points Addressed**:
+
 - No need to login daily on trusted devices
 - Seamless continuation of work across sessions
 - Reduced password entry on mobile keyboards
@@ -155,6 +161,7 @@ Real estate agents need secure, reliable access to their client data without the
 13. Sarah clicks "Login" and signs in with new password
 
 **Pain Points Addressed**:
+
 - Self-service password recovery (no support ticket needed)
 - Secure token-based reset (limited time validity)
 - Email-only verification (no security questions)
@@ -174,6 +181,7 @@ Real estate agents need secure, reliable access to their client data without the
 9. Michael logs in successfully with new credentials
 
 **Pain Points Addressed**:
+
 - Brute force attack prevention
 - User notification of suspicious activity
 - Quick recovery path for legitimate user
@@ -187,6 +195,7 @@ Real estate agents need secure, reliable access to their client data without the
 #### FR1: User Registration
 
 **FR1.1: Email/Password Registration**
+
 - **FR1.1.1**: System shall provide registration form with fields: Full Name (VARCHAR 255), Email (VARCHAR 255), Password (VARCHAR 255)
 - **FR1.1.2**: System shall validate email format before submission
 - **FR1.1.3**: System shall enforce unique constraint on email address
@@ -200,6 +209,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR1.1.11**: System shall prevent login until email is verified
 
 **FR1.2: Social Login Registration (Google)**
+
 - **FR1.2.1**: System shall provide "Continue with Google" button on registration page
 - **FR1.2.2**: System shall redirect to Google OAuth consent screen
 - **FR1.2.3**: System shall request permissions: email, profile (name)
@@ -210,6 +220,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR1.2.8**: System shall prompt for additional profile info if needed
 
 **FR1.3: Social Login Registration (Microsoft)**
+
 - **FR1.3.1**: System shall provide "Continue with Microsoft" button on registration page
 - **FR1.3.2**: System shall redirect to Microsoft OAuth consent screen
 - **FR1.3.3**: System shall request permissions: email, profile
@@ -219,6 +230,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR1.3.7**: System shall not require separate email verification for Microsoft users
 
 **FR1.4: Email Verification**
+
 - **FR1.4.1**: System shall generate unique verification token for each registration
 - **FR1.4.2**: System shall send verification email with clickable link
 - **FR1.4.3**: System shall expire verification tokens after 24 hours
@@ -228,6 +240,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR1.4.7**: System shall mark email as verified in user record
 
 **FR1.5: Trial Account Setup**
+
 - **FR1.5.1**: System shall assign trial subscription tier upon registration
 - **FR1.5.2**: System shall set trial expiration date (14 days from registration)
 - **FR1.5.3**: System shall grant full feature access during trial period
@@ -236,6 +249,7 @@ Real estate agents need secure, reliable access to their client data without the
 #### FR2: User Login
 
 **FR2.1: Email/Password Login**
+
 - **FR2.1.1**: System shall provide login form with fields: Email, Password
 - **FR2.1.2**: System shall validate credentials against stored user records
 - **FR2.1.3**: System shall verify password hash using bcrypt/argon2
@@ -248,6 +262,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR2.1.10**: System shall display appropriate error messages for failed login
 
 **FR2.2: Social Login (Google)**
+
 - **FR2.2.1**: System shall provide "Continue with Google" button on login page
 - **FR2.2.2**: System shall initiate Google OAuth flow
 - **FR2.2.3**: System shall validate Google user ID against stored records
@@ -255,6 +270,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR2.2.5**: System shall handle first-time Google login as registration
 
 **FR2.3: Social Login (Microsoft)**
+
 - **FR2.3.1**: System shall provide "Continue with Microsoft" button on login page
 - **FR2.3.2**: System shall initiate Microsoft OAuth flow
 - **FR2.3.3**: System shall validate Microsoft user ID against stored records
@@ -262,6 +278,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR2.3.5**: System shall handle first-time Microsoft login as registration
 
 **FR2.4: Remember Me Functionality**
+
 - **FR2.4.1**: System shall provide "Remember me" checkbox on login form
 - **FR2.4.2**: System shall extend JWT token expiration to 30 days when checked
 - **FR2.4.3**: System shall store extended session securely in browser
@@ -269,6 +286,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR2.4.5**: System shall allow manual logout to clear remembered session
 
 **FR2.5: Login Security**
+
 - **FR2.5.1**: System shall track failed login attempts per email address
 - **FR2.5.2**: System shall lock account for 30 minutes after 5 failed attempts
 - **FR2.5.3**: System shall send security alert email on account lockout
@@ -279,6 +297,7 @@ Real estate agents need secure, reliable access to their client data without the
 #### FR3: Password Management
 
 **FR3.1: Password Reset Request**
+
 - **FR3.1.1**: System shall provide "Forgot password?" link on login page
 - **FR3.1.2**: System shall display password reset form requesting email
 - **FR3.1.3**: System shall generate unique password reset token
@@ -288,6 +307,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR3.1.7**: System shall limit reset requests to 3 per hour per email (rate limiting)
 
 **FR3.2: Password Reset Completion**
+
 - **FR3.2.1**: System shall validate reset token on link click
 - **FR3.2.2**: System shall display new password form if token valid
 - **FR3.2.3**: System shall require password confirmation (match validation)
@@ -299,6 +319,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR3.2.9**: System shall redirect to login page with success message
 
 **FR3.3: Password Change (Authenticated User)**
+
 - **FR3.3.1**: System shall provide password change form in user settings
 - **FR3.3.2**: System shall require current password for verification
 - **FR3.3.3**: System shall require new password meeting complexity requirements
@@ -310,6 +331,7 @@ Real estate agents need secure, reliable access to their client data without the
 #### FR4: Session Management
 
 **FR4.1: JWT Token Management**
+
 - **FR4.1.1**: System shall generate JWT token with user_id, email, subscription_tier
 - **FR4.1.2**: System shall sign JWT tokens with secret key
 - **FR4.1.3**: System shall set default token expiration to 3 days
@@ -319,6 +341,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR4.1.7**: System shall return 401 Unauthorized for invalid tokens
 
 **FR4.2: Session Lifecycle**
+
 - **FR4.2.1**: System shall create session on successful login
 - **FR4.2.2**: System shall extend session on user activity (if remember me enabled)
 - **FR4.2.3**: System shall expire session after inactivity period (3 days default)
@@ -327,6 +350,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR4.2.6**: System shall redirect to login page on session expiration
 
 **FR4.3: Logout**
+
 - **FR4.3.1**: System shall provide logout button in user interface
 - **FR4.3.2**: System shall invalidate JWT token on logout
 - **FR4.3.3**: System shall clear session from browser storage
@@ -336,6 +360,7 @@ Real estate agents need secure, reliable access to their client data without the
 #### FR5: Account Status Management
 
 **FR5.1: Account Activation States**
+
 - **FR5.1.1**: System shall support account states: pending_verification, active, deactivated, locked
 - **FR5.1.2**: System shall set new accounts to pending_verification state
 - **FR5.1.3**: System shall change to active state on email verification
@@ -344,6 +369,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR5.1.6**: System shall display appropriate message for each account state
 
 **FR5.2: Subscription-Based Access**
+
 - **FR5.2.1**: System shall check subscription status on login
 - **FR5.2.2**: System shall allow login for users with expired subscription
 - **FR5.2.3**: System shall downgrade expired users to free tier upon login
@@ -351,6 +377,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR5.2.5**: System shall display subscription status in user profile
 
 **FR5.3: Account Deactivation**
+
 - **FR5.3.1**: System shall support account deactivation (soft delete)
 - **FR5.3.2**: System shall prevent login for deactivated accounts
 - **FR5.3.3**: System shall display message: "Account deactivated. Contact support."
@@ -360,6 +387,7 @@ Real estate agents need secure, reliable access to their client data without the
 #### FR6: Security & Logging
 
 **FR6.1: Authentication Logging**
+
 - **FR6.1.1**: System shall log all login attempts with user_id, IP address, timestamp
 - **FR6.1.2**: System shall log all logout events
 - **FR6.1.3**: System shall log all password reset requests
@@ -369,6 +397,7 @@ Real estate agents need secure, reliable access to their client data without the
 - **FR6.1.7**: System shall purge logs older than 1 week
 
 **FR6.2: Security Alerts**
+
 - **FR6.2.1**: System shall send email alert on account lockout
 - **FR6.2.2**: System shall send email alert on password reset
 - **FR6.2.3**: System shall send email alert on password change
@@ -439,6 +468,7 @@ Real estate agents need secure, reliable access to their client data without the
 **Target**: Achieve 90%+ registration completion rate and 95%+ login success rate within first month of launch.
 
 **Measurement Approach**:
+
 - Track registration funnel: started → email verified → first login
 - Monitor login success rate: successful logins / total attempts
 - Track password reset frequency: resets per user per month
@@ -447,25 +477,17 @@ Real estate agents need secure, reliable access to their client data without the
 ### Secondary Metrics
 
 **Adoption and Usage**:
+
 1. **Registration Completion**: 90% of users who start registration complete email verification
 2. **Social Login Adoption**: 40% of new users register via Google or Microsoft
 3. **Remember Me Usage**: 60% of users enable "remember me" option
 4. **Login Success Rate**: 95% of login attempts succeed on first try
 
-**Security Metrics**:
-5. **Account Lockouts**: Less than 1% of accounts locked per week
-6. **Password Reset Frequency**: Less than 5% of users reset password per month
-7. **Suspicious Activity**: Zero successful unauthorized access attempts
-8. **Session Security**: No session hijacking incidents
+**Security Metrics**: 5. **Account Lockouts**: Less than 1% of accounts locked per week 6. **Password Reset Frequency**: Less than 5% of users reset password per month 7. **Suspicious Activity**: Zero successful unauthorized access attempts 8. **Session Security**: No session hijacking incidents
 
-**Performance Metrics**:
-9. **Login Speed**: Average login time under 1.5 seconds
-10. **OAuth Performance**: Average OAuth flow completion under 4 seconds
+**Performance Metrics**: 9. **Login Speed**: Average login time under 1.5 seconds 10. **OAuth Performance**: Average OAuth flow completion under 4 seconds
 
-**User Experience**:
-11. **Password Strength**: 80% of passwords rated "Strong" on registration
-12. **Mobile Login**: 70% of logins occur on mobile devices
-13. **User Satisfaction**: System Usability Scale (SUS) score of 80+ for authentication flow
+**User Experience**: 11. **Password Strength**: 80% of passwords rated "Strong" on registration 12. **Mobile Login**: 70% of logins occur on mobile devices 13. **User Satisfaction**: System Usability Scale (SUS) score of 80+ for authentication flow
 
 ---
 
@@ -578,90 +600,95 @@ Real estate agents need secure, reliable access to their client data without the
 
 ### users
 
-| Field Name         | Type         | Allow Null | Description                      | Validation Rule                           |
-| ------------------ | ------------ | ---------- | -------------------------------- | ----------------------------------------- |
-| id                 | UUID         | No         | Primary key identifier           | Auto-generated UUID                       |
-| email              | VARCHAR(255) | No         | User email address               | Required, valid email format, unique      |
-| password_hash      | VARCHAR(255) | Yes        | Hashed password (bcrypt/argon2)  | Null for OAuth-only users                 |
-| full_name          | VARCHAR(255) | No         | User full name                   | Required, min 1 character                 |
-| email_verified     | BOOLEAN      | No         | Email verification status        | Default: false                            |
-| email_verified_at  | TIMESTAMP    | Yes        | Email verification timestamp     | Set when verified                         |
-| account_status     | VARCHAR(50)  | No         | Account status                   | Enum: pending, active, deactivated, locked |
-| subscription_tier  | VARCHAR(50)  | No         | Current subscription tier        | Enum: trial, free, pro, enterprise        |
-| trial_expires_at   | TIMESTAMP    | Yes        | Trial expiration date            | Set for trial users                       |
-| failed_login_count | INTEGER      | No         | Failed login attempt counter     | Default: 0, reset on success              |
-| locked_until       | TIMESTAMP    | Yes        | Account lock expiration          | Set after 5 failed attempts               |
-| last_login_at      | TIMESTAMP    | Yes        | Last successful login timestamp  | Updated on each login                     |
-| last_login_ip      | VARCHAR(45)  | Yes        | Last login IP address            | IPv4 or IPv6                              |
-| created_at         | TIMESTAMP    | No         | Account creation timestamp       | Auto-generated                            |
-| updated_at         | TIMESTAMP    | No         | Last update timestamp            | Auto-updated                              |
+| Field Name         | Type         | Allow Null | Description                     | Validation Rule                            |
+| ------------------ | ------------ | ---------- | ------------------------------- | ------------------------------------------ |
+| id                 | UUID         | No         | Primary key identifier          | Auto-generated UUID                        |
+| email              | VARCHAR(255) | No         | User email address              | Required, valid email format, unique       |
+| password_hash      | VARCHAR(255) | Yes        | Hashed password (bcrypt/argon2) | Null for OAuth-only users                  |
+| full_name          | VARCHAR(255) | No         | User full name                  | Required, min 1 character                  |
+| email_verified     | BOOLEAN      | No         | Email verification status       | Default: false                             |
+| email_verified_at  | TIMESTAMP    | Yes        | Email verification timestamp    | Set when verified                          |
+| account_status     | VARCHAR(50)  | No         | Account status                  | Enum: pending, active, deactivated, locked |
+| subscription_tier  | VARCHAR(50)  | No         | Current subscription tier       | Enum: trial, free, pro, enterprise         |
+| trial_expires_at   | TIMESTAMP    | Yes        | Trial expiration date           | Set for trial users                        |
+| failed_login_count | INTEGER      | No         | Failed login attempt counter    | Default: 0, reset on success               |
+| locked_until       | TIMESTAMP    | Yes        | Account lock expiration         | Set after 5 failed attempts                |
+| last_login_at      | TIMESTAMP    | Yes        | Last successful login timestamp | Updated on each login                      |
+| last_login_ip      | VARCHAR(45)  | Yes        | Last login IP address           | IPv4 or IPv6                               |
+| created_at         | TIMESTAMP    | No         | Account creation timestamp      | Auto-generated                             |
+| updated_at         | TIMESTAMP    | No         | Last update timestamp           | Auto-updated                               |
 
 **Indexes**:
+
 - Primary Key: `id`
 - Unique: `email`
 - Index: `account_status`, `subscription_tier`, `email_verified`
 
 ### oauth_providers
 
-| Field Name  | Type         | Allow Null | Description                  | Validation Rule                   |
-| ----------- | ------------ | ---------- | ---------------------------- | --------------------------------- |
-| id          | UUID         | No         | Primary key identifier       | Auto-generated UUID               |
-| user_id     | UUID         | No         | Reference to users table     | Foreign key to users.id           |
-| provider    | VARCHAR(50)  | No         | OAuth provider name          | Enum: google, microsoft           |
-| provider_id | VARCHAR(255) | No         | Provider's user ID           | Required, unique per provider     |
-| email       | VARCHAR(255) | No         | Email from OAuth provider    | Required                          |
-| created_at  | TIMESTAMP    | No         | Link creation timestamp      | Auto-generated                    |
-| updated_at  | TIMESTAMP    | No         | Last update timestamp        | Auto-updated                      |
+| Field Name  | Type         | Allow Null | Description               | Validation Rule               |
+| ----------- | ------------ | ---------- | ------------------------- | ----------------------------- |
+| id          | UUID         | No         | Primary key identifier    | Auto-generated UUID           |
+| user_id     | UUID         | No         | Reference to users table  | Foreign key to users.id       |
+| provider    | VARCHAR(50)  | No         | OAuth provider name       | Enum: google, microsoft       |
+| provider_id | VARCHAR(255) | No         | Provider's user ID        | Required, unique per provider |
+| email       | VARCHAR(255) | No         | Email from OAuth provider | Required                      |
+| created_at  | TIMESTAMP    | No         | Link creation timestamp   | Auto-generated                |
+| updated_at  | TIMESTAMP    | No         | Last update timestamp     | Auto-updated                  |
 
 **Indexes**:
+
 - Primary Key: `id`
 - Composite Unique: `provider`, `provider_id`
 - Index: `user_id`
 
 ### password_resets
 
-| Field Name | Type         | Allow Null | Description               | Validation Rule           |
-| ---------- | ------------ | ---------- | ------------------------- | ------------------------- |
-| id         | UUID         | No         | Primary key identifier    | Auto-generated UUID       |
-| user_id    | UUID         | No         | Reference to users table  | Foreign key to users.id   |
-| token      | VARCHAR(255) | No         | Reset token (hashed)      | Unique, cryptographically random |
-| expires_at | TIMESTAMP    | No         | Token expiration          | 1 hour from creation      |
-| used       | BOOLEAN      | No         | Token used status         | Default: false            |
-| created_at | TIMESTAMP    | No         | Request timestamp         | Auto-generated            |
+| Field Name | Type         | Allow Null | Description              | Validation Rule                  |
+| ---------- | ------------ | ---------- | ------------------------ | -------------------------------- |
+| id         | UUID         | No         | Primary key identifier   | Auto-generated UUID              |
+| user_id    | UUID         | No         | Reference to users table | Foreign key to users.id          |
+| token      | VARCHAR(255) | No         | Reset token (hashed)     | Unique, cryptographically random |
+| expires_at | TIMESTAMP    | No         | Token expiration         | 1 hour from creation             |
+| used       | BOOLEAN      | No         | Token used status        | Default: false                   |
+| created_at | TIMESTAMP    | No         | Request timestamp        | Auto-generated                   |
 
 **Indexes**:
+
 - Primary Key: `id`
 - Unique: `token`
 - Index: `user_id`, `expires_at`
 
 ### email_verifications
 
-| Field Name | Type         | Allow Null | Description              | Validation Rule           |
-| ---------- | ------------ | ---------- | ------------------------ | ------------------------- |
-| id         | UUID         | No         | Primary key identifier   | Auto-generated UUID       |
-| user_id    | UUID         | No         | Reference to users table | Foreign key to users.id   |
+| Field Name | Type         | Allow Null | Description              | Validation Rule                  |
+| ---------- | ------------ | ---------- | ------------------------ | -------------------------------- |
+| id         | UUID         | No         | Primary key identifier   | Auto-generated UUID              |
+| user_id    | UUID         | No         | Reference to users table | Foreign key to users.id          |
 | token      | VARCHAR(255) | No         | Verification token       | Unique, cryptographically random |
-| expires_at | TIMESTAMP    | No         | Token expiration         | 24 hours from creation    |
-| verified   | BOOLEAN      | No         | Verification status      | Default: false            |
-| created_at | TIMESTAMP    | No         | Request timestamp        | Auto-generated            |
+| expires_at | TIMESTAMP    | No         | Token expiration         | 24 hours from creation           |
+| verified   | BOOLEAN      | No         | Verification status      | Default: false                   |
+| created_at | TIMESTAMP    | No         | Request timestamp        | Auto-generated                   |
 
 **Indexes**:
+
 - Primary Key: `id`
 - Unique: `token`
 - Index: `user_id`
 
 ### auth_logs
 
-| Field Name   | Type         | Allow Null | Description          | Validation Rule                          |
-| ------------ | ------------ | ---------- | -------------------- | ---------------------------------------- |
-| id           | UUID         | No         | Primary key identifier | Auto-generated UUID                    |
-| user_id      | UUID         | Yes        | User who attempted auth | Foreign key to users.id (null for failed attempts) |
-| event_type   | VARCHAR(50)  | No         | Type of auth event   | Enum: login_success, login_fail, logout, password_reset, lockout |
-| ip_address   | VARCHAR(45)  | No         | Request IP address   | IPv4 or IPv6                             |
-| user_agent   | TEXT         | Yes        | Browser user agent   | Optional                                 |
-| created_at   | TIMESTAMP    | No         | Event timestamp      | Auto-generated                           |
+| Field Name | Type        | Allow Null | Description             | Validation Rule                                                  |
+| ---------- | ----------- | ---------- | ----------------------- | ---------------------------------------------------------------- |
+| id         | UUID        | No         | Primary key identifier  | Auto-generated UUID                                              |
+| user_id    | UUID        | Yes        | User who attempted auth | Foreign key to users.id (null for failed attempts)               |
+| event_type | VARCHAR(50) | No         | Type of auth event      | Enum: login_success, login_fail, logout, password_reset, lockout |
+| ip_address | VARCHAR(45) | No         | Request IP address      | IPv4 or IPv6                                                     |
+| user_agent | TEXT        | Yes        | Browser user agent      | Optional                                                         |
+| created_at | TIMESTAMP   | No         | Event timestamp         | Auto-generated                                                   |
 
 **Indexes**:
+
 - Primary Key: `id`
 - Index: `user_id`, `created_at`, `event_type`
 - Retention: 7 days (auto-purge older records)
@@ -707,6 +734,7 @@ Real estate agents need secure, reliable access to their client data without the
 ### Authentication Flow
 
 **Email/Password Registration:**
+
 1. User submits registration form
 2. Backend validates input, checks email uniqueness
 3. Backend hashes password (bcrypt cost 12)
@@ -717,6 +745,7 @@ Real estate agents need secure, reliable access to their client data without the
 8. User can now login
 
 **OAuth Registration/Login:**
+
 1. User clicks "Continue with Google/Microsoft"
 2. Frontend redirects to OAuth provider
 3. Provider shows consent screen
@@ -730,6 +759,7 @@ Real estate agents need secure, reliable access to their client data without the
 11. User is logged in
 
 **Login Flow:**
+
 1. User submits login credentials
 2. Backend validates email exists
 3. Backend checks account status (active, verified)
@@ -744,11 +774,13 @@ Real estate agents need secure, reliable access to their client data without the
 ### Security Implementation
 
 **Password Hashing:**
+
 - Use bcrypt with cost factor 12 (or argon2)
 - Salt automatically handled by bcrypt
 - Never store plaintext passwords
 
 **JWT Token Structure:**
+
 ```json
 {
   "user_id": "uuid",
@@ -760,12 +792,14 @@ Real estate agents need secure, reliable access to their client data without the
 ```
 
 **Token Validation:**
+
 - Verify signature using secret key
 - Check expiration timestamp
 - Validate user still exists and is active
 - Check subscription tier hasn't changed (optional refresh)
 
 **Rate Limiting:**
+
 - Use Redis or in-memory store for rate limit counters
 - Track by IP address for login attempts
 - Track by email for password reset requests

@@ -20,6 +20,7 @@ author: Claude Code PM System
 A mobile-first CRM platform specifically designed for real estate professionals to manage client relationships, documents, tasks, and communications in one centralized system.
 
 **Core Platform Features:**
+
 1. **Client Hub** - Centralized client management with profiles, tags, documents, notes, and tasks
 2. **User Authentication** - Secure registration and login with email/password and social OAuth
 3. **Email Marketing** (Future) - Campaign management and communication tracking
@@ -33,6 +34,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 **Problem**: Real estate agents use fragmented, expensive, desktop-centric CRMs that lock their data to the platform.
 
 **Existing Solutions**:
+
 - FollowUpBoss: $99-299/month, desktop-first, data lock-in
 - Salesforce: Too complex and expensive for independent agents
 - Generic CRMs: Lack real estate-specific workflows
@@ -60,13 +62,13 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 
 2. **Validate Product-Market Fit** (Q2 2026)
    - 10-20 beta users successfully onboarding
-   - >5 minute average session duration
-   - >70% feature completion rate
+   - > 5 minute average session duration
+   - > 70% feature completion rate
    - NPS >40 from beta users
 
 3. **Acquire First 100 Customers** (Q3 2026)
    - Public launch
-   - >30% trial → paid conversion
+   - > 30% trial → paid conversion
    - $4,000 MRR (Monthly Recurring Revenue)
    - <$50 customer acquisition cost
 
@@ -88,6 +90,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### MVP Launch Criteria
 
 **Functional Requirements:**
+
 - ✅ Users can register with email/password
 - ✅ Users can login with Google or Microsoft
 - ✅ Email verification required for activation
@@ -99,12 +102,14 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 - ✅ Mobile responsive on iPhone SE (375px)
 
 **Performance Requirements:**
+
 - Login: <2 seconds
 - Page load: <3 seconds
 - API response: <500ms average
 - Support 100+ concurrent users
 
 **Security Requirements:**
+
 - HTTPS only (no HTTP)
 - Password hashing (bcrypt cost 12)
 - Account lockout (5 failed attempts)
@@ -114,21 +119,25 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### Business Success Metrics
 
 **Acquisition:**
+
 - Trial sign-ups: 50+ in first month
 - Registration completion rate: >80%
 - Email verification rate: >90%
 
 **Activation:**
+
 - Users add first client: >70% within 24 hours
 - Users add 10+ clients: >50% within 7 days
 - Return visit within 7 days: >60%
 
 **Retention:**
+
 - Weekly active users: >60% of registered
 - Monthly retention: >80%
 - Trial → paid conversion: >30%
 
 **Revenue:**
+
 - ARPU (Average Revenue Per User): $50/month
 - LTV (Customer Lifetime Value): $1,800+ (3 years)
 - LTV:CAC ratio: >3:1
@@ -138,6 +147,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### In Scope (Phase 1 - MVP)
 
 **Authentication:**
+
 - Email/password registration with verification
 - Google OAuth integration
 - Microsoft OAuth integration
@@ -147,6 +157,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 - 14-day trial period tracking
 
 **Client Hub:**
+
 - Client profile CRUD (Create, Read, Update, Delete)
 - Tag-based organization
 - Document upload and storage
@@ -156,6 +167,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 - Soft delete (data recovery)
 
 **Infrastructure:**
+
 - Supabase PostgreSQL database
 - Better Auth library integration
 - Mobile-responsive UI (375px+ width)
@@ -164,6 +176,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### Out of Scope (Phase 1)
 
 **Explicitly NOT Building:**
+
 - Email marketing campaigns
 - SMS messaging
 - Calendar integration
@@ -177,6 +190,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 - Custom branding/white-label
 
 **Deferred to Later Phases:**
+
 - Email campaigns (Phase 2)
 - Team features (Phase 3)
 - Advanced analytics (Phase 3)
@@ -187,6 +201,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### Technical Constraints
 
 **Technology Stack:**
+
 - Must use Supabase for PostgreSQL database
 - Must use Better Auth library for authentication
 - Must support Google and Microsoft OAuth
@@ -195,6 +210,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 - Must use relative paths in all documentation
 
 **Performance Constraints:**
+
 - Login: <2 seconds
 - Registration: <3 seconds
 - OAuth flow: <5 seconds
@@ -202,6 +218,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 - Support 100+ concurrent logins
 
 **Security Constraints:**
+
 - HTTPS required (no HTTP allowed)
 - Bcrypt cost factor: 12 minimum
 - JWT expiration: 3 days default, 30 days max
@@ -211,16 +228,19 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### Business Constraints
 
 **Budget:**
+
 - Bootstrap/self-funded (implied - no budget specified)
 - Use free tiers where possible (Supabase, OAuth, email service)
 - Minimize infrastructure costs pre-revenue
 
 **Timeline:**
+
 - MVP launch target: Q1 2026
 - Beta testing: Q2 2026
 - Public launch: Q3 2026
 
 **Team:**
+
 - Solo founder/developer (implied from project structure)
 - Using AI assistance (Claude Code) for development
 - No dedicated designer (use component libraries)
@@ -228,12 +248,14 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### Regulatory Constraints
 
 **GDPR Compliance:**
+
 - User data export capability
 - Right to be forgotten (account deletion)
 - Clear privacy policy
 - Cookie consent for EU users
 
 **Data Security:**
+
 - Encryption at rest
 - Encryption in transit
 - Audit logging for security events
@@ -242,20 +264,24 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ## Project Stakeholders
 
 ### Primary Stakeholder
+
 **Role**: Founder/Product Owner
 **Responsibilities**: Product decisions, requirements, roadmap
 
 ### Target Users (Stakeholders)
 
 **Sarah - Independent Agent**
+
 - Needs: Mobile access, affordable pricing, data ownership
 - Pain Points: Expensive CRM, poor mobile experience, data lock-in
 
 **Michael - Team Lead**
+
 - Needs: Client organization, document management, data security
 - Pain Points: Risk of losing data, inflexible categorization
 
 **Jennifer - Loan Officer**
+
 - Needs: Secure documents, password-free login, date tracking
 - Pain Points: Password fatigue, difficult mobile access
 
@@ -264,16 +290,19 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### Technical Risks
 
 **Risk 1: Better Auth + Supabase Compatibility**
+
 - Impact: High (blocks authentication)
 - Probability: Low (both support PostgreSQL)
 - Mitigation: Test integration in Task 002, validate before proceeding
 
 **Risk 2: OAuth Provider Complexity**
+
 - Impact: Medium (delays launch if broken)
 - Probability: Medium (first-time setup)
 - Mitigation: Follow Task 008 documentation, use provider sandboxes
 
 **Risk 3: Mobile Performance**
+
 - Impact: High (core value proposition)
 - Probability: Medium (depends on implementation)
 - Mitigation: Mobile-first design, test on real devices, performance budgets
@@ -281,16 +310,19 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### Business Risks
 
 **Risk 4: Low Trial → Paid Conversion**
+
 - Impact: High (revenue dependent)
 - Probability: Medium (typical SaaS challenge)
 - Mitigation: Strong onboarding, feature education, clear value demonstration
 
 **Risk 5: Feature Creep**
+
 - Impact: Medium (delays launch)
 - Probability: High (common trap)
 - Mitigation: Strict scope adherence, "Out of Scope" section in PRDs
 
 **Risk 6: Market Competition**
+
 - Impact: Medium (reduces differentiation)
 - Probability: Low (no direct competitor in data portability niche)
 - Mitigation: Focus on unique value props (portability, mobile-first, pricing)
@@ -300,27 +332,32 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### External Dependencies
 
 **Supabase:**
+
 - Account creation required
 - Project setup needed
 - Free tier limitations apply
 
 **OAuth Providers:**
+
 - Google Cloud Platform project
 - Microsoft Azure AD app registration
 - Domain verification for production
 
 **Email Service:**
+
 - Not yet selected (SendGrid, AWS SES, Mailgun, Postmark, Resend)
 - Needed for verification and password reset emails
 
 ### Internal Dependencies
 
 **Frontend Framework:**
+
 - Not yet selected (React, Next.js, Vue)
 - Blocks UI implementation (Task 006)
 - Decision needed before epic starts
 
 **Design System:**
+
 - Not yet selected (Tailwind + shadcn/ui likely)
 - Component library needed for consistency
 
@@ -329,12 +366,14 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### Phase 1: MVP (Q1 2026)
 
 **Planning** (Current):
+
 - ✅ PRD: User Authentication (complete)
 - ✅ PRD: Client Hub (complete)
 - ✅ Epic: User Authentication (decomposed)
 - ⏳ Epic: Client Hub (pending decomposition)
 
 **Implementation** (8-12 weeks):
+
 - Week 1-2: Supabase setup, database schema (Task 001)
 - Week 3-4: Better Auth integration (Task 002)
 - Week 5-8: Authentication APIs and UI (Tasks 003-006)
@@ -342,6 +381,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 - Week 11-12: Trial period and testing (Tasks 009-010)
 
 **Testing & Launch**:
+
 - Security audit (OWASP checklist)
 - Performance testing
 - Mobile device testing
@@ -350,11 +390,13 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ### Phase 2: Email Marketing (Q2 2026)
 
 **Planning**:
+
 - Email marketing PRD
 - Epic decomposition
 - Integration design
 
 **Implementation**:
+
 - Campaign builder
 - Segmentation
 - Email templates
@@ -370,17 +412,20 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 ## Communication Plan
 
 **Project Management:**
+
 - CCPM system (`.claude/` directory)
 - Local-only mode (no GitHub sync required)
 - Context updates after major milestones
 
 **Documentation:**
+
 - PRDs in `.claude/prds/`
 - Epics in `.claude/epics/`
 - Context in `.claude/context/`
 - Developer guide in `CLAUDE.md`
 
 **Status Updates:**
+
 - Use `/pm:status` for dashboard
 - Use `/pm:standup` for daily summary
 - Update context with `/context:update`
@@ -393,6 +438,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 **Blockers**: None - ready to proceed
 
 **Recent Accomplishments:**
+
 - ✅ Created comprehensive PRDs for two core features
 - ✅ Decomposed User Authentication epic into 10 tasks
 - ✅ Established technology stack (Supabase, Better Auth)
@@ -400,6 +446,7 @@ A mobile-first CRM platform specifically designed for real estate professionals 
 - ✅ Created developer documentation (CLAUDE.md)
 
 **Immediate Next Steps:**
+
 1. Create Supabase project
 2. Start Task 001: Database schema
 3. Decompose Client Hub epic

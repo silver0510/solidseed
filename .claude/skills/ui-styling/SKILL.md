@@ -75,13 +75,13 @@ npx shadcn@latest add button card dialog form
 **Use components with utility styling:**
 
 ```tsx
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export function Dashboard() {
   return (
-    <div className="container mx-auto p-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card className="hover:shadow-lg transition-shadow">
+    <div className="container mx-auto grid gap-6 p-6 md:grid-cols-2 lg:grid-cols-3">
+      <Card className="transition-shadow hover:shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Analytics</CardTitle>
         </CardHeader>
@@ -107,13 +107,13 @@ npm install -D tailwindcss @tailwindcss/vite
 
 ```javascript
 // vite.config.ts
-import tailwindcss from "@tailwindcss/vite";
+import tailwindcss from '@tailwindcss/vite';
 export default { plugins: [tailwindcss()] };
 ```
 
 ```css
 /* src/index.css */
-@import "tailwindcss";
+@import 'tailwindcss';
 ```
 
 ## Component Library Guide
@@ -281,9 +281,9 @@ python scripts/tailwind_config_gen.py --colors brand:blue --fonts display:Inter
 **Form with validation:**
 
 ```tsx
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import {
   Form,
   FormField,
@@ -291,9 +291,9 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const schema = z.object({
   email: z.string().email(),
@@ -303,7 +303,7 @@ const schema = z.object({
 export function LoginForm() {
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: '', password: '' },
   });
 
   return (
@@ -336,12 +336,10 @@ export function LoginForm() {
 ```tsx
 <div className="min-h-screen bg-white dark:bg-gray-900">
   <div className="container mx-auto px-4 py-8">
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         <CardContent className="p-6">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Content
-          </h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Content</h3>
         </CardContent>
       </Card>
     </div>

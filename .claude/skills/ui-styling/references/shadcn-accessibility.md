@@ -21,7 +21,7 @@ Benefits:
 **Focus visible states:**
 
 ```tsx
-<Button className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+<Button className="focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2">
   Accessible Button
 </Button>
 ```
@@ -43,7 +43,7 @@ Benefits:
 Dialogs trap focus automatically via Radix Dialog primitive:
 
 ```tsx
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 <Dialog>
   <DialogTrigger>Open</DialogTrigger>
@@ -71,7 +71,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 <DropdownMenu>
   <DropdownMenuTrigger>Open</DropdownMenuTrigger>
@@ -93,7 +93,7 @@ Keyboard shortcuts:
 ### Command Palette Navigation
 
 ```tsx
-import { Command } from "@/components/ui/command";
+import { Command } from '@/components/ui/command';
 
 <Command>
   <CommandInput placeholder="Search..." />
@@ -196,8 +196,8 @@ Toast component includes live region:
 const { toast } = useToast();
 
 toast({
-  title: "Success",
-  description: "Profile updated",
+  title: 'Success',
+  description: 'Profile updated',
 });
 // Announced to screen readers automatically
 ```
@@ -209,8 +209,8 @@ toast({
 **Always label inputs:**
 
 ```tsx
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 <div>
   <Label htmlFor="email">Email</Label>
@@ -221,7 +221,7 @@ import { Input } from "@/components/ui/input";
 **Add descriptions:**
 
 ```tsx
-import { FormDescription, FormMessage } from "@/components/ui/form";
+import { FormDescription, FormMessage } from '@/components/ui/form';
 
 <FormItem>
   <FormLabel>Username</FormLabel>
@@ -248,7 +248,7 @@ Announce errors to screen readers:
         <Input
           {...field}
           aria-invalid={!!fieldState.error}
-          aria-describedby={fieldState.error ? "email-error" : undefined}
+          aria-describedby={fieldState.error ? 'email-error' : undefined}
         />
       </FormControl>
       <FormMessage id="email-error" />
@@ -275,7 +275,7 @@ Group related fields:
 
 ```tsx
 <fieldset>
-  <legend className="text-lg font-semibold mb-4">Contact Information</legend>
+  <legend className="mb-4 text-lg font-semibold">Contact Information</legend>
   <div className="space-y-4">
     <FormField name="email" />
     <FormField name="phone" />
@@ -288,7 +288,7 @@ Group related fields:
 ### Accordion
 
 ```tsx
-import { Accordion } from "@/components/ui/accordion";
+import { Accordion } from '@/components/ui/accordion';
 
 <Accordion type="single" collapsible>
   <AccordionItem value="item-1">
@@ -307,7 +307,7 @@ import { Accordion } from "@/components/ui/accordion";
 ### Tabs
 
 ```tsx
-import { Tabs } from "@/components/ui/tabs";
+import { Tabs } from '@/components/ui/tabs';
 
 <Tabs defaultValue="account">
   <TabsList role="tablist">
@@ -325,7 +325,7 @@ import { Tabs } from "@/components/ui/tabs";
 ### Select
 
 ```tsx
-import { Select } from "@/components/ui/select";
+import { Select } from '@/components/ui/select';
 
 <Select>
   <SelectTrigger aria-label="Choose theme">
@@ -357,7 +357,7 @@ import { Label } from "@/components/ui/label"
 ### Alert
 
 ```tsx
-import { Alert } from "@/components/ui/alert";
+import { Alert } from '@/components/ui/alert';
 
 <Alert role="alert">
   {/* Announced immediately to screen readers */}
@@ -399,7 +399,7 @@ Always provide visible focus indicators:
 **Default focus ring:**
 
 ```tsx
-<Button className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+<Button className="focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2">
   Button
 </Button>
 ```
@@ -409,7 +409,7 @@ Always provide visible focus indicators:
 ```tsx
 <a
   href="#"
-  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:underline"
+  className="focus-visible:ring-primary focus-visible:underline focus-visible:outline-none focus-visible:ring-2"
 >
   Link
 </a>
@@ -442,9 +442,7 @@ Respect reduced motion preference:
 In components:
 
 ```tsx
-<div className="transition-all motion-reduce:transition-none">
-  Respects user preference
-</div>
+<div className="transition-all motion-reduce:transition-none">Respects user preference</div>
 ```
 
 ## Testing Checklist
@@ -481,10 +479,10 @@ npm install -D @axe-core/react
 ```
 
 ```tsx
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
-if (process.env.NODE_ENV === "development") {
-  import("@axe-core/react").then((axe) => {
+if (process.env.NODE_ENV === 'development') {
+  import('@axe-core/react').then((axe) => {
     axe.default(React, ReactDOM, 1000);
   });
 }

@@ -29,24 +29,24 @@ Comprehensive debugging techniques, tools, and best practices for backend system
 **Node.js (Pino - Fastest)**
 
 ```typescript
-import pino from "pino";
+import pino from 'pino';
 
 const logger = pino({
-  level: process.env.LOG_LEVEL || "info",
+  level: process.env.LOG_LEVEL || 'info',
   transport: {
-    target: "pino-pretty",
+    target: 'pino-pretty',
     options: { colorize: true },
   },
 });
 
 // Structured logging with context
-logger.info({ userId: "123", action: "login" }, "User logged in");
+logger.info({ userId: '123', action: 'login' }, 'User logged in');
 
 // Error logging with stack trace
 try {
   await riskyOperation();
 } catch (error) {
-  logger.error({ err: error, userId: "123" }, "Operation failed");
+  logger.error({ err: error, userId: '123' }, 'Operation failed');
 }
 ```
 
@@ -156,13 +156,13 @@ node --inspect-brk app.js
 **3. Debug Module**
 
 ```typescript
-import debug from "debug";
+import debug from 'debug';
 
-const log = debug("app:server");
-const error = debug("app:error");
+const log = debug('app:server');
+const error = debug('app:error');
 
-log("Starting server on port %d", 3000);
-error("Failed to connect to database");
+log('Starting server on port %d', 3000);
+error('Failed to connect to database');
 
 // Run with: DEBUG=app:* node app.js
 ```
@@ -347,7 +347,7 @@ SELECT pg_terminate_backend(pid);
 **1. Explain Query Performance**
 
 ```javascript
-db.users.find({ email: "test@example.com" }).explain("executionStats");
+db.users.find({ email: 'test@example.com' }).explain('executionStats');
 
 // Look for:
 // - totalDocsExamined vs nReturned (should be close)
@@ -440,18 +440,16 @@ http GET https://api.example.com/users Authorization:"Bearer token123"
 **Express/Node.js:**
 
 ```typescript
-import morgan from "morgan";
+import morgan from 'morgan';
 
 // Development
-app.use(morgan("dev"));
+app.use(morgan('dev'));
 
 // Production (JSON format)
-app.use(morgan("combined"));
+app.use(morgan('combined'));
 
 // Custom format
-app.use(
-  morgan(":method :url :status :response-time ms - :res[content-length]"),
-);
+app.use(morgan(':method :url :status :response-time ms - :res[content-length]'));
 ```
 
 **FastAPI/Python:**
@@ -559,9 +557,9 @@ func main() {
 
 ```typescript
 // Take heap snapshot programmatically
-import { writeHeapSnapshot } from "v8";
+import { writeHeapSnapshot } from 'v8';
 
-app.get("/debug/heap", (req, res) => {
+app.get('/debug/heap', (req, res) => {
   const filename = writeHeapSnapshot();
   res.send(`Heap snapshot written to ${filename}`);
 });
@@ -595,25 +593,25 @@ def memory_intensive_function():
 ```typescript
 // newrelic.js
 export const config = {
-  app_name: ["My Backend API"],
+  app_name: ['My Backend API'],
   license_key: process.env.NEW_RELIC_LICENSE_KEY,
-  logging: { level: "info" },
+  logging: { level: 'info' },
   distributed_tracing: { enabled: true },
 };
 
 // Import at app entry
-import "newrelic";
+import 'newrelic';
 ```
 
 **DataDog**
 
 ```typescript
-import tracer from "dd-trace";
+import tracer from 'dd-trace';
 
 tracer.init({
-  service: "backend-api",
+  service: 'backend-api',
   env: process.env.NODE_ENV,
-  version: "1.0.0",
+  version: '1.0.0',
   logInjection: true,
 });
 ```
@@ -621,7 +619,7 @@ tracer.init({
 **Sentry (Error Tracking)**
 
 ```typescript
-import * as Sentry from "@sentry/node";
+import * as Sentry from '@sentry/node';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
@@ -635,7 +633,7 @@ try {
 } catch (error) {
   Sentry.captureException(error, {
     user: { id: userId },
-    tags: { operation: "payment" },
+    tags: { operation: 'payment' },
   });
 }
 ```
@@ -645,13 +643,13 @@ try {
 **OpenTelemetry (Vendor-Agnostic)**
 
 ```typescript
-import { NodeSDK } from "@opentelemetry/sdk-node";
-import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
-import { JaegerExporter } from "@opentelemetry/exporter-jaeger";
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
 
 const sdk = new NodeSDK({
   traceExporter: new JaegerExporter({
-    endpoint: "http://localhost:14268/api/traces",
+    endpoint: 'http://localhost:14268/api/traces',
   }),
   instrumentations: [getNodeAutoInstrumentations()],
 });
@@ -667,7 +665,7 @@ sdk.start();
 
 ```yaml
 # docker-compose.yml
-version: "3"
+version: '3'
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
@@ -758,7 +756,7 @@ function fibonacciMemo(n) {
 // ❌ Memory leak: Event listeners not removed
 class DataService {
   constructor(eventBus) {
-    eventBus.on("data", (data) => this.processData(data));
+    eventBus.on('data', (data) => this.processData(data));
     // Listener never removed, holds reference to DataService
   }
 }
@@ -768,11 +766,11 @@ class DataService {
   constructor(eventBus) {
     this.eventBus = eventBus;
     this.handler = (data) => this.processData(data);
-    eventBus.on("data", this.handler);
+    eventBus.on('data', this.handler);
   }
 
   destroy() {
-    this.eventBus.off("data", this.handler);
+    this.eventBus.off('data', this.handler);
   }
 }
 
@@ -786,7 +784,7 @@ function getCachedData(key) {
 }
 
 // ✅ Fix: LRU cache with size limit
-import LRU from "lru-cache";
+import LRU from 'lru-cache';
 const cache = new LRU({ max: 1000, ttl: 1000 * 60 * 60 });
 ```
 
@@ -842,7 +840,7 @@ ON orders(user_id, created_at DESC);
 // ❌ Bad: Connection leak
 async function getUser(id) {
   const client = await pool.connect();
-  const result = await client.query("SELECT * FROM users WHERE id = $1", [id]);
+  const result = await client.query('SELECT * FROM users WHERE id = $1', [id]);
   return result.rows[0];
   // Connection never released!
 }
@@ -851,9 +849,7 @@ async function getUser(id) {
 async function getUser(id) {
   const client = await pool.connect();
   try {
-    const result = await client.query("SELECT * FROM users WHERE id = $1", [
-      id,
-    ]);
+    const result = await client.query('SELECT * FROM users WHERE id = $1', [id]);
     return result.rows[0];
   } finally {
     client.release(); // Always release
@@ -862,7 +858,7 @@ async function getUser(id) {
 
 // ✅ Better: Use pool directly
 async function getUser(id) {
-  const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
+  const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
   return result.rows[0];
   // Automatically releases
 }
@@ -885,19 +881,19 @@ async function incrementCounter() {
 
 // ✅ Fix: Atomic operations (Redis)
 async function incrementCounter() {
-  return await redis.incr("counter");
+  return await redis.incr('counter');
   // Atomic, thread-safe
 }
 
 // ✅ Fix: Database transactions
 async function incrementCounter(userId) {
   await db.transaction(async (trx) => {
-    const user = await trx("users")
+    const user = await trx('users')
       .where({ id: userId })
       .forUpdate() // Row-level lock
       .first();
 
-    await trx("users")
+    await trx('users')
       .where({ id: userId })
       .update({ counter: user.counter + 1 });
   });

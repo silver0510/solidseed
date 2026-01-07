@@ -68,25 +68,20 @@ export const MyComponent: React.FC<Props> = ({ id }) => {
 **Smart caching** reduces API calls by checking React Query cache first:
 
 ```typescript
-import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { postApi } from "../api/postApi";
+import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
+import { postApi } from '../api/postApi';
 
 export function useSuspensePost(postId: number) {
   const queryClient = useQueryClient();
 
   return useSuspenseQuery({
-    queryKey: ["post", postId],
+    queryKey: ['post', postId],
     queryFn: async () => {
       // Strategy 1: Try to get from list cache first
-      const cachedListData = queryClient.getQueryData<{ posts: Post[] }>([
-        "posts",
-        "list",
-      ]);
+      const cachedListData = queryClient.getQueryData<{ posts: Post[] }>(['posts', 'list']);
 
       if (cachedListData?.posts) {
-        const cachedPost = cachedListData.posts.find(
-          (post) => post.id === postId,
-        );
+        const cachedPost = cachedListData.posts.find((post) => post.id === postId);
 
         if (cachedPost) {
           return cachedPost; // Return from cache!
@@ -163,18 +158,16 @@ export const MyComponent: React.FC = () => {
 
 ```typescript
 // Entity list
-["entities", blogId][("entities", blogId, "summary")][ // With view mode
-  ("entities", blogId, "flat")
-][
+['entities', blogId][('entities', blogId, 'summary')][('entities', blogId, 'flat')][ // With view mode
   // Single entity
-  ("entity", blogId, entityId)
+  ('entity', blogId, entityId)
 ][
   // Related data
-  ("entity", entityId, "history")
-][("entity", entityId, "comments")][
+  ('entity', entityId, 'history')
+][('entity', entityId, 'comments')][
   // User-specific
-  ("user", userId, "profile")
-][("user", userId, "permissions")];
+  ('user', userId, 'profile')
+][('user', userId, 'permissions')];
 ```
 
 **Rules:**
@@ -188,12 +181,12 @@ export const MyComponent: React.FC = () => {
 
 ```typescript
 // From useSuspensePost.ts
-queryKey: ["post", blogId, postId];
-queryKey: ["posts-v2", blogId, "summary"];
+queryKey: ['post', blogId, postId];
+queryKey: ['posts-v2', blogId, 'summary'];
 
 // Invalidation patterns
-queryClient.invalidateQueries({ queryKey: ["post", blogId] }); // All posts for form
-queryClient.invalidateQueries({ queryKey: ["post"] }); // All posts
+queryClient.invalidateQueries({ queryKey: ['post', blogId] }); // All posts for form
+queryClient.invalidateQueries({ queryKey: ['post'] }); // All posts
 ```
 
 ---
@@ -218,27 +211,22 @@ features/
  * Centralized API service for my-feature operations
  * Uses apiClient for consistent error handling
  */
-import apiClient from "@/lib/apiClient";
-import type { MyEntity, UpdatePayload } from "../types";
+import apiClient from '@/lib/apiClient';
+import type { MyEntity, UpdatePayload } from '../types';
 
 export const myFeatureApi = {
   /**
    * Fetch a single entity
    */
   getEntity: async (blogId: number, entityId: number): Promise<MyEntity> => {
-    const { data } = await apiClient.get(
-      `/blog/entities/${blogId}/${entityId}`,
-    );
+    const { data } = await apiClient.get(`/blog/entities/${blogId}/${entityId}`);
     return data;
   },
 
   /**
    * Fetch all entities for a form
    */
-  getEntities: async (
-    blogId: number,
-    view: "summary" | "flat",
-  ): Promise<MyEntity[]> => {
+  getEntities: async (blogId: number, view: 'summary' | 'flat'): Promise<MyEntity[]> => {
     const { data } = await apiClient.get(`/blog/entities/${blogId}`, {
       params: { view },
     });
@@ -251,12 +239,9 @@ export const myFeatureApi = {
   updateEntity: async (
     blogId: number,
     entityId: number,
-    payload: UpdatePayload,
+    payload: UpdatePayload
   ): Promise<MyEntity> => {
-    const { data } = await apiClient.put(
-      `/blog/entities/${blogId}/${entityId}`,
-      payload,
-    );
+    const { data } = await apiClient.put(`/blog/entities/${blogId}/${entityId}`, payload);
     return data;
   },
 
@@ -285,14 +270,14 @@ export const myFeatureApi = {
 
 ```typescript
 // ✅ CORRECT - Direct service path
-await apiClient.get("/blog/posts/123");
-await apiClient.post("/projects/create", data);
-await apiClient.put("/users/update/456", updates);
-await apiClient.get("/email/templates");
+await apiClient.get('/blog/posts/123');
+await apiClient.post('/projects/create', data);
+await apiClient.put('/users/update/456', updates);
+await apiClient.get('/email/templates');
 
 // ❌ WRONG - Do NOT add /api/ prefix
-await apiClient.get("/api/blog/posts/123"); // WRONG!
-await apiClient.post("/api/projects/create", data); // WRONG!
+await apiClient.get('/api/blog/posts/123'); // WRONG!
+await apiClient.post('/api/projects/create', data); // WRONG!
 ```
 
 **Microservice Routing:**
@@ -361,13 +346,13 @@ const updateMutation = useMutation({
   // Optimistic update
   onMutate: async (newData) => {
     // Cancel outgoing refetches
-    await queryClient.cancelQueries({ queryKey: ["entity", id] });
+    await queryClient.cancelQueries({ queryKey: ['entity', id] });
 
     // Snapshot current value
-    const previousData = queryClient.getQueryData(["entity", id]);
+    const previousData = queryClient.getQueryData(['entity', id]);
 
     // Optimistically update
-    queryClient.setQueryData(["entity", id], (old) => ({
+    queryClient.setQueryData(['entity', id], (old) => ({
       ...old,
       ...newData,
     }));
@@ -378,13 +363,13 @@ const updateMutation = useMutation({
 
   // Rollback on error
   onError: (err, newData, context) => {
-    queryClient.setQueryData(["entity", id], context.previousData);
-    showError("Update failed");
+    queryClient.setQueryData(['entity', id], context.previousData);
+    showError('Update failed');
   },
 
   // Refetch after success or error
   onSettled: () => {
-    queryClient.invalidateQueries({ queryKey: ["entity", id] });
+    queryClient.invalidateQueries({ queryKey: ['entity', id] });
   },
 });
 ```
@@ -421,19 +406,12 @@ export function useEntityFromCache(blogId: number, entityId: number) {
   const queryClient = useQueryClient();
 
   // Get from cache, don't fetch if missing
-  const directCache = queryClient.getQueryData<MyEntity>([
-    "entity",
-    blogId,
-    entityId,
-  ]);
+  const directCache = queryClient.getQueryData<MyEntity>(['entity', blogId, entityId]);
 
   if (directCache) return directCache;
 
   // Try grid cache
-  const gridCache = queryClient.getQueryData<{ rows: MyEntity[] }>([
-    "entities-v2",
-    blogId,
-  ]);
+  const gridCache = queryClient.getQueryData<{ rows: MyEntity[] }>(['entities-v2', blogId]);
 
   return gridCache?.rows.find((row) => row.id === entityId);
 }
@@ -444,12 +422,12 @@ export function useEntityFromCache(blogId: number, entityId: number) {
 ```typescript
 // Fetch user first, then user's settings
 const { data: user } = useSuspenseQuery({
-  queryKey: ["user", userId],
+  queryKey: ['user', userId],
   queryFn: () => userApi.getUser(userId),
 });
 
 const { data: settings } = useSuspenseQuery({
-  queryKey: ["user", userId, "settings"],
+  queryKey: ['user', userId, 'settings'],
   queryFn: () => settingsApi.getUserSettings(user.id),
   // Automatically waits for user to load due to Suspense
 });
@@ -462,7 +440,7 @@ const { data: settings } = useSuspenseQuery({
 ### Using apiClient
 
 ```typescript
-import apiClient from "@/lib/apiClient";
+import apiClient from '@/lib/apiClient';
 
 // apiClient is a configured axios instance
 // Automatically includes:
@@ -481,18 +459,18 @@ import apiClient from "@/lib/apiClient";
 ### onError Callback
 
 ```typescript
-import { useMuiSnackbar } from "@/hooks/useMuiSnackbar";
+import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
 const { showError } = useMuiSnackbar();
 
 const { data } = useSuspenseQuery({
-  queryKey: ["entity", id],
+  queryKey: ['entity', id],
   queryFn: () => myFeatureApi.getEntity(id),
 
   // Handle errors
   onError: (error) => {
-    showError("Failed to load entity");
-    console.error("Load error:", error);
+    showError('Failed to load entity');
+    console.error('Load error:', error);
   },
 });
 ```
@@ -554,9 +532,9 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId }) => {
 ### Example 2: Cache-First Strategy
 
 ```typescript
-import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { postApi } from "../api/postApi";
-import type { Post } from "../types";
+import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
+import { postApi } from '../api/postApi';
+import type { Post } from '../types';
 
 /**
  * Hook with cache-first strategy
@@ -566,20 +544,12 @@ export function useSuspensePost(blogId: number, postId: number) {
   const queryClient = useQueryClient();
 
   return useSuspenseQuery<Post, Error>({
-    queryKey: ["post", blogId, postId],
+    queryKey: ['post', blogId, postId],
     queryFn: async () => {
       // 1. Check grid cache first
       const gridCache =
-        queryClient.getQueryData<{ rows: Post[] }>([
-          "posts-v2",
-          blogId,
-          "summary",
-        ]) ||
-        queryClient.getQueryData<{ rows: Post[] }>([
-          "posts-v2",
-          blogId,
-          "flat",
-        ]);
+        queryClient.getQueryData<{ rows: Post[] }>(['posts-v2', blogId, 'summary']) ||
+        queryClient.getQueryData<{ rows: Post[] }>(['posts-v2', blogId, 'flat']);
 
       if (gridCache?.rows) {
         const cached = gridCache.rows.find((row) => row.S_ID === postId);
@@ -644,9 +614,9 @@ export const Dashboard: React.FC = () => {
 ### Update Mutation
 
 ```typescript
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { postApi } from "../api/postApi";
-import { useMuiSnackbar } from "@/hooks/useMuiSnackbar";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { postApi } from '../api/postApi';
+import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
 export const useUpdatePost = () => {
   const queryClient = useQueryClient();
@@ -659,20 +629,20 @@ export const useUpdatePost = () => {
     onSuccess: (data, variables) => {
       // Invalidate specific post
       queryClient.invalidateQueries({
-        queryKey: ["post", variables.blogId, variables.postId],
+        queryKey: ['post', variables.blogId, variables.postId],
       });
 
       // Invalidate list to refresh grid
       queryClient.invalidateQueries({
-        queryKey: ["posts-v2", variables.blogId],
+        queryKey: ['posts-v2', variables.blogId],
       });
 
-      showSuccess("Post updated");
+      showSuccess('Post updated');
     },
 
     onError: (error) => {
-      showError("Failed to update post");
-      console.error("Update error:", error);
+      showError('Failed to update post');
+      console.error('Update error:', error);
     },
   });
 };
@@ -684,7 +654,7 @@ const handleSave = () => {
   updatePost.mutate({
     blogId: 123,
     postId: 456,
-    data: { responses: { "101": "value" } },
+    data: { responses: { '101': 'value' } },
   });
 };
 ```
@@ -697,28 +667,24 @@ export const useDeletePost = () => {
   const { showSuccess, showError } = useMuiSnackbar();
 
   return useMutation({
-    mutationFn: ({ blogId, postId }: DeleteParams) =>
-      postApi.deletePost(blogId, postId),
+    mutationFn: ({ blogId, postId }: DeleteParams) => postApi.deletePost(blogId, postId),
 
     onSuccess: (data, variables) => {
       // Remove from cache manually (optimistic)
-      queryClient.setQueryData<{ rows: Post[] }>(
-        ["posts-v2", variables.blogId],
-        (old) => ({
-          ...old,
-          rows: old?.rows.filter((row) => row.S_ID !== variables.postId) || [],
-        }),
-      );
+      queryClient.setQueryData<{ rows: Post[] }>(['posts-v2', variables.blogId], (old) => ({
+        ...old,
+        rows: old?.rows.filter((row) => row.S_ID !== variables.postId) || [],
+      }));
 
-      showSuccess("Post deleted");
+      showSuccess('Post deleted');
     },
 
     onError: (error, variables) => {
       // Rollback - refetch to get accurate state
       queryClient.invalidateQueries({
-        queryKey: ["posts-v2", variables.blogId],
+        queryKey: ['posts-v2', variables.blogId],
       });
-      showError("Failed to delete post");
+      showError('Failed to delete post');
     },
   });
 };
@@ -750,14 +716,14 @@ const queryClient = new QueryClient({
 ```typescript
 // Frequently changing data - shorter staleTime
 useSuspenseQuery({
-  queryKey: ["notifications", "unread"],
+  queryKey: ['notifications', 'unread'],
   queryFn: () => notificationApi.getUnread(),
   staleTime: 30 * 1000, // 30 seconds
 });
 
 // Rarely changing data - longer staleTime
 useSuspenseQuery({
-  queryKey: ["form", blogId, "structure"],
+  queryKey: ['form', blogId, 'structure'],
   queryFn: () => formApi.getStructure(blogId),
   staleTime: 30 * 60 * 1000, // 30 minutes
 });

@@ -11,7 +11,7 @@ GitHub, Google, Apple, Discord, Facebook, Microsoft, Twitter/X, Spotify, Twitch,
 ### Server Configuration
 
 ```ts
-import { betterAuth } from "better-auth";
+import { betterAuth } from 'better-auth';
 
 export const auth = betterAuth({
   socialProviders: {
@@ -19,12 +19,12 @@ export const auth = betterAuth({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       // Optional: custom scopes
-      scope: ["user:email", "read:user"],
+      scope: ['user:email', 'read:user'],
     },
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      scope: ["openid", "email", "profile"],
+      scope: ['openid', 'email', 'profile'],
     },
     discord: {
       clientId: process.env.DISCORD_CLIENT_ID!,
@@ -37,20 +37,20 @@ export const auth = betterAuth({
 ### Client Usage
 
 ```ts
-import { authClient } from "@/lib/auth-client";
+import { authClient } from '@/lib/auth-client';
 
 // Basic sign in
 await authClient.signIn.social({
-  provider: "github",
-  callbackURL: "/dashboard",
+  provider: 'github',
+  callbackURL: '/dashboard',
 });
 
 // With callbacks
 await authClient.signIn.social({
-  provider: "google",
-  callbackURL: "/dashboard",
-  errorCallbackURL: "/error",
-  newUserCallbackURL: "/welcome", // For first-time users
+  provider: 'google',
+  callbackURL: '/dashboard',
+  errorCallbackURL: '/error',
+  newUserCallbackURL: '/welcome', // For first-time users
 });
 ```
 
@@ -139,17 +139,17 @@ export const auth = betterAuth({
 Add custom OAuth 2.0 provider:
 
 ```ts
-import { betterAuth } from "better-auth";
+import { betterAuth } from 'better-auth';
 
 export const auth = betterAuth({
   socialProviders: {
     customProvider: {
       clientId: process.env.CUSTOM_CLIENT_ID!,
       clientSecret: process.env.CUSTOM_CLIENT_SECRET!,
-      authorizationUrl: "https://provider.com/oauth/authorize",
-      tokenUrl: "https://provider.com/oauth/token",
-      userInfoUrl: "https://provider.com/oauth/userinfo",
-      scope: ["email", "profile"],
+      authorizationUrl: 'https://provider.com/oauth/authorize',
+      tokenUrl: 'https://provider.com/oauth/token',
+      userInfoUrl: 'https://provider.com/oauth/userinfo',
+      scope: ['email', 'profile'],
       // Map provider user data to Better Auth user
       mapProfile: (profile) => ({
         id: profile.id,
@@ -173,7 +173,7 @@ export const auth = betterAuth({
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ["google", "github"], // Auto-link these providers
+      trustedProviders: ['google', 'github'], // Auto-link these providers
     },
   },
 });
@@ -184,8 +184,8 @@ export const auth = betterAuth({
 ```ts
 // Link new provider to existing account
 await authClient.linkSocial({
-  provider: "google",
-  callbackURL: "/profile",
+  provider: 'google',
+  callbackURL: '/profile',
 });
 
 // List linked accounts
@@ -194,7 +194,7 @@ const accounts = session.user.accounts;
 
 // Unlink account
 await authClient.unlinkAccount({
-  accountId: "account-id",
+  accountId: 'account-id',
 });
 ```
 
@@ -213,7 +213,7 @@ const accounts = await auth.api.listAccounts({
 });
 
 // Get specific provider token
-const githubAccount = accounts.find((a) => a.providerId === "github");
+const githubAccount = accounts.find((a) => a.providerId === 'github');
 const accessToken = githubAccount.accessToken;
 const refreshToken = githubAccount.refreshToken;
 ```
@@ -223,7 +223,7 @@ const refreshToken = githubAccount.refreshToken;
 ```ts
 // Manually refresh OAuth token
 const newToken = await auth.api.refreshToken({
-  accountId: "account-id",
+  accountId: 'account-id',
 });
 ```
 
@@ -231,9 +231,9 @@ const newToken = await auth.api.refreshToken({
 
 ```ts
 // Example: Use GitHub token to fetch repos
-const githubAccount = accounts.find((a) => a.providerId === "github");
+const githubAccount = accounts.find((a) => a.providerId === 'github');
 
-const response = await fetch("https://api.github.com/user/repos", {
+const response = await fetch('https://api.github.com/user/repos', {
   headers: {
     Authorization: `Bearer ${githubAccount.accessToken}`,
   },
@@ -253,10 +253,10 @@ export const auth = betterAuth({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       scope: [
-        "user:email",
-        "read:user",
-        "repo", // Access repositories
-        "gist", // Access gists
+        'user:email',
+        'read:user',
+        'repo', // Access repositories
+        'gist', // Access gists
       ],
     },
   },
@@ -305,18 +305,18 @@ export const auth = betterAuth({
 ```ts
 await authClient.signIn.social(
   {
-    provider: "github",
-    errorCallbackURL: "/auth/error",
+    provider: 'github',
+    errorCallbackURL: '/auth/error',
   },
   {
     onError: (ctx) => {
-      console.error("OAuth error:", ctx.error);
+      console.error('OAuth error:', ctx.error);
       // Handle specific errors
-      if (ctx.error.code === "OAUTH_ACCOUNT_ALREADY_LINKED") {
-        alert("This account is already linked to another user");
+      if (ctx.error.code === 'OAUTH_ACCOUNT_ALREADY_LINKED') {
+        alert('This account is already linked to another user');
       }
     },
-  },
+  }
 );
 ```
 
@@ -355,23 +355,21 @@ https://yourdomain.com/api/auth/callback/{provider}
 ### Sign In Button (React)
 
 ```tsx
-import { authClient } from "@/lib/auth-client";
+import { authClient } from '@/lib/auth-client';
 
 export function SocialSignIn() {
   const handleOAuth = async (provider: string) => {
     await authClient.signIn.social({
       provider,
-      callbackURL: "/dashboard",
+      callbackURL: '/dashboard',
     });
   };
 
   return (
     <div className="space-y-2">
-      <button onClick={() => handleOAuth("github")}>Sign in with GitHub</button>
-      <button onClick={() => handleOAuth("google")}>Sign in with Google</button>
-      <button onClick={() => handleOAuth("discord")}>
-        Sign in with Discord
-      </button>
+      <button onClick={() => handleOAuth('github')}>Sign in with GitHub</button>
+      <button onClick={() => handleOAuth('google')}>Sign in with Google</button>
+      <button onClick={() => handleOAuth('discord')}>Sign in with Discord</button>
     </div>
   );
 }
@@ -405,8 +403,8 @@ http://localhost:3000/api/auth/callback/github
 Add required scopes for email access:
 
 ```ts
-scope: ["user:email"]; // GitHub
-scope: ["email"]; // Google
+scope: ['user:email']; // GitHub
+scope: ['email']; // Google
 ```
 
 ### HTTPS Required
@@ -425,7 +423,7 @@ Configure CORS if frontend/backend on different domains:
 export const auth = betterAuth({
   advanced: {
     corsOptions: {
-      origin: ["https://yourdomain.com"],
+      origin: ['https://yourdomain.com'],
       credentials: true,
     },
   },

@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Current Status
 
 The project is in early development with two primary features in planning:
+
 1. **User Authentication** - Email/password + OAuth (Google, Microsoft) with Better Auth library and Supabase
 2. **Client Hub** - Client management platform with GDPR compliance
 
@@ -23,11 +24,13 @@ The project is in early development with two primary features in planning:
 ### Technology Stack
 
 **Database & Storage:**
+
 - **Supabase** - PostgreSQL database hosting and management
 - Supabase CLI for migrations (`supabase/migrations/` directory)
 - Connection via `SUPABASE_DATABASE_URL` environment variable
 
 **Authentication:**
+
 - **Better Auth** library with Supabase PostgreSQL adapter
 - JWT tokens for session management (3-day default, 30-day with "remember me")
 - OAuth 2.0 integration (Google Cloud Platform, Microsoft Azure AD)
@@ -35,6 +38,7 @@ The project is in early development with two primary features in planning:
 - Email verification required for registration
 
 **Security Features:**
+
 - Account lockout after 5 failed login attempts (30-minute lock)
 - Rate limiting: 10 login attempts/min per IP, 3 password resets/hr per email
 - Trial period: 14 days from email verification
@@ -43,6 +47,7 @@ The project is in early development with two primary features in planning:
 ### Database Schema
 
 **Authentication tables** (5 tables):
+
 - `users` - Main user accounts with subscription tiers and trial tracking
 - `oauth_providers` - Social login provider mappings
 - `password_resets` - Password reset tokens (1-hour expiration)
@@ -50,6 +55,7 @@ The project is in early development with two primary features in planning:
 - `auth_logs` - Security audit trail (7-day retention)
 
 **Client Hub tables** (5 tables):
+
 - `clients` - Client profiles with soft delete
 - `client_tags` - Flexible tagging system for organization
 - `client_documents` - Document storage with chronological sorting (no categories)
@@ -91,6 +97,7 @@ This repository uses Claude Code Project Management (CCPM) - a markdown-based pr
 ### Key PM Commands
 
 **Creating Work:**
+
 ```bash
 /pm:prd-new <name>           # Create Product Requirements Document
 /pm:prd-parse <name>         # Convert PRD to technical epic
@@ -98,6 +105,7 @@ This repository uses Claude Code Project Management (CCPM) - a markdown-based pr
 ```
 
 **Viewing Status:**
+
 ```bash
 /pm:status                   # Project dashboard
 /pm:epic-show <name>         # View epic and all tasks
@@ -106,6 +114,7 @@ This repository uses Claude Code Project Management (CCPM) - a markdown-based pr
 ```
 
 **GitHub Sync (Optional):**
+
 ```bash
 /pm:epic-sync <name>         # Push epic and tasks to GitHub Issues
 /pm:sync                     # Bidirectional sync with GitHub
@@ -122,13 +131,14 @@ All markdown files use YAML frontmatter with ISO 8601 timestamps:
 ```yaml
 ---
 name: feature-name
-status: open                 # PRDs: backlog/in-progress/complete
-                            # Epics: backlog/in-progress/completed
-                            # Tasks: open/in-progress/closed
+status:
+  open # PRDs: backlog/in-progress/complete
+  # Epics: backlog/in-progress/completed
+  # Tasks: open/in-progress/closed
 created: 2026-01-06T08:26:55Z
 updated: 2026-01-06T08:58:07Z
-depends_on: [001, 002]      # Task dependencies
-parallel: true              # Can run in parallel
+depends_on: [001, 002] # Task dependencies
+parallel: true # Can run in parallel
 ---
 ```
 
@@ -139,6 +149,7 @@ parallel: true              # Can run in parallel
 ### Path Standards
 
 **Always use relative paths** in documentation and code:
+
 - ✅ `../project-name/internal/auth/server.go`
 - ✅ `internal/processor/converter.go`
 - ❌ `/Users/username/project-name/...` (exposes local structure)
@@ -148,6 +159,7 @@ See `.claude/rules/path-standards.md` for complete specification.
 ### Supabase Setup
 
 **Environment Variables Required:**
+
 ```bash
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-key
@@ -161,6 +173,7 @@ APP_URL=http://localhost:3000
 ```
 
 **Migration Workflow:**
+
 ```bash
 # Initialize Supabase locally
 supabase init
@@ -181,11 +194,11 @@ open https://app.supabase.com
 export const authConfig = {
   database: {
     adapter: postgresAdapter({
-      connectionString: process.env.SUPABASE_DATABASE_URL
-    })
+      connectionString: process.env.SUPABASE_DATABASE_URL,
+    }),
   },
   // ... additional config in .claude/epics/user-authentication/epic.md
-}
+};
 ```
 
 ### GitHub Operations
@@ -203,6 +216,7 @@ The `.claude/context/` directory contains living documentation about the project
 ```
 
 Context files include:
+
 - `project-brief.md` - Scope, goals, objectives
 - `tech-context.md` - Dependencies and tools
 - `progress.md` - Current status and next steps

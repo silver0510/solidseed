@@ -71,28 +71,28 @@ Defined in: [vite.config.ts](../../vite.config.ts) lines 180-185
 
 ```typescript
 // React & Lazy Loading
-import React, { useState, useCallback, useMemo } from "react";
-const Heavy = React.lazy(() => import("./Heavy"));
+import React, { useState, useCallback, useMemo } from 'react';
+const Heavy = React.lazy(() => import('./Heavy'));
 
 // MUI Components
-import { Box, Paper, Typography, Button, Grid } from "@mui/material";
-import type { SxProps, Theme } from "@mui/material";
+import { Box, Paper, Typography, Button, Grid } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material';
 
 // TanStack Query (Suspense)
-import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
 
 // TanStack Router
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router';
 
 // Project Components
-import { SuspenseLoader } from "~components/SuspenseLoader";
+import { SuspenseLoader } from '~components/SuspenseLoader';
 
 // Hooks
-import { useAuth } from "@/hooks/useAuth";
-import { useMuiSnackbar } from "@/hooks/useMuiSnackbar";
+import { useAuth } from '@/hooks/useAuth';
+import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
 // Types
-import type { Post } from "~types/post";
+import type { Post } from '~types/post';
 ```
 
 ---
@@ -198,14 +198,14 @@ features/
 **Example:**
 
 ```typescript
-import { createFileRoute } from "@tanstack/react-router";
-import { lazy } from "react";
+import { createFileRoute } from '@tanstack/react-router';
+import { lazy } from 'react';
 
-const MyPage = lazy(() => import("@/features/my-feature/components/MyPage"));
+const MyPage = lazy(() => import('@/features/my-feature/components/MyPage'));
 
-export const Route = createFileRoute("/my-route/")({
+export const Route = createFileRoute('/my-route/')({
   component: MyPage,
-  loader: () => ({ crumb: "My Route" }),
+  loader: () => ({ crumb: 'My Route' }),
 });
 ```
 

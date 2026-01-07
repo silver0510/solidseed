@@ -36,13 +36,13 @@ Tailwind uses mobile-first responsive design. Base styles apply to all screen si
 
 ```html
 <!-- Vertical on mobile, horizontal on desktop -->
-<div class="flex flex-col lg:flex-row gap-4">
+<div class="flex flex-col gap-4 lg:flex-row">
   <div>Left</div>
   <div>Right</div>
 </div>
 
 <!-- 1 column -> 2 columns -> 3 columns -->
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
   <div>Item 1</div>
   <div>Item 2</div>
   <div>Item 3</div>
@@ -67,9 +67,7 @@ Tailwind uses mobile-first responsive design. Base styles apply to all screen si
 
 ```html
 <!-- Responsive text sizes -->
-<h1 class="text-2xl md:text-4xl lg:text-6xl font-bold">
-  Heading scales with screen size
-</h1>
+<h1 class="text-2xl font-bold md:text-4xl lg:text-6xl">Heading scales with screen size</h1>
 
 <p class="text-sm md:text-base lg:text-lg">Body text scales appropriately</p>
 ```
@@ -94,9 +92,7 @@ Tailwind uses mobile-first responsive design. Base styles apply to all screen si
 <div class="w-full lg:w-1/2 xl:w-1/3">Responsive width</div>
 
 <!-- Responsive max-width -->
-<div class="max-w-sm md:max-w-2xl lg:max-w-4xl mx-auto">
-  Centered with responsive max width
-</div>
+<div class="mx-auto max-w-sm md:max-w-2xl lg:max-w-4xl">Centered with responsive max width</div>
 ```
 
 ## Common Responsive Layouts
@@ -104,9 +100,9 @@ Tailwind uses mobile-first responsive design. Base styles apply to all screen si
 ### Sidebar Layout
 
 ```html
-<div class="flex flex-col lg:flex-row min-h-screen">
+<div class="flex min-h-screen flex-col lg:flex-row">
   <!-- Sidebar: Full width on mobile, fixed on desktop -->
-  <aside class="w-full lg:w-64 bg-gray-100 p-4">Sidebar</aside>
+  <aside class="w-full bg-gray-100 p-4 lg:w-64">Sidebar</aside>
 
   <!-- Main content -->
   <main class="flex-1 p-4 md:p-8">Main content</main>
@@ -116,13 +112,11 @@ Tailwind uses mobile-first responsive design. Base styles apply to all screen si
 ### Card Grid
 
 ```html
-<div
-  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
->
-  <div class="bg-white rounded-lg shadow p-6">Card 1</div>
-  <div class="bg-white rounded-lg shadow p-6">Card 2</div>
-  <div class="bg-white rounded-lg shadow p-6">Card 3</div>
-  <div class="bg-white rounded-lg shadow p-6">Card 4</div>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+  <div class="rounded-lg bg-white p-6 shadow">Card 1</div>
+  <div class="rounded-lg bg-white p-6 shadow">Card 2</div>
+  <div class="rounded-lg bg-white p-6 shadow">Card 3</div>
+  <div class="rounded-lg bg-white p-6 shadow">Card 4</div>
 </div>
 ```
 
@@ -131,12 +125,10 @@ Tailwind uses mobile-first responsive design. Base styles apply to all screen si
 ```html
 <section class="py-12 md:py-20 lg:py-32">
   <div class="container mx-auto px-4">
-    <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+    <div class="flex flex-col items-center gap-8 lg:flex-row lg:gap-12">
       <div class="flex-1 text-center lg:text-left">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-          Hero Title
-        </h1>
-        <p class="text-lg md:text-xl mb-6">Hero description</p>
+        <h1 class="mb-4 text-4xl font-bold md:text-5xl lg:text-6xl">Hero Title</h1>
+        <p class="mb-6 text-lg md:text-xl">Hero description</p>
         <button class="px-6 py-3 md:px-8 md:py-4">CTA Button</button>
       </div>
       <div class="flex-1">
@@ -152,11 +144,11 @@ Tailwind uses mobile-first responsive design. Base styles apply to all screen si
 ```html
 <nav class="bg-white shadow">
   <div class="container mx-auto px-4">
-    <div class="flex items-center justify-between h-16">
+    <div class="flex h-16 items-center justify-between">
       <div class="text-xl font-bold">Logo</div>
 
       <!-- Desktop navigation -->
-      <div class="hidden md:flex gap-6">
+      <div class="hidden gap-6 md:flex">
         <a href="#">Home</a>
         <a href="#">About</a>
         <a href="#">Services</a>
@@ -165,7 +157,7 @@ Tailwind uses mobile-first responsive design. Base styles apply to all screen si
 
       <!-- Mobile menu button -->
       <button class="md:hidden">
-        <svg class="w-6 h-6">...</svg>
+        <svg class="h-6 w-6">...</svg>
       </button>
     </div>
   </div>
@@ -178,9 +170,7 @@ Apply styles only below certain breakpoint using `max-*:` prefix:
 
 ```html
 <!-- Only on mobile and tablet (below 1024px) -->
-<div class="max-lg:text-center">
-  Centered on mobile/tablet, left-aligned on desktop
-</div>
+<div class="max-lg:text-center">Centered on mobile/tablet, left-aligned on desktop</div>
 
 <!-- Only on mobile (below 640px) -->
 <div class="max-sm:hidden">Hidden only on mobile</div>
@@ -197,9 +187,7 @@ Apply styles between breakpoints:
 <div class="md:block lg:hidden">Visible only on tablets</div>
 
 <!-- Between sm and xl -->
-<div class="sm:grid-cols-2 xl:grid-cols-4">
-  2 columns on tablet, 4 on extra large
-</div>
+<div class="sm:grid-cols-2 xl:grid-cols-4">2 columns on tablet, 4 on extra large</div>
 ```
 
 ## Container Queries
@@ -208,9 +196,7 @@ Style elements based on parent container width:
 
 ```html
 <div class="@container">
-  <div class="@md:grid-cols-2 @lg:grid-cols-3">
-    Responds to parent width, not viewport
-  </div>
+  <div class="@md:grid-cols-2 @lg:grid-cols-3">Responds to parent width, not viewport</div>
 </div>
 ```
 
@@ -262,9 +248,7 @@ Start with mobile styles, add complexity at larger breakpoints:
 Use same breakpoints across related elements:
 
 ```html
-<div
-  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8"
->
+<div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-8">
   Spacing scales with layout
 </div>
 ```
@@ -333,9 +317,7 @@ Use 2-3 breakpoints per element for maintainability:
 ### Responsive Overflow
 
 ```html
-<div class="overflow-auto lg:overflow-visible">
-  Scrollable on mobile, expanded on desktop
-</div>
+<div class="overflow-auto lg:overflow-visible">Scrollable on mobile, expanded on desktop</div>
 ```
 
 ## Testing Checklist

@@ -70,7 +70,7 @@ ph.verify(hash, "password123")  # Verify password
 const query = `SELECT * FROM users WHERE email = '${email}'`;
 
 // Good: Parameterized query
-const query = "SELECT * FROM users WHERE email = $1";
+const query = 'SELECT * FROM users WHERE email = $1';
 const result = await db.query(query, [email]);
 ```
 
@@ -111,7 +111,7 @@ app.use(
       maxAge: 31536000,
       includeSubDomains: true,
     },
-  }),
+  })
 );
 ```
 
@@ -205,7 +205,7 @@ class CreateUserDto {
 **2. Sanitization**
 
 ```typescript
-import DOMPurify from "isomorphic-dompurify";
+import DOMPurify from 'isomorphic-dompurify';
 
 // Sanitize HTML input
 const clean = DOMPurify.sanitize(userInput);
@@ -215,7 +215,7 @@ const clean = DOMPurify.sanitize(userInput);
 
 ```typescript
 // Good: Allow-list approach
-const allowedFields = ["name", "email", "age"];
+const allowedFields = ['name', 'email', 'age'];
 const sanitized = Object.keys(input)
   .filter((key) => allowedFields.includes(key))
   .reduce((obj, key) => ({ ...obj, [key]: input[key] }), {});
@@ -226,17 +226,17 @@ const sanitized = Object.keys(input)
 ### Token Bucket Algorithm (Industry Standard)
 
 ```typescript
-import rateLimit from "express-rate-limit";
+import rateLimit from 'express-rate-limit';
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // 100 requests per window
   standardHeaders: true,
   legacyHeaders: false,
-  message: "Too many requests, please try again later",
+  message: 'Too many requests, please try again later',
 });
 
-app.use("/api/", limiter);
+app.use('/api/', limiter);
 ```
 
 ### API-Specific Limits
@@ -280,7 +280,7 @@ app.use("/api/", limiter);
 ```typescript
 // Good: Secrets from environment
 const dbPassword = process.env.DB_PASSWORD;
-if (!dbPassword) throw new Error("DB_PASSWORD not set");
+if (!dbPassword) throw new Error('DB_PASSWORD not set');
 ```
 
 ## API Security Checklist

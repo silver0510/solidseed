@@ -16,23 +16,26 @@ This guide establishes coding standards, documentation conventions, and style pr
 ### Markdown Files
 
 **File Naming:**
+
 - Use lowercase with hyphens: `user-authentication.md`
 - Be descriptive but concise: `project-brief.md` not `project.md`
 - Use consistent suffixes: `-analysis.md`, `-status.md`
 
 **Frontmatter (Required):**
+
 ```yaml
 ---
 name: feature-name
 status: open | in-progress | completed
-created: 2026-01-06T09:03:33Z  # ISO 8601 UTC
-updated: 2026-01-06T09:03:33Z  # ISO 8601 UTC
-depends_on: [001, 002]          # Optional: task dependencies
-parallel: true                  # Optional: can run concurrently
+created: 2026-01-06T09:03:33Z # ISO 8601 UTC
+updated: 2026-01-06T09:03:33Z # ISO 8601 UTC
+depends_on: [001, 002] # Optional: task dependencies
+parallel: true # Optional: can run concurrently
 ---
 ```
 
 **Heading Hierarchy:**
+
 ```markdown
 # H1 - Document Title (only one per file)
 
@@ -44,26 +47,33 @@ parallel: true                  # Optional: can run concurrently
 ```
 
 **Lists:**
+
 - Use `-` for unordered lists (not `*` or `+`)
 - Use `1.` for ordered lists (auto-numbering)
 - Indent nested lists with 2 spaces
 
 **Code Blocks:**
-```markdown
+
+````markdown
 # Always specify language for syntax highlighting
+
 ```javascript
-const example = "like this";
+const example = 'like this';
 ```
+````
 
 # Use bash for shell commands
+
 ```bash
 npm install
 ```
 
 # Use yaml for configuration
+
 ```yaml
 key: value
 ```
+
 ```
 
 **Links:**
@@ -75,15 +85,18 @@ key: value
 
 **Always Use ISO 8601 UTC Format:**
 ```
+
 2026-01-06T09:03:33Z
-```
+
+````
 
 **How to Get Current DateTime:**
 ```bash
 date -u +"%Y-%m-%dT%H:%M:%SZ"
-```
+````
 
 **Rules:**
+
 - NEVER use placeholder values like `[Current date]` or `YYYY-MM-DD`
 - ALWAYS get real system time with `date` command
 - `created` field: Never changes after creation
@@ -95,6 +108,7 @@ date -u +"%Y-%m-%dT%H:%M:%SZ"
 **Always Use Relative Paths:**
 
 ✅ **Correct:**
+
 ```
 internal/auth/server.go
 ../project-name/src/components/Button.tsx
@@ -102,12 +116,14 @@ supabase/migrations/001_create_users.sql
 ```
 
 ❌ **Incorrect:**
+
 ```
 /Users/username/project/internal/auth/server.go
 C:\Users\username\project\src\components\Button.tsx
 ```
 
 **Rationale:**
+
 - Privacy protection (no usernames exposed)
 - Cross-platform compatibility
 - Document portability
@@ -118,6 +134,7 @@ C:\Users\username\project\src\components\Button.tsx
 ### Structure
 
 **Required Sections:**
+
 1. **Executive Summary**: Value proposition, key differentiator
 2. **Problem Statement**: What problem, why important now
 3. **User Stories**: Personas and detailed journeys
@@ -141,11 +158,11 @@ C:\Users\username\project\src\components\Button.tsx
 ```markdown
 ### Table: users
 
-| Column | Type | Nullable | Description | Notes |
-|--------|------|----------|-------------|-------|
-| id | UUID | No | Primary key | Auto-generated |
-| email | VARCHAR(255) | No | User email | Unique |
-| created_at | TIMESTAMP | No | Creation time | UTC |
+| Column     | Type         | Nullable | Description   | Notes          |
+| ---------- | ------------ | -------- | ------------- | -------------- |
+| id         | UUID         | No       | Primary key   | Auto-generated |
+| email      | VARCHAR(255) | No       | User email    | Unique         |
+| created_at | TIMESTAMP    | No       | Creation time | UTC            |
 ```
 
 ## Epic Standards
@@ -153,6 +170,7 @@ C:\Users\username\project\src\components\Button.tsx
 ### Structure
 
 **Required Sections:**
+
 1. **Overview**: High-level description
 2. **Key Technology Decisions**: Architecture choices with rationale
 3. **Technical Approach**: Implementation strategy
@@ -167,19 +185,21 @@ C:\Users\username\project\src\components\Button.tsx
 ### Code Examples
 
 **Include Actual Code:**
+
 ```typescript
 // Good - shows actual implementation
 export const authConfig = {
   database: {
     adapter: postgresAdapter({
-      connectionString: process.env.SUPABASE_DATABASE_URL
-    })
+      connectionString: process.env.SUPABASE_DATABASE_URL,
+    }),
   },
   // ...
-}
+};
 ```
 
 **Not Pseudo-code:**
+
 ```
 // Bad - too vague
 Configure database adapter with connection string
@@ -196,6 +216,7 @@ Configure database adapter with connection string
 ### Structure
 
 **Required Sections:**
+
 1. **Description**: What this task accomplishes
 2. **Acceptance Criteria**: Checkboxes for completion
 3. **Technical Details**: Implementation specifics
@@ -215,6 +236,7 @@ Configure database adapter with connection string
 ```
 
 **Rules:**
+
 - Use GitHub-style checkboxes `- [ ]`
 - One clear, testable criterion per checkbox
 - Be specific and measurable
@@ -222,6 +244,7 @@ Configure database adapter with connection string
 ### Effort Estimates
 
 **Sizes:**
+
 - **S (Small)**: 4-8 hours, single developer, single day
 - **M (Medium)**: 8-12 hours, 1-2 days
 - **L (Large)**: 14-20 hours, 2-3 days
@@ -242,14 +265,17 @@ Configure database adapter with connection string
 ### Naming Conventions (To Be Defined)
 
 **Variables and Functions:**
+
 - Use descriptive names: `getUserById()` not `get()`
 - Prefer clarity over brevity: `userEmailAddress` not `uea`
 
 **Constants:**
+
 - Use SCREAMING_SNAKE_CASE: `MAX_LOGIN_ATTEMPTS`
 - Define at top of file or in constants file
 
 **Files:**
+
 - Match primary export: `UserProfile.tsx` exports `UserProfile` component
 - Use PascalCase for components: `ClientCard.tsx`
 - Use kebab-case for utilities: `format-date.ts`
@@ -257,12 +283,14 @@ Configure database adapter with connection string
 ### Comments
 
 **When to Comment:**
+
 - Complex business logic
 - Non-obvious security considerations
 - Workarounds for bugs
 - Performance optimizations
 
 **When NOT to Comment:**
+
 ```typescript
 // Bad - obvious
 const userId = user.id; // Get user ID
@@ -305,12 +333,14 @@ if (!user) {
 ### Migration Files
 
 **Naming:**
+
 ```
 YYYYMMDDHHMMSS_descriptive_name.sql
 20260106093033_create_users_table.sql
 ```
 
 **Structure:**
+
 ```sql
 -- Create users table
 -- Migration: 20260106093033
@@ -333,6 +363,7 @@ COMMENT ON COLUMN users.password_hash IS 'Bcrypt hash, null for OAuth-only users
 ```
 
 **Rules:**
+
 - One table per migration file
 - Include rollback comments (future)
 - Add indexes for frequently queried columns
@@ -343,6 +374,7 @@ COMMENT ON COLUMN users.password_hash IS 'Bcrypt hash, null for OAuth-only users
 ### Endpoint Naming
 
 **RESTful Conventions:**
+
 ```
 GET    /api/clients          # List all clients
 POST   /api/clients          # Create client
@@ -352,6 +384,7 @@ DELETE /api/clients/:id      # Delete (soft) client
 ```
 
 **Rules:**
+
 - Use plural nouns: `/clients` not `/client`
 - No verbs in URLs: `/api/clients` not `/api/getClients`
 - Use HTTP methods for actions
@@ -360,6 +393,7 @@ DELETE /api/clients/:id      # Delete (soft) client
 ### Response Format
 
 **Success:**
+
 ```json
 {
   "success": true,
@@ -371,6 +405,7 @@ DELETE /api/clients/:id      # Delete (soft) client
 ```
 
 **Error:**
+
 ```json
 {
   "success": false,
@@ -427,6 +462,7 @@ describe('Authentication', () => {
 ```
 
 **Patterns:**
+
 - Use Arrange-Act-Assert pattern
 - One assertion concept per test
 - Descriptive test names (what, when, expected)
@@ -437,6 +473,7 @@ describe('Authentication', () => {
 ### Commit Messages
 
 **Format:**
+
 ```
 Issue #123: Add user authentication endpoints
 
@@ -446,12 +483,14 @@ Issue #123: Add user authentication endpoints
 ```
 
 **Rules:**
+
 - Start with Issue number if applicable
 - First line: Imperative mood, <50 chars
 - Blank line, then bullet points for details
 - Reference issue/task numbers
 
 **Examples:**
+
 - ✅ "Issue #123: Add user registration endpoint"
 - ✅ "Fix password reset email template"
 - ❌ "Updated stuff"
@@ -462,6 +501,7 @@ Issue #123: Add user authentication endpoints
 **Not yet defined** - waiting for development to start
 
 **Likely Pattern:**
+
 - `epic/user-authentication` - Epic branches
 - `task/001-database-schema` - Task branches
 - `fix/login-error` - Bug fixes
@@ -472,6 +512,7 @@ Issue #123: Add user authentication endpoints
 ### Sensitive Data
 
 **NEVER commit:**
+
 - API keys or secrets
 - Database passwords
 - OAuth client secrets
@@ -479,6 +520,7 @@ Issue #123: Add user authentication endpoints
 - `.env` files with real values
 
 **Always use:**
+
 - `.env.example` with placeholder values
 - Environment variables for secrets
 - `.gitignore` for sensitive files
@@ -486,6 +528,7 @@ Issue #123: Add user authentication endpoints
 ### Password Handling
 
 **Requirements:**
+
 - Bcrypt with cost factor 12 minimum
 - Never log passwords (even masked)
 - Never return password_hash in API responses
@@ -494,6 +537,7 @@ Issue #123: Add user authentication endpoints
 ### Token Handling
 
 **JWT Tokens:**
+
 - Store minimal data in payload
 - Use short expiration (3 days default)
 - Sign with strong secret (256-bit)
@@ -533,16 +577,19 @@ Issue #123: Add user authentication endpoints
 ### Status Values
 
 **PRDs:**
+
 - `backlog` - Not started
 - `in-progress` - Being worked on
 - `complete` - Done
 
 **Epics:**
+
 - `backlog` - Not started
 - `in-progress` - Tasks being worked on
 - `completed` - All tasks done
 
 **Tasks:**
+
 - `open` - Ready to start
 - `in-progress` - Being worked on
 - `closed` - Completed
@@ -550,11 +597,13 @@ Issue #123: Add user authentication endpoints
 ### Task Dependencies
 
 **Format:**
+
 ```yaml
 depends_on: [001, 002]
 ```
 
 **Rules:**
+
 - Use task numbers, not names
 - List all blocking tasks
 - Update epic.md when dependencies change
@@ -564,12 +613,14 @@ depends_on: [001, 002]
 ### When to Update
 
 **Always update `updated` field when:**
+
 - Changing any content
 - Modifying frontmatter (except `created`)
 - Adding/removing sections
 - Fixing typos or formatting
 
 **Update related docs when:**
+
 - Architecture changes (update tech-context.md)
 - New features added (update product-context.md)
 - Decisions made (update progress.md)
@@ -578,6 +629,7 @@ depends_on: [001, 002]
 ### Context System
 
 **Update Frequency:**
+
 - `/context:prime` - Start of every session
 - `/context:update` - End of significant work sessions
 - Major milestones (PRD complete, epic done, feature launched)

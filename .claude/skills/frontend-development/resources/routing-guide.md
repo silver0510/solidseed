@@ -95,23 +95,23 @@ export default PostsPage;
 ### Named Export Pattern
 
 ```typescript
-import { lazy } from "react";
+import { lazy } from 'react';
 
 // For named exports, use .then() to map to default
 const MyPage = lazy(() =>
-  import("@/features/my-feature/components/MyPage").then((module) => ({
+  import('@/features/my-feature/components/MyPage').then((module) => ({
     default: module.MyPage,
-  })),
+  }))
 );
 ```
 
 ### Default Export Pattern
 
 ```typescript
-import { lazy } from "react";
+import { lazy } from 'react';
 
 // For default exports, simpler syntax
-const MyPage = lazy(() => import("@/features/my-feature/components/MyPage"));
+const MyPage = lazy(() => import('@/features/my-feature/components/MyPage'));
 ```
 
 ### Why Lazy Load Routes?
@@ -140,10 +140,10 @@ function MyRoutePage() {
 ### With Breadcrumb Loader
 
 ```typescript
-export const Route = createFileRoute("/my-route/")({
+export const Route = createFileRoute('/my-route/')({
   component: MyRoutePage,
   loader: () => ({
-    crumb: "My Route Title",
+    crumb: 'My Route Title',
   }),
 });
 ```
@@ -153,12 +153,12 @@ Breadcrumb appears in navigation/app bar automatically.
 ### With Data Loader
 
 ```typescript
-export const Route = createFileRoute("/my-route/")({
+export const Route = createFileRoute('/my-route/')({
   component: MyRoutePage,
   loader: async () => {
     // Can prefetch data here
     const data = await api.getData();
-    return { crumb: "My Route", data };
+    return { crumb: 'My Route', data };
   },
 });
 ```
@@ -166,11 +166,11 @@ export const Route = createFileRoute("/my-route/")({
 ### With Search Params
 
 ```typescript
-export const Route = createFileRoute("/search/")({
+export const Route = createFileRoute('/search/')({
   component: SearchPage,
   validateSearch: (search: Record<string, unknown>) => {
     return {
-      query: (search.query as string) || "",
+      query: (search.query as string) || '',
       page: Number(search.page) || 1,
     };
   },
@@ -243,8 +243,8 @@ export const MyComponent: React.FC = () => {
 ```typescript
 const handleNavigate = () => {
   navigate({
-    to: "/users/$userId",
-    params: { userId: "123" },
+    to: '/users/$userId',
+    params: { userId: '123' },
   });
 };
 ```
@@ -254,8 +254,8 @@ const handleNavigate = () => {
 ```typescript
 const handleSearch = () => {
   navigate({
-    to: "/search",
-    search: { query: "test", page: 1 },
+    to: '/search',
+    search: { query: 'test', page: 1 },
   });
 };
 ```

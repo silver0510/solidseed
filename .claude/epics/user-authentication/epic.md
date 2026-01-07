@@ -98,6 +98,7 @@ Implement a secure, mobile-first authentication system for Korella CRM using Bet
 5. `auth_logs` - authentication events (7-day retention)
 
 **Benefits:**
+
 - Separation of concerns (each table serves single purpose)
 - Targeted indexes on each table optimize queries
 - Easy to purge expired tokens/logs without affecting user data
@@ -444,6 +445,7 @@ CREATE INDEX idx_users_email_verified ON users(email_verified);
 **Migrations 002-005:** Similar for oauth_providers, password_resets, email_verifications, auth_logs
 
 **Supabase Benefits:**
+
 - Version-controlled migrations in `supabase/migrations/` directory
 - Migration history tracked automatically
 - Rollback support via Supabase Studio
@@ -705,10 +707,7 @@ High-level task categories for implementation:
 5. ⏳ Google Cloud Platform account for OAuth
 6. ⏳ Microsoft Azure account for OAuth
 
-**Can Be Configured During Development:**
-7. Redis for rate limiting (optional, in-memory fallback available)
-8. Better Auth library documentation and examples
-9. Supabase CLI installed for local development
+**Can Be Configured During Development:** 7. Redis for rate limiting (optional, in-memory fallback available) 8. Better Auth library documentation and examples 9. Supabase CLI installed for local development
 
 ### Internal Dependencies
 
@@ -1009,7 +1008,6 @@ High-level task categories for implementation:
 
 - **Client Hub:** .claude/prds/client-hub.md (depends on this epic)
 
-
 ---
 
 ## Tasks Created
@@ -1034,6 +1032,7 @@ High-level task categories for implementation:
 **Estimated total effort:** 112-140 hours
 
 **Breakdown by size:**
+
 - XS: 0 tasks
 - S: 2 tasks (005, 008) - 10-14 hours
 - M: 4 tasks (001, 002, 007, 009) - 32-42 hours

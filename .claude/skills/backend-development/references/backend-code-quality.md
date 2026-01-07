@@ -34,7 +34,7 @@ class User {
   constructor(
     public id: string,
     public email: string,
-    public name: string,
+    public name: string
   ) {}
 }
 
@@ -75,9 +75,9 @@ class ReportGenerator {
 ```typescript
 class PaymentProcessor {
   process(amount: number, method: string) {
-    if (method === "stripe") {
+    if (method === 'stripe') {
       // Stripe logic
-    } else if (method === "paypal") {
+    } else if (method === 'paypal') {
       // PayPal logic
     }
     // Adding new payment method requires modifying this class
@@ -95,14 +95,14 @@ interface PaymentStrategy {
 class StripePayment implements PaymentStrategy {
   async process(amount: number) {
     // Stripe-specific logic
-    return { success: true, transactionId: "..." };
+    return { success: true, transactionId: '...' };
   }
 }
 
 class PayPalPayment implements PaymentStrategy {
   async process(amount: number) {
     // PayPal-specific logic
-    return { success: true, transactionId: "..." };
+    return { success: true, transactionId: '...' };
   }
 }
 
@@ -134,7 +134,7 @@ class Bird {
 
 class Penguin extends Bird {
   fly() {
-    throw new Error("Penguins cannot fly!");
+    throw new Error('Penguins cannot fly!');
   }
 }
 
@@ -266,7 +266,7 @@ class UserService {
   constructor(private db: Database) {} // Injected dependency
 
   async getUser(id: string) {
-    return this.db.query("SELECT * FROM users WHERE id = $1", [id]);
+    return this.db.query('SELECT * FROM users WHERE id = $1', [id]);
   }
 }
 
@@ -287,7 +287,7 @@ class User {
   constructor(
     public id: string,
     public email: string,
-    public name: string,
+    public name: string
   ) {}
 }
 
@@ -304,15 +304,16 @@ class PostgresUserRepository implements UserRepository {
   constructor(private db: Database) {}
 
   async findById(id: string): Promise<User | null> {
-    const row = await this.db.query("SELECT * FROM users WHERE id = $1", [id]);
+    const row = await this.db.query('SELECT * FROM users WHERE id = $1', [id]);
     return row ? new User(row.id, row.email, row.name) : null;
   }
 
   async save(user: User): Promise<void> {
-    await this.db.query(
-      "INSERT INTO users (id, email, name) VALUES ($1, $2, $3)",
-      [user.id, user.email, user.name],
-    );
+    await this.db.query('INSERT INTO users (id, email, name) VALUES ($1, $2, $3)', [
+      user.id,
+      user.email,
+      user.name,
+    ]);
   }
 
   // Other methods...
@@ -356,13 +357,13 @@ class PushNotification implements Notification {
 }
 
 class NotificationFactory {
-  static create(type: "email" | "sms" | "push"): Notification {
+  static create(type: 'email' | 'sms' | 'push'): Notification {
     switch (type) {
-      case "email":
+      case 'email':
         return new EmailNotification();
-      case "sms":
+      case 'sms':
         return new SMSNotification();
-      case "push":
+      case 'push':
         return new PushNotification();
       default:
         throw new Error(`Unknown notification type: ${type}`);
@@ -371,8 +372,8 @@ class NotificationFactory {
 }
 
 // Usage
-const notification = NotificationFactory.create("email");
-await notification.send("Hello!");
+const notification = NotificationFactory.create('email');
+await notification.send('Hello!');
 ```
 
 ### Decorator Pattern
@@ -391,7 +392,7 @@ class SimpleCoffee implements Coffee {
   }
 
   description() {
-    return "Simple coffee";
+    return 'Simple coffee';
   }
 }
 
@@ -468,10 +469,10 @@ class LoggerObserver implements Observer {
 
 // Usage
 const eventEmitter = new EventEmitter();
-eventEmitter.subscribe("user.created", new EmailNotifier());
-eventEmitter.subscribe("user.created", new LoggerObserver());
+eventEmitter.subscribe('user.created', new EmailNotifier());
+eventEmitter.subscribe('user.created', new LoggerObserver());
 
-eventEmitter.emit("user.created", { type: "user.created", userId: "123" });
+eventEmitter.emit('user.created', { type: 'user.created', userId: '123' });
 ```
 
 ## Clean Code Practices
@@ -518,7 +519,7 @@ async function processOrder(orderId: string) {
   const order = await validateOrder(orderId);
   await checkInventory(order);
   const payment = await processPayment(order);
-  await updateOrderStatus(orderId, "paid");
+  await updateOrderStatus(orderId, 'paid');
   await sendConfirmationEmail(order);
   await generateInvoice(order, payment);
 }
@@ -530,7 +531,7 @@ async function processOrder(orderId: string) {
 
 ```typescript
 if (user.age < 18) {
-  throw new Error("Too young");
+  throw new Error('Too young');
 }
 
 setTimeout(fetchData, 86400000);
@@ -541,7 +542,7 @@ setTimeout(fetchData, 86400000);
 ```typescript
 const MINIMUM_AGE = 18;
 if (user.age < MINIMUM_AGE) {
-  throw new Error("Too young");
+  throw new Error('Too young');
 }
 
 const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -572,12 +573,12 @@ try {
   }
   return user;
 } catch (error) {
-  logger.error("Failed to fetch user", {
+  logger.error('Failed to fetch user', {
     userId: id,
     error: error.message,
     stack: error.stack,
   });
-  throw new DatabaseError("User fetch failed", { cause: error });
+  throw new DatabaseError('User fetch failed', { cause: error });
 }
 ```
 
@@ -586,16 +587,16 @@ try {
 **Bad:**
 
 ```typescript
-app.post("/api/users", async (req, res) => {
-  if (!req.body.email || !req.body.email.includes("@")) {
-    return res.status(400).json({ error: "Invalid email" });
+app.post('/api/users', async (req, res) => {
+  if (!req.body.email || !req.body.email.includes('@')) {
+    return res.status(400).json({ error: 'Invalid email' });
   }
   // ...
 });
 
-app.put("/api/users/:id", async (req, res) => {
-  if (!req.body.email || !req.body.email.includes("@")) {
-    return res.status(400).json({ error: "Invalid email" });
+app.put('/api/users/:id', async (req, res) => {
+  if (!req.body.email || !req.body.email.includes('@')) {
+    return res.status(400).json({ error: 'Invalid email' });
   }
   // ...
 });
@@ -605,17 +606,17 @@ app.put("/api/users/:id", async (req, res) => {
 
 ```typescript
 function validateEmail(email: string) {
-  if (!email || !email.includes("@")) {
-    throw new ValidationError("Invalid email");
+  if (!email || !email.includes('@')) {
+    throw new ValidationError('Invalid email');
   }
 }
 
-app.post("/api/users", async (req, res) => {
+app.post('/api/users', async (req, res) => {
   validateEmail(req.body.email);
   // ...
 });
 
-app.put("/api/users/:id", async (req, res) => {
+app.put('/api/users/:id', async (req, res) => {
   validateEmail(req.body.email);
   // ...
 });
@@ -629,11 +630,11 @@ app.put("/api/users/:id", async (req, res) => {
 
 ```typescript
 function renderOrder(order: Order) {
-  console.log("Order Details:");
+  console.log('Order Details:');
   console.log(`ID: ${order.id}`);
   console.log(`Total: $${order.total}`);
 
-  console.log("Items:");
+  console.log('Items:');
   order.items.forEach((item) => {
     console.log(`- ${item.name}: $${item.price}`);
   });
@@ -649,13 +650,13 @@ function renderOrder(order: Order) {
 }
 
 function printOrderHeader(order: Order) {
-  console.log("Order Details:");
+  console.log('Order Details:');
   console.log(`ID: ${order.id}`);
   console.log(`Total: $${order.total}`);
 }
 
 function printOrderItems(items: OrderItem[]) {
-  console.log("Items:");
+  console.log('Items:');
   items.forEach((item) => {
     console.log(`- ${item.name}: $${item.price}`);
   });
@@ -668,11 +669,11 @@ function printOrderItems(items: OrderItem[]) {
 
 ```typescript
 function getShippingCost(order: Order) {
-  if (order.shippingMethod === "standard") {
+  if (order.shippingMethod === 'standard') {
     return 5;
-  } else if (order.shippingMethod === "express") {
+  } else if (order.shippingMethod === 'express') {
     return 15;
-  } else if (order.shippingMethod === "overnight") {
+  } else if (order.shippingMethod === 'overnight') {
     return 30;
   }
 }

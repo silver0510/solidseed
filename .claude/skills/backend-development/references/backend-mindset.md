@@ -94,7 +94,7 @@ Decomposed:
 // Maintainable: Readable, easy to debug
 const users = await db.users.findAll({
   where: { active: true },
-  include: ["posts", "comments"],
+  include: ['posts', 'comments'],
 });
 
 // Performant: Optimized query, reduced joins
@@ -184,7 +184,7 @@ Each context has its own:
 5. **Bulkhead** - Isolate failures (resource pools)
 
 ```typescript
-import { CircuitBreaker } from "opossum";
+import { CircuitBreaker } from 'opossum';
 
 const breaker = new CircuitBreaker(externalAPICall, {
   timeout: 3000, // 3s timeout
@@ -192,7 +192,7 @@ const breaker = new CircuitBreaker(externalAPICall, {
   resetTimeout: 30000, // Try again after 30s
 });
 
-breaker.fallback(() => ({ data: "cached-response" }));
+breaker.fallback(() => ({ data: 'cached-response' }));
 
 const result = await breaker.fire(requestParams);
 ```
@@ -263,14 +263,14 @@ class PayPalPayment implements PaymentStrategy {
 async function getUsers(limit?: number) {
   // Validate input
   if (limit !== undefined && (limit < 1 || limit > 1000)) {
-    throw new Error("Limit must be between 1 and 1000");
+    throw new Error('Limit must be between 1 and 1000');
   }
 
   // Handle undefined
   const safeLimit = limit ?? 50;
 
   // Prevent SQL injection with parameterized query
-  const users = await db.query("SELECT * FROM users LIMIT $1", [safeLimit]);
+  const users = await db.query('SELECT * FROM users LIMIT $1', [safeLimit]);
 
   // Handle empty results
   return users.length > 0 ? users : [];
@@ -314,7 +314,7 @@ Feature: User Registration
 
 ```typescript
 // Good: Structured logging with context
-logger.error("Payment processing failed", {
+logger.error('Payment processing failed', {
   orderId: order.id,
   userId: user.id,
   amount: order.total,

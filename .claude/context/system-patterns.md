@@ -16,6 +16,7 @@ author: Claude Code PM System
 **Rationale**: Real estate agents work primarily on mobile devices during property showings, open houses, and client meetings. Desktop access is secondary for detailed data entry and reporting.
 
 **Implications:**
+
 - Touch-friendly UI (44x44px minimum touch targets)
 - Simplified navigation optimized for small screens
 - Progressive enhancement for larger screens
@@ -25,6 +26,7 @@ author: Claude Code PM System
 ### Data Access Patterns
 
 **Soft Delete Pattern:**
+
 - Never hard delete records
 - Use `is_deleted` boolean flag
 - Enables data recovery
@@ -41,6 +43,7 @@ SELECT * FROM clients WHERE is_deleted = false;
 ```
 
 **Tag-Based Organization:**
+
 - Flexible, user-defined categorization
 - Many-to-many relationship (clients ↔ tags)
 - Enables multiple organizational schemes
@@ -63,6 +66,7 @@ CREATE TABLE client_tags (
 **Pattern**: Stateless session management with JWT tokens.
 
 **Flow:**
+
 1. User authenticates → Server generates JWT
 2. Client stores JWT (localStorage/sessionStorage)
 3. Client sends JWT in Authorization header
@@ -70,6 +74,7 @@ CREATE TABLE client_tags (
 5. Server extracts user_id and subscription_tier from token
 
 **Token Structure:**
+
 ```javascript
 {
   user_id: "uuid",
@@ -81,6 +86,7 @@ CREATE TABLE client_tags (
 ```
 
 **Security Considerations:**
+
 - Short-lived tokens (3 days default)
 - Refresh tokens for "remember me" (30 days)
 - No sensitive data in token payload
@@ -92,12 +98,14 @@ CREATE TABLE client_tags (
 **Pattern**: Server-side OAuth token exchange (not client-side).
 
 **Rationale**:
+
 - Prevents client secret exposure
 - More secure than implicit flow
 - Enables server-side user creation
 - Supports session management
 
 **Flow:**
+
 ```
 1. Client: Click "Sign in with Google"
 2. Server: Redirect to Google OAuth consent
@@ -111,6 +119,7 @@ CREATE TABLE client_tags (
 ```
 
 **Benefits:**
+
 - Client secret never exposed to browser
 - Server controls user creation
 - Can enrich user data before session creation
@@ -122,6 +131,7 @@ CREATE TABLE client_tags (
 **Pattern**: Progressive lockout after failed login attempts.
 
 **Implementation:**
+
 ```typescript
 // On login failure
 user.failed_login_count++
@@ -136,6 +146,7 @@ user.locked_until = null
 ```
 
 **Reset Conditions:**
+
 - Successful login
 - Time expiration (30 minutes)
 - Password reset
@@ -145,12 +156,14 @@ user.locked_until = null
 **Pattern**: Request-based rate limiting per resource.
 
 **Implementation:**
+
 ```
 Login endpoint: 10 requests / minute / IP address
 Password reset: 3 requests / hour / email address
 ```
 
 **Benefits:**
+
 - Prevents brute force attacks
 - Reduces abuse
 - Protects infrastructure
@@ -160,6 +173,7 @@ Password reset: 3 requests / hour / email address
 **Pattern**: Comprehensive event logging for security events.
 
 **Events Logged:**
+
 - Login success/failure
 - Password reset request
 - Email verification
@@ -167,10 +181,12 @@ Password reset: 3 requests / hour / email address
 - OAuth authentication
 
 **Log Retention:**
+
 - 7 days in database (auto-purge)
 - Longer retention in external logging service (optional)
 
 **Schema:**
+
 ```sql
 CREATE TABLE auth_logs (
   id UUID PRIMARY KEY,
@@ -189,6 +205,7 @@ CREATE TABLE auth_logs (
 **Pattern**: Time-based trial with automatic downgrade.
 
 **Implementation:**
+
 ```typescript
 // On email verification
 user.trial_expires_at = now + 14 days
@@ -202,6 +219,7 @@ if (user.subscription_tier === "trial" &&
 ```
 
 **Business Logic:**
+
 - Trial starts on email verification (not registration)
 - 14 days from verification
 - Auto-downgrade to free tier on expiration
@@ -212,12 +230,14 @@ if (user.subscription_tier === "trial" &&
 **Pattern**: Feature access control based on subscription tier.
 
 **Tiers:**
+
 - `trial` - Full access for 14 days
 - `free` - Limited features
 - `pro` - Full features (paid)
 - `enterprise` - Advanced features (paid)
 
 **Access Control:**
+
 ```typescript
 // Middleware example
 function requireSubscription(tier: string | string[]) {
@@ -225,9 +245,9 @@ function requireSubscription(tier: string | string[]) {
     const userTier = req.user.subscription_tier;
     if (!allowedTiers.includes(userTier)) {
       return res.status(403).json({
-        error: "Subscription upgrade required",
+        error: 'Subscription upgrade required',
         current_tier: userTier,
-        required_tier: tier
+        required_tier: tier,
       });
     }
     next();
@@ -235,7 +255,8 @@ function requireSubscription(tier: string | string[]) {
 }
 
 // Usage
-app.get('/api/advanced-feature',
+app.get(
+  '/api/advanced-feature',
   authenticateJWT,
   requireSubscription(['pro', 'enterprise']),
   handleAdvancedFeature
@@ -247,12 +268,14 @@ app.get('/api/advanced-feature',
 **Pattern**: Chronological document storage without categories.
 
 **Design Decision**:
+
 - Original plan: Custom document categories
 - Current plan: Chronological only, sorted by `uploaded_at`
 - Rationale: Simplify MVP, add categorization later if needed
 - User can add description for context
 
 **Schema:**
+
 ```sql
 CREATE TABLE client_documents (
   id UUID PRIMARY KEY,
@@ -268,6 +291,7 @@ CREATE TABLE client_documents (
 ```
 
 **Access Pattern:**
+
 ```sql
 -- Fetch documents for client (newest first)
 SELECT * FROM client_documents
@@ -282,6 +306,7 @@ ORDER BY uploaded_at DESC;
 **Pattern**: Incremental, versioned SQL migrations via Supabase CLI.
 
 **Structure:**
+
 ```
 supabase/migrations/
   20260106000001_create_users_table.sql
@@ -291,11 +316,13 @@ supabase/migrations/
 ```
 
 **Naming Convention:**
+
 - Timestamp prefix: `YYYYMMDDHHMMSS`
 - Descriptive name: `create_table_name`
 - Sequential numbering ensures order
 
 **Best Practices:**
+
 - One table per migration file
 - Include rollback logic (future)
 - Test migrations on development first
@@ -306,12 +333,14 @@ supabase/migrations/
 **Pattern**: UUID v4 for all primary keys (not auto-increment integers).
 
 **Rationale:**
+
 - Prevents enumeration attacks
 - Enables distributed systems
 - No collision risk across databases
 - Better for public APIs
 
 **Implementation:**
+
 ```sql
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -324,6 +353,7 @@ CREATE TABLE users (
 **Pattern**: Use composite unique constraints for logical uniqueness.
 
 **Examples:**
+
 ```sql
 -- OAuth providers: one provider per user per platform
 CREATE UNIQUE INDEX oauth_providers_unique
@@ -344,6 +374,7 @@ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ```
 
 **Benefits:**
+
 - Audit trail
 - Debugging
 - Data analysis
@@ -356,6 +387,7 @@ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 **Pattern**: Resource-based URLs with HTTP verbs.
 
 **Authentication Endpoints:**
+
 ```
 POST   /api/auth/register
 POST   /api/auth/login
@@ -372,6 +404,7 @@ GET    /api/auth/oauth/microsoft/callback
 ```
 
 **Client Hub Endpoints (Future):**
+
 ```
 GET    /api/clients
 POST   /api/clients
@@ -386,6 +419,7 @@ POST   /api/clients/:id/documents
 ### Response Format Pattern
 
 **Success Response:**
+
 ```json
 {
   "success": true,
@@ -395,6 +429,7 @@ POST   /api/clients/:id/documents
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -409,6 +444,7 @@ POST   /api/clients/:id/documents
 **Pattern**: Consistent error codes and messages.
 
 **Error Categories:**
+
 - `VALIDATION_ERROR` - Invalid input
 - `AUTH_ERROR` - Authentication failure
 - `FORBIDDEN` - Insufficient permissions
@@ -419,6 +455,7 @@ POST   /api/clients/:id/documents
 ## Frontend Patterns (To Be Defined)
 
 **Pending Decisions:**
+
 - Component library selection
 - State management approach
 - Form validation strategy
@@ -459,6 +496,7 @@ tests/
 **Pattern**: PRD → Epic → Tasks → Implementation.
 
 **Workflow:**
+
 1. Create PRD with `/pm:prd-new feature-name`
 2. Convert to epic with `/pm:prd-parse feature-name`
 3. Decompose to tasks with `/pm:epic-decompose feature-name`
@@ -481,6 +519,7 @@ parallel: true
 ```
 
 **Key Fields:**
+
 - `created` - Never changes after creation
 - `updated` - Modified on every change
 - `depends_on` - Task dependencies
@@ -491,14 +530,17 @@ parallel: true
 **Pattern**: Always use relative paths, never expose local file structure.
 
 **Correct:**
+
 - `internal/auth/server.go`
 - `../project-name/src/components/Button.tsx`
 
 **Incorrect:**
+
 - `/Users/username/project/internal/auth/server.go`
 - `C:\Users\username\project\src\components\Button.tsx`
 
 **Rationale:**
+
 - Privacy protection
 - Cross-platform compatibility
 - Document portability

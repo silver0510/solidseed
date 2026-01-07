@@ -22,6 +22,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 **Purpose**: Secure access control with multiple login options.
 
 **Capabilities:**
+
 - Email/password registration with verification
 - Google OAuth ("Sign in with Google")
 - Microsoft OAuth ("Sign in with Microsoft")
@@ -33,6 +34,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 **Status**: Epic decomposed into 10 implementation tasks
 
 **Key Technical Details:**
+
 - Better Auth library for authentication framework
 - Bcrypt password hashing (cost factor 12)
 - JWT tokens (3-day default, 30-day with "remember me")
@@ -46,6 +48,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 **Capabilities:**
 
 **Client Profiles:**
+
 - Full name, email, phone, address
 - Custom notes and activity history
 - Important dates tracking
@@ -53,12 +56,14 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 - Soft delete (data recovery possible)
 
 **Tag-Based Organization:**
+
 - Create custom tags ("Buyer", "Seller", "Open House 2026-01", etc.)
 - Apply multiple tags per client
 - Filter and search by tags
 - Flexible categorization without rigid folders
 
 **Document Management:**
+
 - Upload documents (contracts, disclosures, photos)
 - File size and type tracking
 - Chronological organization (sorted by upload date)
@@ -67,12 +72,14 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 - Soft delete for accidental removal recovery
 
 **Notes & Activity Tracking:**
+
 - Timestamped notes for all interactions
 - Search through historical notes
 - Quick context before client meetings
 - Track phone calls, meetings, property showings
 
 **Task Management:**
+
 - Create tasks with due dates
 - Set priorities (low, medium, high)
 - Mark tasks complete
@@ -80,6 +87,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 - Follow-up reminders
 
 **Search & Filtering:**
+
 - Search by client name, email, phone
 - Filter by tags
 - Filter by date ranges
@@ -88,6 +96,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 **Status**: PRD complete, epic decomposition pending
 
 **Key Technical Details:**
+
 - 5 database tables (clients, tags, documents, notes, tasks)
 - Tag-based organization (many-to-many relationship)
 - Document categories removed (simplified to chronological)
@@ -99,6 +108,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 **Purpose**: Targeted communication campaigns to client segments.
 
 **Planned Capabilities:**
+
 - Send campaigns to clients filtered by tags
 - Email templates
 - Open and click tracking
@@ -117,12 +127,14 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 **Design Principle**: Optimized for 375px+ width screens (iPhone SE and up).
 
 **Why Mobile-First:**
+
 - Real estate agents work on-the-go during showings
 - Quick client lookup needed during property visits
 - Document access required in the field
 - Task creation on-site at open houses
 
 **Desktop Experience:**
+
 - Enhanced version with larger screens
 - More data visible at once
 - Easier bulk operations
@@ -133,12 +145,14 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 **Unique Value**: Agents own their data, not the brokerage.
 
 **Benefits:**
+
 - Take client data when switching brokerages
 - Export data in standard formats
 - No vendor lock-in
 - GDPR compliant with export rights
 
 **Implementation:**
+
 - Data export endpoint (CSV, JSON)
 - Account deletion with data download
 - Clear data ownership terms
@@ -148,6 +162,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 **No sales calls required** - instant trial access.
 
 **Flow:**
+
 1. User registers (email or OAuth)
 2. Verify email (if email/password)
 3. Trial period starts automatically (14 days)
@@ -155,6 +170,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 5. Optional upgrade to paid tier anytime
 
 **Benefits:**
+
 - Fast user acquisition
 - Low friction onboarding
 - Scalable business model
@@ -163,21 +179,25 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 ### Subscription Model
 
 **Trial**: Free, 14 days, full access
+
 - Starts on email verification
 - Auto-downgrade to Free tier on expiration
 
 **Free**: $0/month, limited features
+
 - Up to 100 clients
 - Basic functionality
 - Community support
 
 **Pro**: $49/month (target), full features
+
 - Unlimited clients
 - All features
 - Email marketing included
 - Priority support
 
 **Enterprise**: $149/month (target), advanced features
+
 - Team collaboration
 - Advanced reporting
 - API access
@@ -192,6 +212,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 **Schema**: 10 tables across two feature sets
 
 **Authentication Tables (5):**
+
 - `users` - User accounts and subscription data
 - `oauth_providers` - Social login mappings
 - `password_resets` - Temporary reset tokens
@@ -199,6 +220,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 - `auth_logs` - Security event logging
 
 **Client Hub Tables (5):**
+
 - `clients` - Client profiles
 - `client_tags` - Tag assignments
 - `client_documents` - Document metadata and storage paths
@@ -206,6 +228,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 - `client_tasks` - Task tracking with due dates
 
 **Key Patterns:**
+
 - UUID primary keys (not auto-increment)
 - Soft delete on user-facing entities
 - Timestamps on all tables (created_at, updated_at)
@@ -218,6 +241,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 **Session Management**: JWT tokens (stateless)
 
 **Security Features:**
+
 - Bcrypt password hashing (cost 12)
 - Account lockout (5 attempts → 30 min)
 - Rate limiting per endpoint
@@ -225,22 +249,26 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 - HTTPS only (no HTTP)
 
 **OAuth Providers:**
+
 - Google (via Google Cloud Platform)
 - Microsoft (via Azure AD)
 
 ### Application Layer (To Be Built)
 
 **Frontend Framework**: Not yet selected
+
 - Options: React, Next.js, Vue
 - Component library: Likely Tailwind + shadcn/ui
 
 **API Design**: RESTful endpoints
+
 - `/api/auth/*` - Authentication endpoints
 - `/api/clients/*` - Client management
 - `/api/documents/*` - Document operations
 - `/api/tasks/*` - Task management
 
 **Deployment**: To be determined
+
 - Options: Vercel, Netlify, custom hosting
 - CDN for static assets
 - Environment-based configuration
@@ -250,6 +278,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 ### Supabase
 
 **Services Used:**
+
 - PostgreSQL database (primary data store)
 - Supabase CLI (migration management)
 - Supabase Studio (database UI)
@@ -257,6 +286,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 - Automatic backups
 
 **Not Using:**
+
 - Supabase Auth (using Better Auth instead)
 - Supabase Storage (direct file upload TBD)
 - Supabase Realtime (not needed for MVP)
@@ -264,12 +294,14 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 ### OAuth Providers
 
 **Google Cloud Platform:**
+
 - OAuth 2.0 Client ID
 - Consent screen configuration
 - Redirect URI management
 - API scopes: email, profile
 
 **Microsoft Azure AD:**
+
 - App registration
 - Client secret management
 - Redirect URI configuration
@@ -278,12 +310,14 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 ### Email Service (To Be Selected)
 
 **Use Cases:**
+
 - Verification emails (registration)
 - Password reset emails
 - Security notifications (account lockout)
 - Future: Marketing campaigns
 
 **Options Under Consideration:**
+
 - SendGrid
 - AWS SES
 - Mailgun
@@ -295,6 +329,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 ### What Works Today
 
 **Project Management:**
+
 - ✅ CCPM system fully functional
 - ✅ PRD creation and management
 - ✅ Epic decomposition
@@ -303,6 +338,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 - ✅ Local-only mode (no GitHub required)
 
 **Documentation:**
+
 - ✅ Two comprehensive PRDs (auth, client hub)
 - ✅ User Authentication epic with 10 tasks
 - ✅ Architecture decisions documented
@@ -313,6 +349,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 ### What Doesn't Exist Yet
 
 **Application Code:**
+
 - ❌ No frontend implemented
 - ❌ No backend API
 - ❌ No database created
@@ -320,6 +357,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 - ❌ No tests
 
 **Infrastructure:**
+
 - ❌ Supabase project not created
 - ❌ OAuth apps not registered
 - ❌ Email service not configured
@@ -327,6 +365,7 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 - ❌ Hosting not set up
 
 **Product:**
+
 - ❌ No MVP launched
 - ❌ No beta users
 - ❌ No paying customers
@@ -337,16 +376,19 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 ### User Engagement
 
 **Registration:**
+
 - Trial sign-ups per month
 - Registration completion rate >80%
 - Email verification rate >90%
 
 **Activation:**
+
 - First client added within 24 hours: >70%
 - 10+ clients added within 7 days: >50%
 - Return visit within 7 days: >60%
 
 **Retention:**
+
 - Weekly active users: >60%
 - Monthly retention: >80%
 - Client Hub usage weekly: >70%
@@ -354,18 +396,21 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 ### Business Metrics
 
 **Revenue:**
+
 - Trial → paid conversion: >30%
 - Average revenue per user: $50/month
 - Customer lifetime value: $1,800+ (3 years)
 - Monthly recurring revenue growth
 
 **Performance:**
+
 - Login time: <2 seconds
 - Page load time: <3 seconds
 - API response time: <500ms average
 - System uptime: >99.9%
 
 **Security:**
+
 - Zero data breaches
 - Zero critical vulnerabilities
 - Audit log coverage: 100% of security events
@@ -382,30 +427,35 @@ Korella is a **mobile-first CRM platform for real estate professionals** that en
 ## Roadmap Summary
 
 **Q1 2026 (Current)**: Planning → Implementation
+
 - Complete Client Hub epic decomposition
 - Implement User Authentication (10 tasks)
 - Implement Client Hub core features
 - Launch MVP
 
 **Q2 2026**: Beta Testing
+
 - Recruit 10-20 beta users
 - Gather feedback
 - Iterate on features
 - Build Email Marketing PRD
 
 **Q3 2026**: Public Launch
+
 - Launch publicly
 - Marketing campaign
 - Acquire first 100 customers
 - $4,000 MRR
 
 **Q4 2026**: Scale
+
 - Email marketing platform launch
 - Scale to 1,000 users
 - $40,000 MRR
 - Feature parity with FollowUpBoss
 
 **Year 2-3**: Growth
+
 - 10,000 users
 - Advanced features (teams, API, analytics)
 - Market leader in agent-owned CRM category

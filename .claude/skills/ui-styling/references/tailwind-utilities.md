@@ -244,7 +244,7 @@ Core utility classes for layout, spacing, typography, colors, borders, and shado
 ```html
 <p class="truncate">Truncate with ellipsis...</p>
 <p class="line-clamp-3">Clamp to 3 lines...</p>
-<p class="text-ellipsis overflow-hidden">Ellipsis</p>
+<p class="overflow-hidden text-ellipsis">Ellipsis</p>
 ```
 
 ## Colors
@@ -290,12 +290,8 @@ Each color has 11 shades (50-950):
 ### Gradients
 
 ```html
-<div class="bg-gradient-to-r from-blue-500 to-purple-600">
-  Left to right gradient
-</div>
-<div class="bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500">
-  With via color
-</div>
+<div class="bg-gradient-to-r from-blue-500 to-purple-600">Left to right gradient</div>
+<div class="bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500">With via color</div>
 ```
 
 Directions: `to-t | to-tr | to-r | to-br | to-b | to-bl | to-l | to-tl`

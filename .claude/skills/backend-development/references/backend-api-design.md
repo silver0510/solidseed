@@ -281,24 +281,24 @@ mutation CreateUser($input: CreateUserInput!) {
 export class UserResolver {
   constructor(
     private userService: UserService,
-    private postService: PostService,
+    private postService: PostService
   ) {}
 
   @Query(() => User, { nullable: true })
-  async user(@Args("id") id: string) {
+  async user(@Args('id') id: string) {
     return this.userService.findById(id);
   }
 
   @Query(() => [User])
   async users(
-    @Args("limit", { defaultValue: 50 }) limit: number,
-    @Args("offset", { defaultValue: 0 }) offset: number,
+    @Args('limit', { defaultValue: 50 }) limit: number,
+    @Args('offset', { defaultValue: 0 }) offset: number
   ) {
     return this.userService.findAll({ limit, offset });
   }
 
   @Mutation(() => User)
-  async createUser(@Args("input") input: CreateUserInput) {
+  async createUser(@Args('input') input: CreateUserInput) {
     return this.userService.create(input);
   }
 
@@ -385,10 +385,10 @@ message CreateUserRequest {
 ### Implementation (Node.js)
 
 ```typescript
-import * as grpc from "@grpc/grpc-js";
-import * as protoLoader from "@grpc/proto-loader";
+import * as grpc from '@grpc/grpc-js';
+import * as protoLoader from '@grpc/proto-loader';
 
-const packageDefinition = protoLoader.loadSync("user.proto");
+const packageDefinition = protoLoader.loadSync('user.proto');
 const userProto = grpc.loadPackageDefinition(packageDefinition).user;
 
 // Server implementation
@@ -414,9 +414,7 @@ server.addService(userProto.UserService.service, {
   },
 });
 
-server.bindAsync("0.0.0.0:50051", grpc.ServerCredentials.createInsecure(), () =>
-  server.start(),
-);
+server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => server.start());
 ```
 
 ### gRPC Benefits
@@ -473,7 +471,7 @@ paths:
             type: integer
             default: 50
       responses:
-        "200":
+        '200':
           description: Successful response
           content:
             application/json:
@@ -483,7 +481,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/User"
+                      $ref: '#/components/schemas/User'
 components:
   schemas:
     User:

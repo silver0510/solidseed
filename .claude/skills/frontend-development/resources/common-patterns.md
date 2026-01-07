@@ -224,27 +224,26 @@ export const DataGridWrapper: React.FC<DataGridWrapperProps> = ({
 ### Update with Cache Invalidation
 
 ```typescript
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMuiSnackbar } from "@/hooks/useMuiSnackbar";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
 export const useUpdateEntity = () => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useMuiSnackbar();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) =>
-      api.updateEntity(id, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) => api.updateEntity(id, data),
 
     onSuccess: (result, variables) => {
       // Invalidate affected queries
-      queryClient.invalidateQueries({ queryKey: ["entity", variables.id] });
-      queryClient.invalidateQueries({ queryKey: ["entities"] });
+      queryClient.invalidateQueries({ queryKey: ['entity', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['entities'] });
 
-      showSuccess("Entity updated");
+      showSuccess('Entity updated');
     },
 
     onError: () => {
-      showError("Failed to update entity");
+      showError('Failed to update entity');
     },
   });
 };
@@ -253,7 +252,7 @@ export const useUpdateEntity = () => {
 const updateEntity = useUpdateEntity();
 
 const handleSave = () => {
-  updateEntity.mutate({ id: 123, data: { name: "New Name" } });
+  updateEntity.mutate({ id: 123, data: { name: 'New Name' } });
 };
 ```
 
@@ -273,7 +272,7 @@ Use TanStack Query for **all server data**:
 ```typescript
 // ✅ CORRECT - TanStack Query for server data
 const { data: users } = useSuspenseQuery({
-  queryKey: ["users"],
+  queryKey: ['users'],
   queryFn: () => userApi.getUsers(),
 });
 ```
@@ -302,7 +301,7 @@ Use Zustand only for **global client state**:
 - User preferences (not from server)
 
 ```typescript
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface AppState {
   sidebarOpen: boolean;

@@ -65,13 +65,13 @@ export const MyComponent: React.FC = () => {
 ```typescript
 const formStyles: Record<string, SxProps<Theme>> = {
   gridContainer: {
-    height: "100%",
-    maxHeight: "calc(100vh - 220px)",
+    height: '100%',
+    maxHeight: 'calc(100vh - 220px)',
   },
   section: {
-    height: "100%",
-    maxHeight: "calc(100vh - 220px)",
-    overflow: "auto",
+    height: '100%',
+    maxHeight: 'calc(100vh - 220px)',
+    overflow: 'auto',
     p: 4,
   },
   // ... 15 more style objects
@@ -209,7 +209,7 @@ import { Grid } from '@mui/material';
 ### Style Object Type
 
 ```typescript
-import type { SxProps, Theme } from "@mui/material";
+import type { SxProps, Theme } from '@mui/material';
 
 // Type-safe styles
 const styles: Record<string, SxProps<Theme>> = {
@@ -222,7 +222,7 @@ const styles: Record<string, SxProps<Theme>> = {
 // Or individual style
 const containerStyle: SxProps<Theme> = {
   p: 2,
-  display: "flex",
+  display: 'flex',
 };
 ```
 
@@ -233,7 +233,7 @@ const styles: Record<string, SxProps<Theme>> = {
   primary: {
     color: (theme) => theme.palette.primary.main,
     backgroundColor: (theme) => theme.palette.primary.light,
-    "&:hover": {
+    '&:hover': {
       backgroundColor: (theme) => theme.palette.primary.dark,
     },
   },
@@ -252,7 +252,7 @@ const styles: Record<string, SxProps<Theme>> = {
 
 ```typescript
 // ❌ AVOID - Old Material-UI v4 pattern
-import { makeStyles } from "@mui/styles";
+import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -267,7 +267,7 @@ const useStyles = makeStyles((theme) => ({
 
 ```typescript
 // ❌ AVOID - styled-components pattern
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 
 const StyledBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -302,8 +302,8 @@ const StyledBox = styled(Box)(({ theme }) => ({
 const styles: Record<string, SxProps<Theme>> = {
   container: {
     p: 2,
-    display: "flex",
-    flexDirection: "column",
+    display: 'flex',
+    flexDirection: 'column',
   },
 };
 ```
@@ -314,12 +314,12 @@ const styles: Record<string, SxProps<Theme>> = {
 
 ```typescript
 // ✅ CORRECT
-const color = "primary.main";
-import { Box } from "@mui/material";
+const color = 'primary.main';
+import { Box } from '@mui/material';
 
 // ❌ WRONG
-const color = "primary.main";
-import { Box } from "@mui/material";
+const color = 'primary.main';
+import { Box } from '@mui/material';
 ```
 
 ### Trailing Commas
@@ -334,8 +334,8 @@ const styles = {
 };
 
 const items = [
-  "item1",
-  "item2", // Trailing comma
+  'item1',
+  'item2', // Trailing comma
 ];
 
 // ❌ WRONG - No trailing comma
@@ -354,20 +354,20 @@ const styles = {
 ```typescript
 const styles = {
   flexRow: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 2,
   },
   flexColumn: {
-    display: "flex",
-    flexDirection: "column",
+    display: 'flex',
+    flexDirection: 'column',
     gap: 1,
   },
   spaceBetween: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 };
 ```
@@ -394,15 +394,15 @@ p: 0.5  // = 4px
 ```typescript
 const styles = {
   relative: {
-    position: "relative",
+    position: 'relative',
   },
   absolute: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     right: 0,
   },
   sticky: {
-    position: "sticky",
+    position: 'sticky',
     top: 0,
     zIndex: 1000,
   },

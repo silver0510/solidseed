@@ -211,13 +211,13 @@ export const MyComponent: React.FC = () => {
 ```typescript
 useEffect(() => {
   const handleResize = () => {
-    console.log("Resized");
+    console.log('Resized');
   };
 
-  window.addEventListener("resize", handleResize);
+  window.addEventListener('resize', handleResize);
 
   return () => {
-    window.removeEventListener("resize", handleResize); // Cleanup!
+    window.removeEventListener('resize', handleResize); // Cleanup!
   };
 }, []);
 ```
@@ -228,12 +228,12 @@ useEffect(() => {
 useEffect(() => {
   const abortController = new AbortController();
 
-  fetch("/api/data", { signal: abortController.signal })
+  fetch('/api/data', { signal: abortController.signal })
     .then((response) => response.json())
     .then((data) => setState(data))
     .catch((error) => {
-      if (error.name === "AbortError") {
-        console.log("Fetch aborted");
+      if (error.name === 'AbortError') {
+        console.log('Fetch aborted');
       }
     });
 
@@ -376,18 +376,18 @@ export const Parent: React.FC<{ config: Config }> = ({ config }) => {
 
 ```typescript
 // ❌ AVOID - Import heavy libraries at top level
-import jsPDF from "jspdf"; // Large library loaded immediately
-import * as XLSX from "xlsx"; // Large library loaded immediately
+import jsPDF from 'jspdf'; // Large library loaded immediately
+import * as XLSX from 'xlsx'; // Large library loaded immediately
 
 // ✅ CORRECT - Dynamic import when needed
 const handleExportPDF = async () => {
-  const { jsPDF } = await import("jspdf");
+  const { jsPDF } = await import('jspdf');
   const doc = new jsPDF();
   // Use it
 };
 
 const handleExportExcel = async () => {
-  const XLSX = await import("xlsx");
+  const XLSX = await import('xlsx');
   // Use it
 };
 ```

@@ -77,9 +77,9 @@ export const MyComponent: React.FC = () => {
 ### Import
 
 ```typescript
-import { SuspenseLoader } from "~components/SuspenseLoader";
+import { SuspenseLoader } from '~components/SuspenseLoader';
 // Or
-import { SuspenseLoader } from "@/components/SuspenseLoader";
+import { SuspenseLoader } from '@/components/SuspenseLoader';
 ```
 
 ### Basic Usage
