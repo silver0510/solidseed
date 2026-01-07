@@ -1,7 +1,7 @@
 ---
 created: 2026-01-06T09:03:33Z
-last_updated: 2026-01-07T00:56:54Z
-version: 2.0
+last_updated: 2026-01-07T15:02:25Z
+version: 2.1
 author: Claude Code PM System
 ---
 
@@ -39,7 +39,19 @@ Korella/
 │   │   ├── project-style-guide.md   # Coding standards
 │   │   └── README.md                # Context system documentation
 │   ├── epics/                       # Technical implementation plans
-│   │   └── user-authentication/     # User auth epic
+│   │   ├── project-setup/           # Infrastructure setup epic ✅
+│   │   │   ├── epic.md              # Setup plan and architecture
+│   │   │   ├── 001.md               # Next.js initialization ✅
+│   │   │   ├── 002.md               # PWA configuration ✅
+│   │   │   ├── 003.md               # Testing setup ✅
+│   │   │   ├── 004.md               # Supabase integration ✅
+│   │   │   ├── 005.md               # Storage configuration ✅
+│   │   │   ├── 006.md               # OAuth registration (pending)
+│   │   │   ├── 007.md               # Email service (pending)
+│   │   │   ├── 008.md               # Better Auth SDK (pending)
+│   │   │   ├── 009.md               # Environment validation (pending)
+│   │   │   └── 010.md               # Documentation (pending)
+│   │   └── user-authentication/     # User auth epic (pending)
 │   │       ├── epic.md              # Technical plan and architecture
 │   │       ├── 001.md               # Database schema task
 │   │       ├── 002.md               # Better Auth integration
@@ -177,6 +189,52 @@ Allows for up to 999 tasks per epic (typically 5-15 tasks).
 - `CLAUDE.md` - Developer guide for AI assistants
 - `LOCAL_MODE.md` - Workflow documentation
 - All lowercase with hyphens: `project-brief.md`
+
+## Application Source Structure
+
+### Core Application Files (Created)
+
+```
+korella/
+├── app/                           # Next.js App Router
+│   ├── (auth)/                    # Auth route group
+│   │   └── layout.tsx             # Auth layout ✅
+│   ├── (dashboard)/               # Dashboard route group
+│   │   └── layout.tsx             # Dashboard layout ✅
+│   ├── api/                       # API routes
+│   │   └── test/                  # Test endpoints
+│   │       ├── database/          # Database connection test ✅
+│   │       │   └── route.ts
+│   │       └── storage/           # Storage test ✅
+│   │           └── route.ts
+│   ├── layout.tsx                 # Root layout ✅
+│   └── page.tsx                   # Home page ✅
+├── lib/                           # Shared libraries
+│   ├── db.ts                      # Supabase client ✅
+│   └── storage.ts                 # Storage helper ✅
+├── public/                        # Static assets
+│   ├── icons/                     # PWA icons
+│   ├── manifest.json              # PWA manifest ✅
+│   └── ...
+├── supabase/                      # Supabase configuration
+│   ├── .temp/                     # CLI temp files
+│   └── migrations/                # Database migrations (pending)
+├── tests/                         # Test files
+│   ├── e2e/                       # Playwright tests
+│   │   └── homepage.spec.ts      # Homepage e2e test ✅
+│   ├── unit/                      # Vitest tests
+│   │   └── lib/
+│   │       └── example.test.ts   # Example unit test ✅
+│   └── setup.ts                   # Test setup ✅
+├── next.config.ts                 # Next.js config (with PWA) ✅
+├── playwright.config.ts           # Playwright config ✅
+├── vitest.config.ts               # Vitest config ✅
+├── tailwind.config.ts             # Tailwind config ✅
+├── tsconfig.json                  # TypeScript config ✅
+├── .env.local                     # Environment variables ✅
+├── .env.example                   # Env template ✅
+└── package.json                   # Dependencies ✅
+```
 
 ## Module Organization
 
