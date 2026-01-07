@@ -1,7 +1,7 @@
 ---
 created: 2026-01-06T09:03:33Z
-last_updated: 2026-01-07T15:02:25Z
-version: 1.1
+last_updated: 2026-01-07T15:32:42Z
+version: 1.2
 author: Claude Code PM System
 ---
 
@@ -10,11 +10,11 @@ author: Claude Code PM System
 ## Current Status
 
 **Phase**: Project Setup & Infrastructure
-**Overall Progress**: ~25% (Infrastructure setup in progress)
+**Overall Progress**: ~30% (Infrastructure setup in progress)
 
 The project has moved from planning into initial implementation with infrastructure setup underway:
 
-1. **Project Setup Epic** - 5 tasks completed (001-005), basic infrastructure ready
+1. **Project Setup Epic** - 6 tasks completed (001-006), OAuth configuration ready
 2. **User Authentication System** - Awaiting completion of project setup
 3. **Client Hub** - Requirements documented, awaiting implementation
 
@@ -27,6 +27,7 @@ The project has moved from planning into initial implementation with infrastruct
 - ✅ Task 003: Testing framework setup (Vitest for unit tests, Playwright for e2e)
 - ✅ Task 004: Supabase integration (database client, environment variables, test endpoint)
 - ✅ Task 005: Supabase Storage setup (client-documents bucket, RLS policies)
+- ✅ Task 006: Google OAuth setup (GCP project, OAuth consent screen, credentials configured)
 
 **Documentation Created:**
 
@@ -70,7 +71,6 @@ The project has moved from planning into initial implementation with infrastruct
 
 **Project Setup Epic:**
 
-- Task 006: OAuth provider registration (pending)
 - Task 007: Email service configuration (pending)
 - Task 008: Better Auth SDK setup (pending)
 - Task 009: Environment validation (pending)
@@ -84,13 +84,12 @@ The project has moved from planning into initial implementation with infrastruct
 **Pending:**
 
 - Client Hub epic decomposition
-- OAuth provider registration (Google Cloud Platform, Microsoft Azure AD)
+- Microsoft OAuth setup (Azure AD)
 - Email service setup (Resend.com)
 
 ### Immediate Next Steps
 
 1. **Complete Project Setup Tasks**
-   - Task 006: Register OAuth applications (Google, Microsoft)
    - Task 007: Configure email service (Resend.com)
    - Task 008: Set up Better Auth SDK
    - Task 009: Validate environment configuration
@@ -193,7 +192,18 @@ The project has moved from planning into initial implementation with infrastruct
 
 ## Session Notes
 
-**Last Session (2026-01-07):**
+**Current Session (2026-01-07):**
+
+- Completed Project Setup Task 006 (Google OAuth setup)
+- Created Google Cloud Platform project "Korella CRM"
+- Configured OAuth consent screen with External user type
+- Generated OAuth 2.0 credentials (Client ID and Client Secret)
+- Added credentials to .env.local and .env.example
+- Documented complete OAuth setup process in README.md
+- Included troubleshooting guide for common OAuth errors
+- Ready to proceed with Microsoft OAuth setup (Task 007 if needed)
+
+**Previous Session (2026-01-07):**
 
 - Completed Project Setup Tasks 001-005
 - Fixed Turbopack configuration warning (added empty turbopack: {} to next.config.ts)

@@ -1,7 +1,7 @@
 ---
 created: 2026-01-06T09:03:33Z
-last_updated: 2026-01-07T15:02:25Z
-version: 2.1
+last_updated: 2026-01-07T15:32:42Z
+version: 2.2
 author: Claude Code PM System
 ---
 
@@ -77,10 +77,15 @@ _Email Marketing Tables (4) - Phase 2:_
 **OAuth Providers:**
 
 - **Google OAuth 2.0**
-  - Google Cloud Platform project required
-  - Scopes: email, profile
-  - Client ID and secret in environment variables
+  - **Status**: ✅ Configured
+  - Google Cloud Platform project created: "Korella CRM"
+  - OAuth consent screen configured (External user type)
+  - Scopes: email, profile, openid
+  - Client ID and secret stored in .env.local
+  - Redirect URI: `{APP_URL}/api/auth/callback/google`
+  - Documentation: README.md (OAuth Setup section)
 - **Microsoft OAuth**
+  - **Status**: ⏳ Pending setup
   - Azure AD app registration required
   - Scopes: email, profile, openid, User.Read
   - Client ID and secret in environment variables
@@ -474,14 +479,18 @@ INNGEST_EVENT_KEY=your-event-key
 INNGEST_SIGNING_KEY=your-signing-key
 ```
 
+**Set Up:**
+
+- ✅ `.env.local` file created
+- ✅ Google OAuth credentials configured
+- ✅ Supabase project created and linked
+
 **Not Set Up Yet:**
 
-- Supabase project doesn't exist
-- OAuth applications not registered
+- Microsoft OAuth application registration
 - Better Auth secret not generated
 - Resend account not created
 - Sentry project not created
-- No `.env.local` file created
 
 ### Dependencies
 
