@@ -1,7 +1,7 @@
 ---
 created: 2026-01-06T09:03:33Z
-last_updated: 2026-01-07T15:32:42Z
-version: 1.2
+last_updated: 2026-01-07T16:29:26Z
+version: 1.3
 author: Claude Code PM System
 ---
 
@@ -10,11 +10,11 @@ author: Claude Code PM System
 ## Current Status
 
 **Phase**: Project Setup & Infrastructure
-**Overall Progress**: ~30% (Infrastructure setup in progress)
+**Overall Progress**: ~35% (7 of 10 setup tasks complete)
 
-The project has moved from planning into initial implementation with infrastructure setup underway:
+The project has moved from planning into initial implementation with infrastructure setup progressing well:
 
-1. **Project Setup Epic** - 6 tasks completed (001-006), OAuth configuration ready
+1. **Project Setup Epic** - 7 tasks completed (001-007), email & monitoring configured
 2. **User Authentication System** - Awaiting completion of project setup
 3. **Client Hub** - Requirements documented, awaiting implementation
 
@@ -28,6 +28,7 @@ The project has moved from planning into initial implementation with infrastruct
 - ✅ Task 004: Supabase integration (database client, environment variables, test endpoint)
 - ✅ Task 005: Supabase Storage setup (client-documents bucket, RLS policies)
 - ✅ Task 006: Google OAuth setup (GCP project, OAuth consent screen, credentials configured)
+- ✅ Task 007: Resend & Sentry setup (email service, error monitoring, test endpoints)
 
 **Documentation Created:**
 
@@ -48,6 +49,8 @@ The project has moved from planning into initial implementation with infrastruct
 - PWA support (manifest, service worker, offline capabilities)
 - Testing frameworks (Vitest + Playwright)
 - Environment variable management (.env.local, .env.example)
+- Resend email service (transactional emails)
+- Sentry error monitoring (error tracking + session replay)
 
 **Key Decisions Made:**
 
@@ -71,26 +74,23 @@ The project has moved from planning into initial implementation with infrastruct
 
 **Project Setup Epic:**
 
-- Task 007: Email service configuration (pending)
-- Task 008: Better Auth SDK setup (pending)
+- Task 008: Better Auth SDK setup (next)
 - Task 009: Environment validation (pending)
 - Task 010: Documentation finalization (pending)
 
 **User Authentication Epic:**
 
-- Awaiting completion of project setup tasks (006-010)
+- Awaiting completion of project setup tasks (008-010)
 - Ready to start once Better Auth SDK is configured
 
 **Pending:**
 
 - Client Hub epic decomposition
 - Microsoft OAuth setup (Azure AD)
-- Email service setup (Resend.com)
 
 ### Immediate Next Steps
 
 1. **Complete Project Setup Tasks**
-   - Task 007: Configure email service (Resend.com)
    - Task 008: Set up Better Auth SDK
    - Task 009: Validate environment configuration
    - Task 010: Update documentation
@@ -143,10 +143,10 @@ The project has moved from planning into initial implementation with infrastruct
 
 **Codebase:**
 
-- Source files: 8 (lib/db.ts, lib/storage.ts, API routes, layouts)
+- Source files: 13 (lib/db.ts, lib/storage.ts, lib/email.ts, API routes, Sentry configs)
 - Tests: 2 test files created (e2e/homepage.spec.ts, unit/lib/example.test.ts)
 - Database migrations: 0 (supabase initialized, migrations pending)
-- API endpoints: 2 (/api/test/database, /api/test/storage)
+- API endpoints: 3 (/api/test/database, /api/test/storage, /api/test/email)
 
 ## Historical Decisions
 
@@ -194,6 +194,20 @@ The project has moved from planning into initial implementation with infrastruct
 
 **Current Session (2026-01-07):**
 
+- Completed Project Setup Task 007 (Resend & Sentry configuration)
+- Installed and configured Resend email service (resend@6.6.0)
+- Installed and configured Sentry error monitoring (@sentry/nextjs@10.32.1)
+- Fixed Sentry Wizard issues (hardcoded DSN, missing client config)
+- Created EmailService class with verification and password reset templates
+- Created Sentry configs (server, client, edge, instrumentation)
+- Built test endpoint for email sending and error tracking
+- Successfully tested all 3 email types (generic, verification, password-reset)
+- Verified Sentry error capture working
+- Documented complete setup in README.md with troubleshooting guides
+- Ready to proceed with Better Auth SDK setup (Task 008)
+
+**Previous Session (2026-01-07):**
+
 - Completed Project Setup Task 006 (Google OAuth setup)
 - Created Google Cloud Platform project "Korella CRM"
 - Configured OAuth consent screen with External user type
@@ -201,7 +215,6 @@ The project has moved from planning into initial implementation with infrastruct
 - Added credentials to .env.local and .env.example
 - Documented complete OAuth setup process in README.md
 - Included troubleshooting guide for common OAuth errors
-- Ready to proceed with Microsoft OAuth setup (Task 007 if needed)
 
 **Previous Session (2026-01-07):**
 

@@ -1,7 +1,7 @@
 ---
 created: 2026-01-06T09:03:33Z
-last_updated: 2026-01-07T15:02:25Z
-version: 2.1
+last_updated: 2026-01-07T16:29:26Z
+version: 2.2
 author: Claude Code PM System
 ---
 
@@ -46,8 +46,8 @@ Korella/
 │   │   │   ├── 003.md               # Testing setup ✅
 │   │   │   ├── 004.md               # Supabase integration ✅
 │   │   │   ├── 005.md               # Storage configuration ✅
-│   │   │   ├── 006.md               # OAuth registration (pending)
-│   │   │   ├── 007.md               # Email service (pending)
+│   │   │   ├── 006.md               # OAuth registration ✅
+│   │   │   ├── 007.md               # Email & Sentry setup ✅
 │   │   │   ├── 008.md               # Better Auth SDK (pending)
 │   │   │   ├── 009.md               # Environment validation (pending)
 │   │   │   └── 010.md               # Documentation (pending)
@@ -205,13 +205,22 @@ korella/
 │   │   └── test/                  # Test endpoints
 │   │       ├── database/          # Database connection test ✅
 │   │       │   └── route.ts
+│   │       ├── email/             # Email & Sentry test ✅
+│   │       │   └── route.ts
 │   │       └── storage/           # Storage test ✅
 │   │           └── route.ts
+│   ├── global-error.tsx           # Global error handler (Sentry) ✅
 │   ├── layout.tsx                 # Root layout ✅
 │   └── page.tsx                   # Home page ✅
 ├── lib/                           # Shared libraries
 │   ├── db.ts                      # Supabase client ✅
+│   ├── email.ts                   # Email service (Resend) ✅
 │   └── storage.ts                 # Storage helper ✅
+├── instrumentation.ts             # Sentry instrumentation ✅
+├── instrumentation-client.ts      # Client instrumentation (unused) ✅
+├── sentry.server.config.ts        # Sentry server config ✅
+├── sentry.client.config.ts        # Sentry client config ✅
+├── sentry.edge.config.ts          # Sentry edge config ✅
 ├── public/                        # Static assets
 │   ├── icons/                     # PWA icons
 │   ├── manifest.json              # PWA manifest ✅

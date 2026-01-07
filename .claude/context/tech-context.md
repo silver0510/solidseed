@@ -1,7 +1,7 @@
 ---
 created: 2026-01-06T09:03:33Z
-last_updated: 2026-01-07T15:32:42Z
-version: 2.2
+last_updated: 2026-01-07T16:29:26Z
+version: 2.3
 author: Claude Code PM System
 ---
 
@@ -242,6 +242,8 @@ _Email Marketing Tables (4) - Phase 2:_
 
 **Resend (Transactional Emails)**
 
+- **Version**: 6.6.0
+- **Status**: ✅ Configured and tested
 - **Purpose**: System emails (verification, password reset, notifications)
 - **Features**:
   - React Email for JSX-based templates
@@ -249,6 +251,12 @@ _Email Marketing Tables (4) - Phase 2:_
   - 98%+ inbox rate (uses AWS SES)
   - Clean modern API
 - **Pricing**: Free → $20/mo (50K emails) → pay-as-you-go
+- **Configuration**:
+  - API key stored in .env.local
+  - Helper library: `lib/email.ts` (EmailService class)
+  - Test endpoint: `/api/test/email` (verified working)
+  - Email templates: verification, password reset
+  - From address: onboarding@resend.dev (development)
 - **Use Cases**:
   - Email verification links
   - Password reset links
@@ -347,6 +355,8 @@ _Email Marketing Tables (4) - Phase 2:_
 
 **Sentry**
 
+- **Version**: @sentry/nextjs@10.32.1
+- **Status**: ✅ Configured and tested
 - **Purpose**: Error tracking and performance monitoring
 - **Features**:
   - Error tracking with stack traces
@@ -356,6 +366,17 @@ _Email Marketing Tables (4) - Phase 2:_
   - One-line Next.js integration
 - **Pricing**: Free (5K events/mo) → $26/mo (50K events)
 - **Bundle Size**: ~8KB
+- **Configuration**:
+  - DSN stored in environment variables
+  - Instrumentation file: `instrumentation.ts`
+  - Server config: `sentry.server.config.ts`
+  - Client config: `sentry.client.config.ts` (with session replay)
+  - Edge config: `sentry.edge.config.ts`
+  - Next.js integration: `next.config.ts` (withSentryConfig)
+  - Test endpoint: `/api/test/email` GET request
+  - Production-only: Only sends errors in production
+  - Privacy: Filters auth headers and cookies
+  - Sampling: 10% trace sampling in production
 - **Metrics Tracked**:
   - Error rates and types
   - API response times
@@ -464,7 +485,9 @@ MICROSOFT_CLIENT_SECRET=xxx
 RESEND_API_KEY=re_xxxxxxxxxxxx
 
 # Monitoring
+SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
+SENTRY_AUTH_TOKEN=your_sentry_auth_token
 ```
 
 **Additional for Phase 2 (Email Marketing):**
@@ -484,13 +507,13 @@ INNGEST_SIGNING_KEY=your-signing-key
 - ✅ `.env.local` file created
 - ✅ Google OAuth credentials configured
 - ✅ Supabase project created and linked
+- ✅ Resend account created and configured
+- ✅ Sentry project created and configured
 
 **Not Set Up Yet:**
 
 - Microsoft OAuth application registration
 - Better Auth secret not generated
-- Resend account not created
-- Sentry project not created
 
 ### Dependencies
 
@@ -563,11 +586,13 @@ INNGEST_SIGNING_KEY=your-signing-key
 - Date: ~7KB (date-fns)
 - **Total: ~185KB gzipped**
 
-**Not Installed Yet:**
+**Installation Status:**
 
-- No `package.json` exists
-- No dependencies installed
-- Need to run `npm create next-app@latest` to initialize
+- ✅ All Phase 1 dependencies installed
+- ✅ resend@6.6.0 configured with EmailService class
+- ✅ @sentry/nextjs@10.32.1 configured with error tracking
+- ⏳ better-auth not yet installed (Task 008)
+- ⏳ Phase 2 dependencies not installed
 
 ### Data Flow (Planned Architecture)
 

@@ -129,6 +129,158 @@ Where `APP_URL` is:
 - Add test users in OAuth consent screen
 - Or submit app for verification for production
 
+## Email Service Setup (Resend)
+
+### Development Setup
+
+1. **Create Resend Account**
+   - Go to [resend.com/signup](https://resend.com/signup)
+   - Sign up with your email and verify your account
+
+2. **Create API Key**
+   - Go to "API Keys" section
+   - Click "Create API Key"
+   - Name: "Korella CRM - Development"
+   - Copy the API key (starts with `re_`)
+
+3. **Add to Environment Variables**
+   ```bash
+   RESEND_API_KEY=re_your_api_key
+   ```
+
+4. **For Development**
+   - Use `onboarding@resend.dev` as the from address
+   - No domain setup required for testing
+
+### Production Setup
+
+1. **Add Your Domain**
+   - Go to "Domains" in Resend dashboard
+   - Click "Add Domain"
+   - Enter your domain: `korella.app`
+
+2. **Configure DNS Records**
+   - Add the following DNS records to your domain:
+     - **MX Record**: For receiving bounces
+     - **TXT Record**: For SPF authentication
+     - **CNAME Records**: For DKIM authentication
+
+3. **Verify Domain**
+   - Wait for DNS propagation (can take up to 48 hours)
+   - Click "Verify" in Resend dashboard
+
+4. **Update Environment Variable**
+   ```bash
+   RESEND_FROM_EMAIL=noreply@korella.app
+   ```
+
+### Testing Email Service
+
+```bash
+# Test generic email
+curl -X POST http://localhost:3000/api/test/email \
+  -H "Content-Type: application/json" \
+  -d '{"to":"your-email@example.com"}'
+
+# Test verification email
+curl -X POST http://localhost:3000/api/test/email \
+  -H "Content-Type: application/json" \
+  -d '{"to":"your-email@example.com","type":"verification"}'
+
+# Test password reset email
+curl -X POST http://localhost:3000/api/test/email \
+  -H "Content-Type: application/json" \
+  -d '{"to":"your-email@example.com","type":"password-reset"}'
+```
+
+### Troubleshooting
+
+**Email not received:**
+- Check spam folder
+- Verify from address (use `onboarding@resend.dev` for development)
+- Check Resend dashboard for delivery status
+
+**Invalid API key error:**
+- Verify API key starts with `re_`
+- Check for extra spaces in `.env.local`
+- Create a new API key if needed
+
+## Error Monitoring Setup (Sentry)
+
+### Development Setup
+
+1. **Create Sentry Account**
+   - Go to [sentry.io/signup](https://sentry.io/signup)
+   - Sign up or log in with your account
+
+2. **Create New Project**
+   - Click "Projects" → "Create Project"
+   - Platform: **Next.js**
+   - Project name: `korella-crm`
+   - Alert frequency: Choose your preference
+
+3. **Copy DSN**
+   - After project creation, copy the DSN
+   - Format: `https://key@org.ingest.sentry.io/project-id`
+
+4. **Add to Environment Variables**
+   ```bash
+   SENTRY_DSN=https://key@org.ingest.sentry.io/project-id
+   NEXT_PUBLIC_SENTRY_DSN=https://key@org.ingest.sentry.io/project-id
+   SENTRY_AUTH_TOKEN=your_auth_token
+   ```
+
+5. **Configuration Files**
+   - `instrumentation.ts` - Loads Sentry based on runtime
+   - `sentry.server.config.ts` - Server-side error tracking
+   - `sentry.client.config.ts` - Client-side error tracking + session replay
+   - `sentry.edge.config.ts` - Edge runtime error tracking
+
+### Features Configured
+
+- **Error Tracking**: Automatic capture of all errors
+- **Performance Monitoring**: 10% trace sampling in production
+- **Session Replay**: Browser session recording on errors
+- **Privacy Protection**: Sensitive data filtered (auth headers, cookies)
+- **Source Maps**: Uploaded for production debugging
+- **Release Tracking**: Linked to Git commits
+
+### Testing Sentry
+
+```bash
+# Test error tracking
+curl http://localhost:3000/api/test/email
+
+# Expected response:
+# {
+#   "success": true,
+#   "message": "Test error sent to Sentry"
+# }
+
+# Check Sentry dashboard for captured error
+# https://sentry.io/organizations/YOUR_ORG/issues/
+```
+
+### Production Configuration
+
+In production, Sentry will:
+- Only send errors when `NODE_ENV=production`
+- Sample 10% of traces (configurable in config files)
+- Upload source maps automatically via Vercel integration
+- Track releases using Git commit SHA
+
+### Troubleshooting
+
+**Errors not appearing in Sentry:**
+- Check that `SENTRY_DSN` is set correctly
+- Verify Sentry is enabled (check `enabled` config)
+- Restart development server
+
+**"Module not found: instrumentation":**
+- Next.js 15+ has instrumentation enabled by default
+- Ensure `instrumentation.ts` is in project root
+- Restart dev server
+
 ## Project Structure
 
 ```
