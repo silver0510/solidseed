@@ -1,7 +1,7 @@
 ---
 created: 2026-01-06T09:03:33Z
-last_updated: 2026-01-07T16:29:26Z
-version: 2.2
+last_updated: 2026-01-08T02:59:06Z
+version: 2.3
 author: Claude Code PM System
 ---
 
@@ -48,7 +48,7 @@ Korella/
 │   │   │   ├── 005.md               # Storage configuration ✅
 │   │   │   ├── 006.md               # OAuth registration ✅
 │   │   │   ├── 007.md               # Email & Sentry setup ✅
-│   │   │   ├── 008.md               # Better Auth SDK (pending)
+│   │   │   ├── 008.md               # Vercel CLI setup ✅
 │   │   │   ├── 009.md               # Environment validation (pending)
 │   │   │   └── 010.md               # Documentation (pending)
 │   │   └── user-authentication/     # User auth epic (pending)
@@ -91,7 +91,9 @@ Korella/
 │   ├── settings.json.example        # Settings template
 │   └── settings.local.json          # Local settings (gitignored)
 ├── CLAUDE.md                        # Developer guide for Claude Code
-└── LOCAL_MODE.md                    # Local workflow documentation
+├── DEPLOYMENT.md                    # Production deployment checklist
+├── LOCAL_MODE.md                    # Local workflow documentation
+└── vercel.json                      # Vercel deployment configuration
 ```
 
 ## Key Directory Purposes
