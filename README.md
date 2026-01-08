@@ -281,6 +281,236 @@ In production, Sentry will:
 - Ensure `instrumentation.ts` is in project root
 - Restart dev server
 
+## Vercel Deployment
+
+### Prerequisites
+
+- Vercel account (sign up at vercel.com)
+- Vercel CLI installed: `npm install -g vercel`
+- Project linked: `vercel link`
+
+### Development with Vercel
+
+```bash
+# Start local dev server with Vercel features
+vercel dev
+
+# This provides:
+# - Environment variables from Vercel
+# - Serverless function simulation
+# - Edge function testing
+```
+
+### Deployment Process
+
+#### First Time Setup
+
+1. **Install Vercel CLI**
+
+   ```bash
+   npm install -g vercel
+   ```
+
+2. **Authenticate**
+
+   ```bash
+   vercel login
+   ```
+
+3. **Link Project**
+
+   ```bash
+   vercel link
+   # Follow prompts to create/link project
+   ```
+
+4. **Configure Environment Variables**
+
+   ```bash
+   # Add production environment variables
+   vercel env add DATABASE_URL production
+   vercel env add SUPABASE_URL production
+   vercel env add SUPABASE_ANON_KEY production
+   vercel env add GOOGLE_CLIENT_ID production
+   vercel env add GOOGLE_CLIENT_SECRET production
+   vercel env add RESEND_API_KEY production
+   vercel env add SENTRY_DSN production
+   vercel env add NEXT_PUBLIC_SENTRY_DSN production
+   vercel env add JWT_SECRET production
+   vercel env add APP_URL production
+
+   # Set APP_URL to: https://korella.app
+   ```
+
+#### Deploy to Preview
+
+```bash
+# Deploy to preview environment
+vercel
+
+# This creates a preview deployment with unique URL
+# Perfect for testing before production
+```
+
+#### Deploy to Production
+
+```bash
+# Deploy to production
+vercel --prod
+
+# Or use GitHub integration for automatic deployments:
+# 1. Go to vercel.com/dashboard
+# 2. Import Git Repository
+# 3. Connect to GitHub repo
+# 4. Configure build settings
+# 5. Add environment variables
+# 6. Every push to main = automatic production deployment
+# 7. Every PR = preview deployment
+```
+
+### Vercel Configuration
+
+Project settings are in `vercel.json`:
+
+- Framework: Next.js
+- Region: Washington D.C. (iad1) - Closest to US East Coast
+- Build command: `npm run build`
+- Install command: `npm install`
+- Output directory: `.next` (automatic)
+
+### Environment Variables
+
+**Production variables** (set in Vercel dashboard or CLI):
+
+- All variables from `.env.local`
+- `APP_URL` = `https://korella.app`
+- `NODE_ENV` = `production` (automatic)
+
+**Preview variables** (optional):
+
+- Same as production, but with preview URLs
+- Use preview database/services if needed
+
+### Deployment Checklist
+
+Before deploying to production:
+
+- [ ] All environment variables configured in Vercel
+- [ ] Database migrations applied to production database
+- [ ] Supabase production project configured
+- [ ] OAuth redirect URIs updated for production domain
+- [ ] Domain configured in Vercel (korella.app)
+- [ ] DNS records pointed to Vercel
+- [ ] SSL certificate verified
+- [ ] Sentry configured for production
+- [ ] Error monitoring tested
+- [ ] Performance monitoring enabled
+- [ ] Build successful locally: `npm run build`
+- [ ] Type check passing: `npm run type-check`
+- [ ] Tests passing: `npm run test`
+
+### Post-Deployment
+
+1. **Verify deployment**
+
+   ```bash
+   vercel ls
+   # Check deployment status
+   ```
+
+2. **Check logs**
+
+   ```bash
+   vercel logs
+   # View production logs
+   ```
+
+3. **Test production site**
+   - Visit https://korella.app
+   - Test authentication flow
+   - Test database connectivity
+   - Verify OAuth works
+   - Check Sentry error tracking
+
+### Rollback
+
+If something goes wrong:
+
+```bash
+# List deployments
+vercel ls
+
+# Promote previous deployment to production
+vercel promote <deployment-url>
+```
+
+### Useful Commands
+
+```bash
+# View project info
+vercel inspect
+
+# View logs
+vercel logs [deployment-url]
+
+# List all deployments
+vercel ls
+
+# Remove deployment
+vercel rm [deployment-url]
+
+# Pull environment variables to local
+vercel env pull .env.local
+```
+
+### GitHub Integration (Recommended)
+
+For automatic deployments:
+
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Import Git Repository
+3. Select GitHub repository
+4. Configure:
+   - Framework: Next.js (auto-detected)
+   - Root Directory: `./`
+   - Build Command: `npm run build`
+   - Install Command: `npm install`
+5. Add environment variables
+6. Deploy
+
+**Automatic Deployments:**
+
+- Push to `main` → Production deployment
+- Open PR → Preview deployment
+- Commit to PR → Updated preview
+
+### Troubleshooting
+
+**Build fails on Vercel but works locally**
+
+- Check Node.js version matches (use `.nvmrc`)
+- Verify all dependencies in `package.json`
+- Check environment variables are set
+- Review build logs in Vercel dashboard
+
+**Environment variables not loading**
+
+- Ensure variables are set for correct environment (production/preview)
+- Restart deployment after adding variables
+- Check variable names match exactly
+
+**Domain not working**
+
+- Verify DNS records point to Vercel
+- Check domain configuration in Vercel dashboard
+- Wait for DNS propagation (up to 48 hours)
+
+**Serverless function timeout**
+
+- Default timeout: 10s (Hobby), 60s (Pro)
+- Optimize slow functions
+- Consider upgrading plan if needed
+
 ## Project Structure
 
 ```
