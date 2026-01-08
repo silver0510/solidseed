@@ -18,8 +18,10 @@ import {
   type AuthLog,
   type OAuthProvider as OAuthProviderType,
   type AccountStatus,
+  type SubscriptionTier,
 } from '../config/database';
 import { resendVerificationEmail } from './email.service';
+import { checkTrialExpiration } from './subscription.service';
 
 // =============================================================================
 // Database Connection
@@ -187,16 +189,19 @@ export async function verifyEmail(
       };
     }
 
-    // Update user as verified and active
+    // Update user as verified and active, starting trial period
     const trialExpiresAt = new Date();
     trialExpiresAt.setDate(trialExpiresAt.getDate() + securityConstants.TRIAL_PERIOD_DAYS);
+    trialExpiresAt.setHours(23, 59, 59, 999); // End of the day
 
     await sql`
       UPDATE ${authTables.users}
       SET email_verified = true,
           email_verified_at = ${new Date()},
           account_status = 'active',
-          trial_expires_at = ${trialExpiresAt}
+          subscription_tier = 'trial',
+          trial_expires_at = ${trialExpiresAt},
+          updated_at = ${new Date()}
       WHERE id = ${verification.user_id}
     `;
 
@@ -408,6 +413,8 @@ export async function loginUser(
 
     // Check account status
     const userData = result.user as any;
+    const currentTier = (userData.subscription_tier || 'trial') as SubscriptionTier;
+    const trialExpiresAt = userData.trial_expires_at || null;
 
     // Check if account is locked
     if (userData.locked_until && new Date(userData.locked_until) > new Date()) {
@@ -425,6 +432,13 @@ export async function loginUser(
       };
     }
 
+    // Check trial expiration and downgrade if needed
+    const updatedTier = await checkTrialExpiration(
+      result.user.id,
+      currentTier,
+      trialExpiresAt
+    );
+
     // Log successful login
     await logAuthEvent({
       userId: result.user.id,
@@ -432,6 +446,10 @@ export async function loginUser(
       success: true,
       ipAddress,
       userAgent,
+      eventDetails: {
+        subscription_tier: updatedTier,
+        trial_expired: updatedTier !== currentTier,
+      },
     });
 
     return {
@@ -442,8 +460,8 @@ export async function loginUser(
         id: result.user.id,
         email: result.user.email,
         fullName: result.user.name,
-        subscriptionTier: userData.subscription_tier || 'trial',
-        trialExpiresAt: userData.trial_expires_at || null,
+        subscriptionTier: updatedTier,
+        trialExpiresAt: updatedTier === 'free' ? null : trialExpiresAt,
       },
     };
   } catch (error) {
@@ -538,12 +556,23 @@ export async function handleOAuthCallback(
       };
     }
 
+    const userData = callbackResult.user as any;
+    const currentTier = (userData.subscription_tier || 'trial') as SubscriptionTier;
+    const trialExpiresAt = userData.trial_expires_at || null;
+
+    // Check trial expiration and downgrade if needed
+    const updatedTier = await checkTrialExpiration(
+      callbackResult.user.id,
+      currentTier,
+      trialExpiresAt
+    );
+
     // Log successful OAuth login
     await logAuthEvent({
       userId: callbackResult.user.id,
       eventType: 'oauth_login',
       success: true,
-      eventDetails: { provider },
+      eventDetails: { provider, subscription_tier: updatedTier },
       ipAddress,
       userAgent,
     });
@@ -556,7 +585,7 @@ export async function handleOAuthCallback(
         id: callbackResult.user.id,
         email: callbackResult.user.email,
         fullName: callbackResult.user.name,
-        subscriptionTier: (callbackResult.user as any).subscription_tier || 'trial',
+        subscriptionTier: updatedTier,
       },
       redirect: '/dashboard',
     };
