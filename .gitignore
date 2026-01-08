@@ -44,6 +44,10 @@ next-env.d.ts
 .env.local
 .env.*.local
 
+# OAuth credentials (for local development)
+oauth-credentials.json
+config/oauth-credentials.json
+
 # IDE
 .vscode/
 .idea/
