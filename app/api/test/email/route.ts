@@ -13,15 +13,18 @@ export async function POST(request: NextRequest) {
     let result;
 
     if (type === 'verification') {
-      result = await EmailService.sendVerificationEmail(
-        to,
-        'http://localhost:3000/auth/verify?token=test123'
-      );
+      await EmailService.sendVerificationEmail(to, 'Test User', 'test-token-123');
+      result = { success: true, type: 'verification' };
     } else if (type === 'password-reset') {
-      result = await EmailService.sendPasswordResetEmail(
-        to,
-        'http://localhost:3000/auth/reset?token=test456'
-      );
+      await EmailService.sendPasswordResetEmail(to, 'Test User', 'test-token-456');
+      result = { success: true, type: 'password-reset' };
+    } else if (type === 'password-changed') {
+      await EmailService.sendPasswordChangedEmail(to, 'Test User');
+      result = { success: true, type: 'password-changed' };
+    } else if (type === 'account-lockout') {
+      const unlockTime = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+      await EmailService.sendAccountLockoutEmail(to, 'Test User', unlockTime, 'reset-token-789');
+      result = { success: true, type: 'account-lockout' };
     } else {
       result = await EmailService.sendEmail({
         to,
