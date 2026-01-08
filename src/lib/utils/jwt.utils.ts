@@ -12,7 +12,7 @@
  * and provide additional functionality for session management.
  */
 
-import { securityConstants } from '../config/database';
+import { securityConstants } from '../../config/database';
 
 // =============================================================================
 // Type Definitions
