@@ -60,7 +60,23 @@ const tierProtectedPaths: Record<string, string[]> = {
 // =============================================================================
 
 /**
- * Extracts and validates JWT token from request
+ * Extracts and validates JWT token from request with comprehensive session validation
+ *
+ * This function:
+ * 1. Extracts token from Authorization header
+ * 2. Validates JWT signature and expiration
+ * 3. Fetches user from database
+ * 4. Checks user status (active, not locked, not deleted)
+ * 5. Returns session if valid, null otherwise
+ *
+ * Session validation checks:
+ * - Token signature is valid
+ * - Token is not expired
+ * - User exists in database
+ * - User is not soft-deleted
+ * - User account is active (not deactivated)
+ * - User account is not locked
+ * - User email is verified
  */
 export async function getSessionFromRequest(request: NextRequest): Promise<Session | null> {
   try {
@@ -72,12 +88,47 @@ export async function getSessionFromRequest(request: NextRequest): Promise<Sessi
 
     const token = authHeader.substring(7);
 
+    // Validate token format
+    if (!token || token.length === 0) {
+      return null;
+    }
+
     // Validate session using Better Auth
     const session = await auth.api.getSession({
       headers: request.headers,
-    });
+    }) as Session | null;
 
-    return session as Session | null;
+    if (!session) {
+      return null;
+    }
+
+    // Additional validation: Check user status
+    const user = session.user;
+
+    // Check if user is soft-deleted
+    if (user.is_deleted) {
+      return null;
+    }
+
+    // Check if account is deactivated
+    if (user.account_status === 'deactivated') {
+      return null;
+    }
+
+    // Check if account is locked
+    if (user.locked_until) {
+      const lockedUntil = new Date(user.locked_until);
+      if (lockedUntil > new Date()) {
+        return null;
+      }
+    }
+
+    // Check if email is verified
+    if (!user.emailVerified) {
+      return null;
+    }
+
+    return session;
   } catch (error) {
     console.error('Session validation error:', error);
     return null;
@@ -227,6 +278,14 @@ export function withOptionalAuth<T extends Response = Response>(
 
 /**
  * Standard error responses for auth failures
+ *
+ * These error responses cover all session validation edge cases:
+ * - Missing or invalid tokens
+ * - Expired tokens
+ * - Deactivated users
+ * - Locked accounts
+ * - Unverified emails
+ * - Insufficient subscription tiers
  */
 export const authErrors = {
   unauthorized: {
@@ -239,15 +298,25 @@ export const authErrors = {
     message: 'Invalid or expired token',
     status: 401,
   },
-  forbidden: {
+  tokenExpired: {
+    error: 'Unauthorized',
+    message: 'Session expired. Please login again',
+    status: 401,
+  },
+  userNotFound: {
+    error: 'Unauthorized',
+    message: 'User not found',
+    status: 401,
+  },
+  accountDeactivated: {
     error: 'Forbidden',
-    message: 'Insufficient permissions',
+    message: 'Account has been deactivated',
     status: 403,
   },
-  insufficientTier: {
-    error: 'Forbidden',
-    message: 'This feature requires a higher subscription tier',
-    status: 403,
+  accountDeleted: {
+    error: 'Unauthorized',
+    message: 'Account has been deleted',
+    status: 401,
   },
   accountLocked: {
     error: 'Locked',
@@ -257,6 +326,16 @@ export const authErrors = {
   emailNotVerified: {
     error: 'Forbidden',
     message: 'Email address must be verified before accessing this feature',
+    status: 403,
+  },
+  forbidden: {
+    error: 'Forbidden',
+    message: 'Insufficient permissions',
+    status: 403,
+  },
+  insufficientTier: {
+    error: 'Forbidden',
+    message: 'This feature requires a higher subscription tier',
     status: 403,
   },
 } as const;
