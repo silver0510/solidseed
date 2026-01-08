@@ -1,7 +1,7 @@
 ---
 created: 2026-01-06T09:03:33Z
-last_updated: 2026-01-08T02:59:06Z
-version: 2.3
+last_updated: 2026-01-08T03:14:34Z
+version: 2.4
 author: Claude Code PM System
 ---
 
@@ -49,8 +49,8 @@ Korella/
 │   │   │   ├── 006.md               # OAuth registration ✅
 │   │   │   ├── 007.md               # Email & Sentry setup ✅
 │   │   │   ├── 008.md               # Vercel CLI setup ✅
-│   │   │   ├── 009.md               # Environment validation (pending)
-│   │   │   └── 010.md               # Documentation (pending)
+│   │   │   ├── 009.md               # Environment validation ✅
+│   │   │   └── 010.md               # Integration testing (pending)
 │   │   └── user-authentication/     # User auth epic (pending)
 │   │       ├── epic.md              # Technical plan and architecture
 │   │       ├── 001.md               # Database schema task
@@ -204,6 +204,8 @@ korella/
 │   ├── (dashboard)/               # Dashboard route group
 │   │   └── layout.tsx             # Dashboard layout ✅
 │   ├── api/                       # API routes
+│   │   ├── health/                # Health check endpoint ✅
+│   │   │   └── route.ts
 │   │   └── test/                  # Test endpoints
 │   │       ├── database/          # Database connection test ✅
 │   │       │   └── route.ts
@@ -217,7 +219,9 @@ korella/
 ├── lib/                           # Shared libraries
 │   ├── db.ts                      # Supabase client ✅
 │   ├── email.ts                   # Email service (Resend) ✅
-│   └── storage.ts                 # Storage helper ✅
+│   ├── env.ts                     # Environment validation (Zod) ✅
+│   ├── storage.ts                 # Storage helper ✅
+│   └── validate-env.ts            # Env validation middleware ✅
 ├── instrumentation.ts             # Sentry instrumentation ✅
 ├── instrumentation-client.ts      # Client instrumentation (unused) ✅
 ├── sentry.server.config.ts        # Sentry server config ✅
@@ -227,6 +231,8 @@ korella/
 │   ├── icons/                     # PWA icons
 │   ├── manifest.json              # PWA manifest ✅
 │   └── ...
+├── scripts/                       # Utility scripts
+│   └── health-check.sh            # Health monitoring script ✅
 ├── supabase/                      # Supabase configuration
 │   ├── .temp/                     # CLI temp files
 │   └── migrations/                # Database migrations (pending)

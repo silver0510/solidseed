@@ -1,7 +1,7 @@
 ---
 created: 2026-01-06T09:03:33Z
-last_updated: 2026-01-08T02:59:06Z
-version: 2.4
+last_updated: 2026-01-08T03:14:34Z
+version: 2.5
 author: Claude Code PM System
 ---
 
@@ -198,9 +198,15 @@ _Email Marketing Tables (4) - Phase 2:_
   - Perfect for authentication forms
   - Bundle Size: ~45KB
 - **Zod**: TypeScript schema validation
+  - **Version**: 4.3.5
+  - **Status**: ✅ Configured for environment validation and forms
   - Type-safe validation
   - Custom error messages
   - Composable schemas
+  - **Use Cases**:
+    - Environment variable validation (`lib/env.ts`)
+    - Form validation (authentication forms)
+    - API request/response validation
   - Bundle Size: ~5KB
 - **Total Bundle**: ~50KB
 
@@ -383,6 +389,31 @@ _Email Marketing Tables (4) - Phase 2:_
   - User session data
   - Frontend performance
 
+**Health Check System**
+
+- **Status**: ✅ Implemented
+- **Endpoint**: `/api/health`
+- **Purpose**: Service monitoring and uptime checks
+- **Features**:
+  - Database connectivity check (queries users table)
+  - Storage service check (verifies client-documents bucket)
+  - Email service check (validates Resend API key)
+  - Sentry monitoring check (tests error capture)
+  - System metrics (uptime, memory usage)
+  - Individual service latency tracking
+  - Overall status aggregation (healthy/degraded/unhealthy)
+- **Response Codes**:
+  - 200: All services healthy or degraded
+  - 503: One or more services unhealthy
+- **Scripts**:
+  - `npm run health-check` - Check endpoint via curl
+  - `./scripts/health-check.sh` - Formatted health report
+- **Use Cases**:
+  - Production uptime monitoring
+  - CI/CD pipeline health verification
+  - Post-deployment validation
+  - Service degradation alerts
+
 ### Additional Tools
 
 **next-pwa (Progressive Web App)**
@@ -466,37 +497,62 @@ _Email Marketing Tables (4) - Phase 2:_
 
 ### Environment Variables
 
+**Validation System:**
+
+- **Status**: ✅ Implemented with Zod schema validation
+- **Location**: `lib/env.ts` (schema definition and type-safe access)
+- **Validation**: `lib/validate-env.ts` (startup validation middleware)
+- **Integration**: Runs during app startup via `instrumentation.ts`
+- **Features**:
+  - Type-safe environment variable access
+  - Startup validation (fails fast if misconfigured)
+  - Default values for optional variables
+  - Minimum length requirements (e.g., BETTER_AUTH_SECRET ≥32 chars)
+  - URL format validation for endpoints
+  - Enum validation for environment types
+- **Scripts**:
+  - `npm run validate-env` - Manual validation check
+  - `npm run type-check` - TypeScript validation
+
 **Required for MVP (Phase 1):**
 
 ```bash
 # Application
-NEXT_PUBLIC_APP_URL=http://localhost:3000
 NODE_ENV=development
+BETTER_AUTH_URL=http://localhost:3000
 
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-anon-key
 SUPABASE_DATABASE_URL=postgresql://postgres:[password]@db.your-project.supabase.co:5432/postgres
 
 # Better Auth
-BETTER_AUTH_SECRET=your-32-char-secret
-BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_SECRET=your-secret-minimum-32-characters-long
 
 # OAuth - Google
 GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=xxx
 
-# OAuth - Microsoft
+# OAuth - Microsoft (pending)
 MICROSOFT_CLIENT_ID=xxx
 MICROSOFT_CLIENT_SECRET=xxx
 
 # Email (Transactional)
 RESEND_API_KEY=re_xxxxxxxxxxxx
+RESEND_FROM_EMAIL=onboarding@resend.dev
 
-# Monitoring
+# Monitoring (optional)
 SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 SENTRY_AUTH_TOKEN=your_sentry_auth_token
+SENTRY_ORG=your-org
+SENTRY_PROJECT=your-project
+
+# Vercel (auto-generated in production)
+VERCEL_URL=auto-generated
+VERCEL_ENV=auto-generated
+VERCEL_GIT_COMMIT_SHA=auto-generated
+VERCEL_OIDC_TOKEN=auto-generated
 ```
 
 **Additional for Phase 2 (Email Marketing):**

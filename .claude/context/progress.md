@@ -1,7 +1,7 @@
 ---
 created: 2026-01-06T09:03:33Z
-last_updated: 2026-01-08T02:59:06Z
-version: 1.4
+last_updated: 2026-01-08T03:14:34Z
+version: 1.5
 author: Claude Code PM System
 ---
 
@@ -10,11 +10,11 @@ author: Claude Code PM System
 ## Current Status
 
 **Phase**: Project Setup & Infrastructure
-**Overall Progress**: ~40% (8 of 10 setup tasks complete)
+**Overall Progress**: ~90% (9 of 10 setup tasks complete)
 
-The project has moved from planning into initial implementation with infrastructure setup progressing well:
+The project has moved from planning into initial implementation with infrastructure setup nearly complete:
 
-1. **Project Setup Epic** - 8 tasks completed (001-008), Vercel deployment ready
+1. **Project Setup Epic** - 9 of 10 tasks completed (001-009), environment validation implemented
 2. **User Authentication System** - Awaiting completion of project setup
 3. **Client Hub** - Requirements documented, awaiting implementation
 
@@ -30,6 +30,7 @@ The project has moved from planning into initial implementation with infrastruct
 - ✅ Task 006: Google OAuth setup (GCP project, OAuth consent screen, credentials configured)
 - ✅ Task 007: Resend & Sentry setup (email service, error monitoring, test endpoints)
 - ✅ Task 008: Vercel CLI setup (deployment configuration, documentation, production checklist)
+- ✅ Task 009: Environment validation & health check (Zod schema, type-safe env access, health endpoint)
 
 **Documentation Created:**
 
@@ -49,10 +50,11 @@ The project has moved from planning into initial implementation with infrastruct
 - Supabase Storage with RLS policies
 - PWA support (manifest, service worker, offline capabilities)
 - Testing frameworks (Vitest + Playwright)
-- Environment variable management (.env.local, .env.example)
+- Environment variable management with Zod validation (type-safe)
 - Resend email service (transactional emails)
 - Sentry error monitoring (error tracking + session replay)
 - Vercel deployment configuration (vercel.json with security headers)
+- Health check endpoint (/api/health) with service monitoring
 
 **Key Decisions Made:**
 
@@ -76,12 +78,11 @@ The project has moved from planning into initial implementation with infrastruct
 
 **Project Setup Epic:**
 
-- Task 009: Environment validation (next)
-- Task 010: Documentation finalization (pending)
+- Task 010: Final integration testing (next)
 
 **User Authentication Epic:**
 
-- Awaiting completion of project setup tasks (009-010)
+- Awaiting completion of project setup task 010
 - Ready to start once project setup is complete
 
 **Pending:**
@@ -92,8 +93,7 @@ The project has moved from planning into initial implementation with infrastruct
 ### Immediate Next Steps
 
 1. **Complete Project Setup Tasks**
-   - Task 009: Validate environment configuration
-   - Task 010: Update documentation
+   - Task 010: Run final integration testing
 
 2. **Start User Authentication Epic**
    - After project setup is complete
@@ -143,11 +143,12 @@ The project has moved from planning into initial implementation with infrastruct
 
 **Codebase:**
 
-- Source files: 13 (lib/db.ts, lib/storage.ts, lib/email.ts, API routes, Sentry configs)
+- Source files: 15 (lib/db.ts, lib/storage.ts, lib/email.ts, lib/env.ts, lib/validate-env.ts, API routes, Sentry configs)
 - Tests: 2 test files created (e2e/homepage.spec.ts, unit/lib/example.test.ts)
 - Database migrations: 0 (supabase initialized, migrations pending)
-- API endpoints: 3 (/api/test/database, /api/test/storage, /api/test/email)
+- API endpoints: 4 (/api/test/database, /api/test/storage, /api/test/email, /api/health)
 - Deployment files: 2 (vercel.json, DEPLOYMENT.md)
+- Scripts: 1 (scripts/health-check.sh)
 
 ## Historical Decisions
 
@@ -195,29 +196,33 @@ The project has moved from planning into initial implementation with infrastruct
 
 **Current Session (2026-01-08):**
 
-- Completed Project Setup Task 008 (Vercel CLI and deployment configuration)
-- Created vercel.json with production-ready configuration
-  - Framework settings for Next.js
-  - Region: iad1 (Washington D.C.)
-  - Security headers (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection)
-  - Environment variable configuration
-  - Redirect rules
-- Added comprehensive Vercel deployment documentation to README.md
-  - Prerequisites and setup instructions
-  - Deployment process (preview and production)
-  - Environment variables configuration
-  - GitHub integration guide
-  - Troubleshooting section
-- Created DEPLOYMENT.md production deployment checklist
-  - Pre-deployment verification steps
-  - Code quality checks
-  - Environment and database setup
-  - Post-deployment monitoring
-  - Rollback procedures
-- Tested vercel dev environment successfully
-- Verified .vercel directory already in .gitignore
-- Updated task 008 status to complete
-- Ready to proceed with environment validation (Task 009)
+- Completed Project Setup Task 009 (Environment validation & health check endpoint)
+- Created lib/env.ts with Zod schema for type-safe environment validation
+  - Validates all required environment variables on app startup
+  - Provides type-safe access to env vars throughout codebase
+  - Supports Supabase, OAuth, Email, Sentry, Auth variables
+  - Auto-detects Vercel environment variables
+- Created lib/validate-env.ts middleware for startup validation
+- Updated instrumentation.ts to validate environment before Sentry initialization
+- Created comprehensive health check endpoint (/api/health)
+  - Database connectivity check (queries users table)
+  - Storage service check (verifies client-documents bucket)
+  - Email service check (validates Resend API key configuration)
+  - Sentry monitoring check (tests error capture)
+  - System metrics (uptime, memory usage, latency tracking)
+  - Returns detailed JSON with individual service statuses
+  - HTTP status codes: 200 (healthy/degraded), 503 (unhealthy)
+- Created scripts/health-check.sh for command-line health monitoring
+- Updated package.json with new scripts:
+  - npm run type-check (TypeScript validation)
+  - npm run validate-env (environment validation)
+  - npm run health-check (health endpoint check)
+- Updated .env.example with all current environment variables
+- Fixed BETTER_AUTH_SECRET length validation (minimum 32 characters)
+- Tested environment validation during build (catches invalid vars)
+- Tested health endpoint successfully (all services except database healthy)
+- Database check failing as expected (users table not created yet - migrations pending)
+- Ready to proceed with final integration testing (Task 010)
 
 **Previous Session (2026-01-07):**
 
