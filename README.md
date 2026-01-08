@@ -2,6 +2,29 @@
 
 Modern CRM platform designed for real estate professionals (realtors, agents, and loan officers).
 
+## Quick Start
+
+```bash
+# 1. Clone repository
+git clone https://github.com/your-username/korella.git
+cd korella
+
+# 2. Install dependencies
+npm install
+
+# 3. Copy environment template
+cp .env.example .env.local
+
+# 4. Configure environment variables
+# Edit .env.local with your credentials (see Setup Guide below)
+
+# 5. Start development server
+npm run dev
+
+# 6. Run integration tests
+./scripts/integration-test.sh
+```
+
 ## Project Status
 
 🚧 **In Development** - Project setup phase
@@ -511,6 +534,54 @@ For automatic deployments:
 - Optimize slow functions
 - Consider upgrading plan if needed
 
+## Verification
+
+### Health Check
+
+```bash
+# Start server
+npm run dev
+
+# Check health
+curl http://localhost:3000/api/health | jq
+
+# Expected: All services "healthy"
+```
+
+### Integration Tests
+
+```bash
+# Run automated tests
+./scripts/integration-test.sh
+
+# Expected: All tests pass
+```
+
+### Manual Testing
+
+See [TESTING.md](./TESTING.md) for complete manual testing checklist.
+
+## Troubleshooting
+
+See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for common issues and solutions.
+
+## Environment Variables
+
+All environment variables are documented in `.env.example`.
+
+Required variables:
+- `SUPABASE_URL` - From Supabase dashboard
+- `SUPABASE_ANON_KEY` - From Supabase dashboard
+- `SUPABASE_DATABASE_URL` - PostgreSQL connection string
+- `GOOGLE_CLIENT_ID` - From Google Cloud Console
+- `GOOGLE_CLIENT_SECRET` - From Google Cloud Console
+- `RESEND_API_KEY` - From Resend dashboard
+- `JWT_SECRET` - Generate random 32+ character string
+
+Optional variables:
+- `SENTRY_DSN` - For error monitoring
+- `NEXT_PUBLIC_SENTRY_DSN` - For client-side monitoring
+
 ## Project Structure
 
 ```
@@ -524,6 +595,7 @@ features/            # Feature-based modules
 components/          # Reusable UI components
 supabase/            # Database migrations
 tests/               # Test files
+scripts/             # Utility scripts
 ```
 
 ## Documentation
@@ -534,6 +606,10 @@ See `.claude/` directory for:
 - Epics (Technical implementation plans)
 - Context documentation
 - Project management files
+
+Additional documentation:
+- [TESTING.md](./TESTING.md) - Manual testing checklist
+- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Common issues and solutions
 
 ## License
 
