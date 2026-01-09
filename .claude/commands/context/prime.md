@@ -45,19 +45,23 @@ Load context files in priority order for optimal understanding:
 
 **Priority 1 - Essential Context (load first):**
 
-1. `project-overview.md` - High-level understanding of the project
-2. `project-brief.md` - Core purpose and goals
-3. `tech-context.md` - Technical stack and dependencies
+1. `README.md` - Introduction to context system
+2. `project.md` - Project overview, scope, features, decisions
+3. `tech-stack.md` - Technology stack and architecture
 
-**Priority 2 - Current State (load second):** 4. `progress.md` - Current status and recent work 5. `project-structure.md` - Directory and file organization
+**Priority 2 - Current State (load second):**
 
-**Priority 3 - Deep Context (load third):** 6. `system-patterns.md` - Architecture and design patterns 7. `product-context.md` - User needs and requirements 8. `project-style-guide.md` - Coding conventions 9. `project-vision.md` - Long-term direction
+4. `progress.md` - Current status and recent work
+
+**Priority 3 - Standards (load third):**
+
+5. `style-guide.md` - Coding conventions and standards
 
 ### 2. Validation During Loading
 
 For each file loaded:
 
-- Check frontmatter exists and parse:
+- Check frontmatter exists and parse (except README.md):
   - `created` date should be valid
   - `last_updated` should be ≥ created date
   - `version` should be present
@@ -69,15 +73,15 @@ For each file loaded:
 After loading context files:
 
 - Run: `git ls-files --others --exclude-standard | head -20` to see untracked files
-- Read `README.md` if it exists for additional project information
 - Check for `.env.example` or similar for environment setup needs
+- Check if there are PRDs or epics in `.claude/prds/` or `.claude/epics/`
 
 ### 4. Error Recovery
 
 **If critical files are missing:**
 
-- `project-overview.md` missing: Try to understand from README.md
-- `tech-context.md` missing: Analyze project configuration files directly (package.json, requirements.txt, pyproject.toml, composer.json, Gemfile, Cargo.toml, go.mod, pom.xml, build.gradle, build.gradle.kts, _.sln, _.csproj, Package.swift, pubspec.yaml, CMakeLists.txt, etc.)
+- `project.md` missing: Try to understand from project README.md
+- `tech-stack.md` missing: Analyze project configuration files directly (package.json, requirements.txt, etc.)
 - `progress.md` missing: Check recent git commits for status
 
 **If context is incomplete:**
@@ -95,8 +99,8 @@ Provide comprehensive summary after priming:
 
 📖 Loaded Context Files:
   ✅ Essential: {count}/3 files
-  ✅ Current State: {count}/2 files
-  ✅ Deep Context: {count}/4 files
+  ✅ Current State: {count}/1 files
+  ✅ Standards: {count}/1 files
 
 🔍 Project Understanding:
   - Name: {project_name}
@@ -129,7 +133,7 @@ If some files fail to load:
 - Continue with available context
 - Clearly note what's missing
 - Suggest remediation:
-  - "Missing technical context - run /context:create to rebuild"
+  - "Missing project overview - run /context:create to rebuild"
   - "Progress file corrupted - run /context:update to refresh"
 
 ### 7. Performance Optimization
@@ -148,3 +152,5 @@ For large contexts:
 - **Handle missing files gracefully** - don't fail completely
 - **Provide clear summary** of what was loaded and project state
 - **Note any issues** that might affect development work
+
+$ARGUMENTS
