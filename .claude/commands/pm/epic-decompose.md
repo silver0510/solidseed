@@ -85,7 +85,11 @@ Task:
 
 ### 4. Task File Format with Frontmatter
 
-For each task, create a file with this exact structure:
+**IMPORTANT**: Tasks should be lightweight work trackers (30-50 lines), NOT implementation guides. All technical details, code snippets, and configurations belong in the epic.
+
+**Two Types of Tasks**:
+
+**A. Regular Tasks** (30-50 lines):
 
 ```markdown
 ---
@@ -96,46 +100,94 @@ updated: [Current ISO date/time]
 github: [Will be updated when synced to GitHub]
 depends_on: [] # List of task numbers this depends on, e.g., [001, 002]
 parallel: true # Can this run in parallel with other tasks?
-conflicts_with: [] # Tasks that modify same files, e.g., [003, 004]
 ---
 
 # Task: [Task Title]
 
 ## Description
 
-Clear, concise description of what needs to be done
+1-2 sentence summary of what to implement.
 
-## Acceptance Criteria
+## Checklist
 
-- [ ] Specific criterion 1
-- [ ] Specific criterion 2
-- [ ] Specific criterion 3
+- [ ] Specific deliverable 1
+- [ ] Specific deliverable 2
+- [ ] Specific deliverable 3
+- [ ] Tests passing
+- [ ] Code reviewed
 
-## Technical Details
+## Reference
 
-- Implementation approach
-- Key considerations
-- Code locations/files affected
+See epic.md sections:
+- "[Section Name]" for [what's there]
+- "[Section Name]" for [what's there]
 
 ## Dependencies
 
-- [ ] Task/Issue dependencies
-- [ ] External dependencies
+- Task XXX must complete first
+- [External dependency if any]
 
-## Effort Estimate
-
-- Size: XS/S/M/L/XL
-- Hours: estimated hours
-- Parallel: true/false (can run in parallel with other tasks)
-
-## Definition of Done
-
-- [ ] Code implemented
-- [ ] Tests written and passing
-- [ ] Documentation updated
-- [ ] Code reviewed
-- [ ] Deployed to staging
+## Effort: [Size] ([X-Y hours])
 ```
+
+**B. Setup/Integration Tasks** (100-150 lines with detailed steps):
+
+```markdown
+---
+name: [Setup Task Title]
+status: open
+created: [Current ISO date/time]
+updated: [Current ISO date/time]
+github: [Will be updated when synced to GitHub]
+depends_on: []
+parallel: true
+---
+
+# Task: [Setup Task Title]
+
+## Description
+
+Brief summary of what external service/integration to set up.
+
+## Step-by-Step Instructions
+
+### 1. [First Major Step]
+1. Detailed step
+2. Detailed step
+3. Screenshots/examples if helpful
+
+### 2. [Second Major Step]
+1. Detailed step
+2. Configuration details
+3. Where to find credentials
+
+### 3. [Verification]
+1. How to test it works
+2. Expected results
+
+## Checklist
+
+- [ ] Account/project created
+- [ ] Configuration complete
+- [ ] Credentials added to .env
+- [ ] Integration tested
+- [ ] Documentation updated
+
+## Effort: [Size] ([X-Y hours])
+```
+
+**When to Use Setup Format**:
+- OAuth provider registration (Google Cloud, Azure AD, etc.)
+- Email service setup (SendGrid, Resend, etc.)
+- Third-party API integrations
+- External service configuration
+
+**When to Use Regular Format**:
+- Feature implementation
+- API endpoint creation
+- UI component development
+- Database migrations
+- Testing tasks
 
 ### 3. Task Naming Convention
 
@@ -229,11 +281,14 @@ Also update the epic's frontmatter progress if needed (still 0% until tasks actu
 
 Before finalizing tasks, verify:
 
-- [ ] All tasks have clear acceptance criteria
+- [ ] Regular tasks are 30-50 lines (no code snippets, just checklists)
+- [ ] Setup tasks are 100-150 lines (detailed step-by-step only)
+- [ ] All tasks reference epic.md sections (no duplication)
 - [ ] Task sizes are reasonable (1-3 days each)
 - [ ] Dependencies are logical and achievable
 - [ ] Parallel tasks don't conflict with each other
 - [ ] Combined tasks cover all epic requirements
+- [ ] No technical implementation details in regular tasks (belongs in epic)
 
 ### 10. Post-Decomposition
 
