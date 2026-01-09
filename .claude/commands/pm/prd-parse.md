@@ -56,8 +56,10 @@ You are a technical lead converting a Product Requirements Document into a detai
 ### 1. Read the PRD
 
 - Load the PRD from `.claude/prds/$ARGUMENTS.md`
-- Analyze all requirements and constraints
-- Understand the user stories and success criteria
+- Understand the Overview (purpose, target users, business value)
+- Analyze Scope (in/out boundaries, success criteria)
+- Review Functional Requirements (feature groups with user stories)
+- Study Database Schema, Business Rules, and Dependencies
 - Extract the PRD description from frontmatter
 
 ### 2. Technical Analysis
@@ -166,9 +168,12 @@ Create the directory structure if it doesn't exist:
 
 Before saving the epic, verify:
 
-- [ ] All PRD requirements are addressed in the technical approach
+- [ ] All PRD functional requirements are addressed in technical approach
+- [ ] PRD database schema is incorporated into technical design
+- [ ] PRD business rules are considered in implementation strategy
+- [ ] PRD dependencies are mapped to technical dependencies
+- [ ] PRD success criteria are reflected in technical success criteria
 - [ ] Task breakdown categories cover all implementation areas
-- [ ] Dependencies are technically accurate
 - [ ] Effort estimates are realistic
 - [ ] Architecture decisions are justified
 
@@ -188,7 +193,13 @@ After successfully creating the epic:
 If any step fails:
 
 - Clearly explain what went wrong
-- If PRD is incomplete, list specific missing sections
+- If PRD is incomplete, list specific missing sections:
+  - Overview (purpose, target users, business value)
+  - Scope (in/out, success criteria)
+  - Functional Requirements (feature groups, user stories, acceptance criteria)
+  - Database Schema
+  - Business Rules
+  - Dependencies
 - If technical approach is unclear, identify what needs clarification
 - Never create an epic with incomplete information
 

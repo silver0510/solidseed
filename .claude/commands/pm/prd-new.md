@@ -59,53 +59,44 @@ Follow this structured approach:
 
 Create a comprehensive PRD with these sections:
 
-#### Executive Summary
+#### Overview
 
-- Brief overview and value proposition
+- **Purpose**: 2-3 sentences explaining what this feature is and why it matters
+- **Target Users**: Primary and secondary user types with their key needs
+- **Business Value**: Expected metrics and impact
 
-#### Problem Statement
+#### Scope
 
-- What problem are we solving?
-- Why is this important now?
+- **In Scope**: Features and capabilities that will be built
+- **Out of Scope**: What we're explicitly NOT building
+- **Success Criteria**: Measurable outcomes as checkboxes
 
-#### User Stories
+#### Functional Requirements
 
-- Primary user personas
-- Detailed user journeys
-- Pain points being addressed
+Organize by feature groups (user-facing capabilities):
 
-#### Requirements
+**Feature Group 1: [Capability Name]**
+- Brief description of this capability
+- **Requirement 1.1**: Specific requirement
+  - User Story: As a [role], I want to [action] so that [benefit]
+  - Acceptance Criteria: Testable criteria as checkboxes
+  - Business Rules: Rules specific to this requirement
 
-**Functional Requirements**
+Continue for all feature groups and requirements.
 
-- Core features and capabilities
-- User interactions and flows
+#### Database Schema
 
-**Non-Functional Requirements**
+Tables with fields, types, null constraints, descriptions, and validation rules
 
-- Performance expectations
-- Security considerations
-- Scalability needs
+#### Business Rules
 
-#### Success Criteria
-
-- Measurable outcomes
-- Key metrics and KPIs
-
-#### Constraints & Assumptions
-
-- Technical limitations
-- Timeline constraints
-- Resource limitations
-
-#### Out of Scope
-
-- What we're explicitly NOT building
+Global rules and constraints that apply across the feature
 
 #### Dependencies
 
-- External dependencies
-- Internal team dependencies
+- **External Systems**: What external systems are needed
+- **Existing Features**: What internal features are required
+- **Data Requirements**: What data sources are needed
 
 ### 3. File Format with Frontmatter
 
@@ -119,17 +110,70 @@ status: backlog
 created: [Current ISO date/time]
 ---
 
-# PRD: $ARGUMENTS
+# Feature Name
 
-## Executive Summary
+## Overview
 
-[Content...]
+**Purpose**: [2-3 sentences]
 
-## Problem Statement
+**Target Users**:
+- Primary: [User type] - [Key need]
+- Secondary: [User type] - [Key need]
 
-[Content...]
+**Business Value**:
+- [Metric 1]: [Expected impact]
+- [Metric 2]: [Expected impact]
 
-[Continue with all sections...]
+## Scope
+
+### In Scope
+- [Feature 1]
+- [Feature 2]
+
+### Out of Scope
+- [Not included 1]
+- [Not included 2]
+
+### Success Criteria
+- [ ] [Measurable criterion 1]
+- [ ] [Measurable criterion 2]
+
+## Functional Requirements
+
+### Feature Group 1: [Capability Name]
+
+**Description**: [Brief description]
+
+#### Requirement 1.1: [Specific requirement]
+- **User Story**: As a [role], I want to [action] so that [benefit]
+- **Acceptance Criteria**:
+  - [ ] [Testable criterion]
+  - [ ] [Testable criterion]
+- **Business Rules**:
+  - [Rule specific to this requirement]
+
+## Database Schema
+
+### table_name
+
+| Field | Type | Null | Description | Validation |
+|-------|------|------|-------------|------------|
+| id | UUID | No | Primary key | Auto-generated |
+
+## Business Rules
+
+1. [Rule with clear conditions and outcomes]
+
+## Dependencies
+
+**External Systems**:
+- [System name]: [What it provides]
+
+**Existing Features**:
+- [Feature name]: [Why it's needed]
+
+**Data Requirements**:
+- [Data source]: [What data is needed]
 ```
 
 ### 4. Frontmatter Guidelines
@@ -145,11 +189,13 @@ created: [Current ISO date/time]
 
 Before saving the PRD, verify:
 
-- [ ] All sections are complete (no placeholder text)
-- [ ] User stories include acceptance criteria
-- [ ] Success criteria are measurable
-- [ ] Dependencies are clearly identified
-- [ ] Out of scope items are explicitly listed
+- [ ] Overview clearly explains what, why, who, and business value
+- [ ] Scope has explicit in/out boundaries
+- [ ] Success criteria are measurable and use checkboxes
+- [ ] Each requirement has user story + acceptance criteria
+- [ ] Database schema includes all necessary tables
+- [ ] Business rules are clear and actionable
+- [ ] Dependencies are identified (external systems, features, data)
 
 ### 6. Post-Creation
 
