@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model auth_logs {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String?  @db.Uuid
+  event_type     String   @db.VarChar(50)
+  event_details  Json?
+  ip_address     String?  @db.VarChar(45)
+  user_agent     String?
+  session_id     String?  @db.VarChar(255)
+  target_email   String?  @db.VarChar(255)
+  success        Boolean  @default(true)
+  failure_reason String?
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  users          users?   @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "fk_auth_logs_user")
+
+  @@index([created_at], map: "idx_auth_logs_created_at")
+  @@index([event_type], map: "idx_auth_logs_event_type")
+  @@index([ip_address, event_type, created_at], map: "idx_auth_logs_ip_event")
+  @@index([user_id], map: "idx_auth_logs_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model email_verifications {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id            String    @db.Uuid
+  token              String    @unique(map: "email_verifications_token_unique") @db.VarChar(255)
+  email              String    @db.VarChar(255)
+  expires_at         DateTime  @db.Timestamptz(6)
+  verified           Boolean   @default(false)
+  verified_at        DateTime? @db.Timestamptz(6)
+  request_ip         String?   @db.VarChar(45)
+  request_user_agent String?
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  users              users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_email_verifications_user")
+
+  @@index([expires_at], map: "idx_email_verifications_expires_at")
+  @@index([token], map: "idx_email_verifications_token")
+  @@index([user_id], map: "idx_email_verifications_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model oauth_providers {
+  id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                 String    @db.Uuid
+  provider                String    @db.VarChar(50)
+  provider_id             String    @db.VarChar(255)
+  access_token            String?
+  refresh_token           String?
+  access_token_expires_at DateTime? @db.Timestamptz(6)
+  provider_email          String?   @db.VarChar(255)
+  provider_name           String?   @db.VarChar(255)
+  provider_avatar_url     String?
+  created_at              DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime  @default(now()) @db.Timestamptz(6)
+  users                   users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_oauth_providers_user")
+
+  @@unique([provider, provider_id], map: "oauth_providers_provider_provider_id_unique")
+  @@index([provider], map: "idx_oauth_providers_provider")
+  @@index([provider, provider_id], map: "idx_oauth_providers_provider_lookup")
+  @@index([user_id], map: "idx_oauth_providers_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model password_resets {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id            String    @db.Uuid
+  token              String    @unique(map: "password_resets_token_unique") @db.VarChar(255)
+  expires_at         DateTime  @db.Timestamptz(6)
+  used               Boolean   @default(false)
+  used_at            DateTime? @db.Timestamptz(6)
+  request_ip         String?   @db.VarChar(45)
+  request_user_agent String?
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  users              users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_password_resets_user")
+
+  @@index([expires_at], map: "idx_password_resets_expires_at")
+  @@index([token], map: "idx_password_resets_token")
+  @@index([user_id], map: "idx_password_resets_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model users {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email               String                @unique(map: "users_email_unique") @db.VarChar(255)
+  password_hash       String?               @db.VarChar(255)
+  full_name           String                @db.VarChar(255)
+  email_verified      Boolean               @default(false)
+  email_verified_at   DateTime?             @db.Timestamptz(6)
+  account_status      String                @default("pending") @db.VarChar(50)
+  subscription_tier   String                @default("trial") @db.VarChar(50)
+  trial_expires_at    DateTime?             @db.Timestamptz(6)
+  failed_login_count  Int                   @default(0)
+  locked_until        DateTime?             @db.Timestamptz(6)
+  last_login_at       DateTime?             @db.Timestamptz(6)
+  last_login_ip       String?               @db.VarChar(45)
+  is_deleted          Boolean               @default(false)
+  created_at          DateTime              @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime              @default(now()) @db.Timestamptz(6)
+  auth_logs           auth_logs[]
+  email_verifications email_verifications[]
+  oauth_providers     oauth_providers[]
+  password_resets     password_resets[]
+
+  @@index([account_status], map: "idx_users_account_status")
+  @@index([email], map: "idx_users_email")
+  @@index([email_verified], map: "idx_users_email_verified")
+  @@index([is_deleted], map: "idx_users_is_deleted")
+  @@index([subscription_tier], map: "idx_users_subscription_tier")
+}
