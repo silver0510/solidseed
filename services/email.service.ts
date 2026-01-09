@@ -18,9 +18,11 @@ import { Resend } from 'resend';
 /**
  * Validates that all required email environment variables are set
  * @throws Error if any required variable is missing
+ *
+ * Note: RESEND_FROM_EMAIL is optional - defaults to 'onboarding@resend.dev' in development mode
  */
 export function validateEmailConfig(): void {
-  const required = ['RESEND_API_KEY', 'RESEND_FROM_EMAIL'];
+  const required = ['RESEND_API_KEY'];
 
   const missing = required.filter((key) => !process.env[key]);
 

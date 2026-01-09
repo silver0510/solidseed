@@ -12,7 +12,13 @@ import { PrismaClient } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import { auth } from '../lib/auth';
+import {
+  sendEmailVerificationEmail,
+  createVerificationLink,
+} from './email.service';
 import {
   securityConstants,
   authTables,
@@ -109,6 +115,34 @@ export async function registerUser(
         failed_login_count: 0,
         is_deleted: false,
       },
+    });
+
+    // Generate email verification token (secure random 32 bytes = 64 hex chars)
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
+    // Calculate token expiration (24 hours from now)
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + securityConstants.EMAIL_VERIFICATION_EXPIRATION_HOURS);
+
+    // Create email verification record
+    await prisma.email_verifications.create({
+      data: {
+        user_id: newUser.id,
+        token: verificationToken,
+        email: newUser.email,
+        expires_at: expiresAt,
+        verified: false,
+        request_ip: ipAddress,
+        request_user_agent: userAgent,
+      },
+    });
+
+    // Send verification email
+    const verificationLink = createVerificationLink(verificationToken);
+    await sendEmailVerificationEmail({
+      to: newUser.email,
+      userName: newUser.full_name,
+      verificationLink,
     });
 
     // Log registration event
@@ -372,22 +406,31 @@ export async function loginUser(
   };
 }> {
   try {
-    // Use Better Auth to sign in
-    const result = await auth.api.signInEmail({
-      body: {
-        email,
-        password,
-        rememberMe,
-      },
+    // Find user by email
+    const user = await prisma.users.findFirst({
+      where: { email: email.toLowerCase() },
+      select: {
+        id: true,
+        email: true,
+        password_hash: true,
+        full_name: true,
+        email_verified: true,
+        account_status: true,
+        subscription_tier: true,
+        trial_expires_at: true,
+        failed_login_count: true,
+        locked_until: true,
+        is_deleted: true,
+      }
     });
 
-    if (result.error) {
+    if (!user || !user.password_hash) {
       // Log failed login attempt
       await logAuthEvent({
         userId: null,
         eventType: 'login_fail',
         success: false,
-        failureReason: result.error.message,
+        failureReason: 'Invalid credentials',
         targetEmail: email,
         ipAddress,
         userAgent,
@@ -395,56 +438,111 @@ export async function loginUser(
 
       return {
         success: false,
-        message: result.error.message || 'Invalid credentials',
+        message: 'Invalid credentials',
       };
     }
-
-    if (!result.user || !result.session) {
-      return {
-        success: false,
-        message: 'Authentication failed',
-      };
-    }
-
-    // Check if email is verified
-    if (!result.user.emailVerified) {
-      return {
-        success: false,
-        message: 'Please verify your email before logging in',
-      };
-    }
-
-    // Check account status
-    const userData = result.user as any;
-    const currentTier = (userData.subscription_tier || 'trial') as SubscriptionTier;
-    const trialExpiresAt = userData.trial_expires_at || null;
 
     // Check if account is locked
-    if (userData.locked_until && new Date(userData.locked_until) > new Date()) {
+    if (user.locked_until && new Date(user.locked_until) > new Date()) {
       return {
         success: false,
         message: 'Account is temporarily locked due to multiple failed login attempts',
       };
     }
 
-    // Check if account is deactivated
-    if (userData.account_status === 'deactivated' || userData.is_deleted) {
+    // Check if account is deactivated or deleted
+    if (user.account_status === 'deactivated' || user.is_deleted) {
       return {
         success: false,
         message: 'Account has been deactivated',
       };
     }
 
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+
+    if (!isPasswordValid) {
+      // Increment failed login count
+      const newFailedCount = user.failed_login_count + 1;
+      const updateData: any = {
+        failed_login_count: newFailedCount,
+        updated_at: new Date(),
+      };
+
+      // Lock account if too many failed attempts
+      if (newFailedCount >= securityConstants.MAX_FAILED_LOGIN_ATTEMPTS) {
+        const lockUntil = new Date();
+        lockUntil.setMinutes(lockUntil.getMinutes() + securityConstants.LOCKOUT_DURATION_MINUTES);
+        updateData.locked_until = lockUntil;
+      }
+
+      await prisma.users.update({
+        where: { id: user.id },
+        data: updateData
+      });
+
+      // Log failed login attempt
+      await logAuthEvent({
+        userId: user.id,
+        eventType: 'login_fail',
+        success: false,
+        failureReason: 'Invalid password',
+        targetEmail: email,
+        ipAddress,
+        userAgent,
+      });
+
+      return {
+        success: false,
+        message: 'Invalid credentials',
+      };
+    }
+
+    // Check if email is verified
+    if (!user.email_verified) {
+      return {
+        success: false,
+        message: 'Please verify your email before logging in',
+      };
+    }
+
     // Check trial expiration and downgrade if needed
+    const currentTier = user.subscription_tier as SubscriptionTier;
+    const trialExpiresAt = user.trial_expires_at;
     const updatedTier = await checkTrialExpiration(
-      result.user.id,
+      user.id,
       currentTier,
-      trialExpiresAt
+      trialExpiresAt ? trialExpiresAt.toISOString() : null
+    );
+
+    // Update last login and reset failed login count
+    await prisma.users.update({
+      where: { id: user.id },
+      data: {
+        last_login_at: new Date(),
+        last_login_ip: ipAddress,
+        failed_login_count: 0,
+        updated_at: new Date(),
+      }
+    });
+
+    // Generate JWT token
+    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+    const expiresIn = rememberMe ? '30d' : '3d';
+
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        subscriptionTier: updatedTier,
+      },
+      jwtSecret,
+      { expiresIn }
     );
 
     // Log successful login
     await logAuthEvent({
-      userId: result.user.id,
+      userId: user.id,
       eventType: 'login_success',
       success: true,
       ipAddress,
@@ -458,13 +556,13 @@ export async function loginUser(
     return {
       success: true,
       message: 'Login successful',
-      token: result.session.token,
+      token,
       user: {
-        id: result.user.id,
-        email: result.user.email,
-        fullName: result.user.name,
+        id: user.id,
+        email: user.email,
+        fullName: user.full_name,
         subscriptionTier: updatedTier,
-        trialExpiresAt: updatedTier === 'free' ? null : trialExpiresAt,
+        trialExpiresAt: updatedTier === 'free' ? null : (trialExpiresAt ? trialExpiresAt.toISOString() : null),
       },
     };
   } catch (error) {
