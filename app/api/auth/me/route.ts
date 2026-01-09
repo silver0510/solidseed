@@ -1,87 +1,98 @@
 /**
  * GET /api/auth/me
  *
- * Get current authenticated user endpoint.
+ * Returns the current authenticated user's information.
+ * Validates JWT token and returns user data if session is valid.
  *
- * Headers:
- * Authorization: Bearer <jwt-token>
+ * This endpoint is used by the frontend to:
+ * - Check if user is authenticated
+ * - Get current user data for profile display
+ * - Refresh user subscription tier and trial status
+ * - Validate session on page load
+ *
+ * Request:
+ * GET /api/auth/me
+ * Headers: Authorization: Bearer <token>
  *
  * Response (200 OK):
  * {
- *   "user": {
- *     "id": "uuid",
- *     "email": "user@example.com",
- *     "fullName": "John Doe",
- *     "subscriptionTier": "trial",
- *     "trialExpiresAt": "2024-01-22T00:00:00Z",
- *     "emailVerified": true,
- *     "accountStatus": "active"
+ *   success: true,
+ *   user: {
+ *     id: string,
+ *     email: string,
+ *     fullName: string,
+ *     subscriptionTier: string,
+ *     trialExpiresAt: string | null,
+ *     isTrial: boolean,
+ *     daysRemaining: number | null
  *   }
  * }
  *
- * Response (401 Unauthorized): Invalid or missing token
- * Response (500 Internal Server Error): Server error
+ * Response (401 Unauthorized):
+ * {
+ *   error: "Unauthorized",
+ *   message: "Invalid or missing token"
+ * }
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionFromRequest, createAuthResponse } from '@/middleware/auth.middleware';
-import { getUserSubscriptionStatus } from '@/services/auth.service';
+import { auth } from '@/lib/auth';
+import { getUserSubscriptionStatus } from '@/services/session.service';
+import { authErrors } from '@/middleware/auth.middleware';
 
-/**
- * GET handler for retrieving current user
- */
+// =============================================================================
+// GET /api/auth/me
+// =============================================================================
+
 export async function GET(request: NextRequest) {
   try {
-    // Get session from request
-    const session = await getSessionFromRequest(request);
+    // Validate session using Better Auth
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
-    if (!session) {
-      return createAuthResponse('unauthorized');
+    if (!session || !session.user) {
+      return NextResponse.json(
+        {
+          error: authErrors.unauthorized.error,
+          message: authErrors.unauthorized.message,
+        },
+        { status: 401 }
+      );
     }
 
-    // Get user subscription status
-    const subscriptionStatus = getUserSubscriptionStatus(session.user as any);
+    const user = session.user as any;
+
+    // Get subscription status
+    const subscriptionStatus = getUserSubscriptionStatus(user);
 
     // Return user data
     return NextResponse.json(
       {
+        success: true,
         user: {
-          id: session.user.id,
-          email: session.user.email,
-          fullName: session.user.name,
+          id: user.id,
+          email: user.email,
+          fullName: user.name,
           subscriptionTier: subscriptionStatus.tier,
-          trialExpiresAt: (session.user as any).trial_expires_at || null,
-          emailVerified: session.user.emailVerified,
-          accountStatus: (session.user as any).account_status || 'active',
+          trialExpiresAt: user.trial_expires_at || null,
           isTrial: subscriptionStatus.isTrial,
-          isTrialExpired: subscriptionStatus.isTrialExpired,
-          trialDaysRemaining: subscriptionStatus.daysRemaining,
+          daysRemaining: subscriptionStatus.daysRemaining,
+          emailVerified: user.emailVerified,
+          accountStatus: user.account_status || 'active',
         },
       },
       { status: 200 }
     );
-
   } catch (error) {
-    console.error('Get current user endpoint error:', error);
+    console.error('Get current user error:', error);
 
     return NextResponse.json(
       {
         error: 'Internal Server Error',
-        message: 'An unexpected error occurred. Please try again.',
+        message: 'Failed to retrieve user information',
       },
       { status: 500 }
     );
   }
-}
-
-/**
- * OPTIONS handler for CORS preflight
- */
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Allow': 'GET, OPTIONS',
-    },
-  });
 }

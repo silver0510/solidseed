@@ -25,7 +25,7 @@
 
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { PrismaClient } from '../src/generated/prisma/client';
+import { PrismaClient } from '../generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { googleOAuthConfig, microsoftOAuthConfig } from '../config/oauth.config';
@@ -59,8 +59,14 @@ if (!databaseUrl) {
 /**
  * PostgreSQL connection pool
  * Used by Prisma adapter for Prisma 7
+ * Supabase requires SSL connections
  */
-const pool = new Pool({ connectionString: databaseUrl });
+const pool = new Pool({
+  connectionString: databaseUrl,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 const adapter = new PrismaPg(pool);
 
 /**
@@ -373,90 +379,84 @@ export const auth = betterAuth({
   },
 
   // -------------------------------------------------------------------------
-  // Hooks
+  // Hooks - Temporarily disabled for debugging
   // -------------------------------------------------------------------------
-  hooks: {
-    // After user creation
-    after: [
-      {
-        matcher(context) {
-          return context.path === '/sign-up/email';
-        },
-        handler: async (ctx) => {
-          // Set trial expiration date
-          const trialExpiresAt = new Date();
-          trialExpiresAt.setDate(trialExpiresAt.getDate() + securityConstants.TRIAL_PERIOD_DAYS);
+  // hooks: {
+  //   after: [
+  //     // After user creation
+  //     {
+  //       matcher(context) {
+  //         return context.path === '/sign-up/email';
+  //       },
+  //       handler: async (ctx) => {
+  //         // Set trial expiration date
+  //         const trialExpiresAt = new Date();
+  //         trialExpiresAt.setDate(trialExpiresAt.getDate() + securityConstants.TRIAL_PERIOD_DAYS);
 
-          // Update user with trial information
-          await prisma.users.update({
-            where: { id: ctx.user?.id },
-            data: {
-              trial_expires_at: trialExpiresAt,
-              account_status: 'pending',
-            },
-          });
-        },
-      },
-    ],
-    // After successful login
-    after: [
-      {
-        matcher(context) {
-          return context.path === '/sign-in/email';
-        },
-        handler: async (ctx) => {
-          // Update last login information
-          await prisma.users.update({
-            where: { id: ctx.user?.id },
-            data: {
-              last_login_at: new Date(),
-              last_login_ip: ctx.request?.headers.get('x-forwarded-for') || ctx.request?.headers.get('x-real-ip') || null,
-              failed_login_count: 0,
-            },
-          });
-        },
-      },
-    ],
-    // After failed login
-    after: [
-      {
-        matcher(context) {
-          return context.path === '/sign-in/email' && ctx.context?.returned?.error;
-        },
-        handler: async (ctx) => {
-          // Increment failed login count
-          if (ctx.body?.email) {
-            await prisma.users.updateMany({
-              where: { email: ctx.body.email },
-              data: {
-                failed_login_count: {
-                  increment: 1,
-                },
-              },
-            });
-          }
-        },
-      },
-    ],
-    // After password change
-    after: [
-      {
-        matcher(context) {
-          return context.path === '/change-password';
-        },
-        handler: async (ctx) => {
-          // Send password change confirmation email
-          if (ctx.user) {
-            await sendPasswordChangedEmail({
-              to: ctx.user.email,
-              userName: ctx.user.name,
-              changedAt: new Date(),
-            });
-          }
-        },
-      },
-    ],
-  },
+  //         // Update user with trial information
+  //         await prisma.users.update({
+  //           where: { id: ctx.user?.id },
+  //           data: {
+  //             trial_expires_at: trialExpiresAt,
+  //             account_status: 'pending',
+  //           },
+  //         });
+  //       },
+  //     },
+  //     // After successful login
+  //     {
+  //       matcher(context) {
+  //         return context.path === '/sign-in/email';
+  //       },
+  //       handler: async (ctx) => {
+  //         // Update last login information
+  //         await prisma.users.update({
+  //           where: { id: ctx.user?.id },
+  //           data: {
+  //             last_login_at: new Date(),
+  //             last_login_ip: ctx.request?.headers.get('x-forwarded-for') || ctx.request?.headers.get('x-real-ip') || null,
+  //             failed_login_count: 0,
+  //           },
+  //         });
+  //       },
+  //     },
+  //     // After failed login
+  //     {
+  //       matcher(context) {
+  //         return context.path === '/sign-in/email' && context.returned?.error;
+  //       },
+  //       handler: async (ctx) => {
+  //         // Increment failed login count
+  //         if (ctx.body?.email) {
+  //           await prisma.users.updateMany({
+  //             where: { email: ctx.body.email },
+  //             data: {
+  //               failed_login_count: {
+  //                 increment: 1,
+  //               },
+  //             },
+  //           });
+  //         },
+  //       },
+  //     },
+  //     // After password change
+  //     {
+  //       matcher(context) {
+  //         return context.path === '/change-password';
+  //       },
+  //       handler: async (ctx) => {
+  //         // Send password change confirmation email
+  //         if (ctx.user) {
+  //           await sendPasswordChangedEmail({
+  //             to: ctx.user.email,
+  //             userName: ctx.user.name,
+  //             changedAt: new Date(),
+  //           });
+  //         },
+  //       },
+  //     },
+  //   ],
+  // },
 });
 
 // -------------------------------------------------------------------------

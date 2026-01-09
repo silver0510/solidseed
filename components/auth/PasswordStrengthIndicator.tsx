@@ -7,7 +7,7 @@
  */
 
 import { useMemo, useEffect, useState } from 'react';
-import { calculatePasswordStrength, type PasswordStrength } from '@/src/lib/password-validation';
+import { calculatePasswordStrength, type PasswordStrength } from '@/lib/password-validation';
 
 interface PasswordStrengthIndicatorProps {
   password: string;

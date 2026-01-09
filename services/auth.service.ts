@@ -8,7 +8,7 @@
  * providing custom logic and database operations specific to Korella CRM.
  */
 
-import { PrismaClient } from '../src/generated/prisma/client';
+import { PrismaClient } from '../generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import bcrypt from 'bcrypt';
@@ -17,7 +17,10 @@ import jwt from 'jsonwebtoken';
 import { auth } from '../lib/auth';
 import {
   sendEmailVerificationEmail,
+  sendPasswordResetEmail,
+  sendPasswordChangedEmail,
   createVerificationLink,
+  createPasswordResetLink,
 } from './email.service';
 import {
   securityConstants,
@@ -41,7 +44,13 @@ if (!databaseUrl) {
 }
 
 // Initialize Prisma Client with PostgreSQL adapter for Prisma 7
-const pool = new Pool({ connectionString: databaseUrl });
+// Supabase requires SSL connections
+const pool = new Pool({
+  connectionString: databaseUrl,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
@@ -923,4 +932,299 @@ export function getUserSubscriptionStatus(user: User): {
     isTrialExpired,
     daysRemaining,
   };
+}
+
+// =============================================================================
+// Password Reset Management
+// =============================================================================
+
+/**
+ * Requests a password reset by creating a reset token and sending email
+ *
+ * @param email - User's email address
+ * @param ipAddress - Request IP address for logging
+ * @param userAgent - Request user agent for logging
+ *
+ * @returns Success status and message
+ */
+export async function requestPasswordReset(
+  email: string,
+  ipAddress?: string | null,
+  userAgent?: string | null
+): Promise<{ success: boolean; message: string }> {
+  try {
+    // Find user by email
+    const user = await prisma.users.findFirst({
+      where: {
+        email: email.toLowerCase(),
+        is_deleted: false
+      },
+      select: {
+        id: true,
+        email: true,
+        full_name: true,
+        account_status: true,
+      }
+    });
+
+    // Don't reveal if user exists for security
+    if (!user) {
+      return {
+        success: true,
+        message: 'If an account exists with this email, a password reset link has been sent.',
+      };
+    }
+
+    // Check if account is deactivated
+    if (user.account_status === 'deactivated') {
+      return {
+        success: true,
+        message: 'If an account exists with this email, a password reset link has been sent.',
+      };
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + securityConstants.PASSWORD_RESET_EXPIRATION_HOURS);
+
+    // Create password reset record
+    await prisma.password_resets.create({
+      data: {
+        user_id: user.id,
+        token: resetToken,
+        expires_at: expiresAt,
+        used: false,
+        request_ip: ipAddress,
+        request_user_agent: userAgent,
+      }
+    });
+
+    // Send password reset email
+    const resetLink = createPasswordResetLink(resetToken);
+    await sendPasswordResetEmail({
+      to: user.email,
+      userName: user.full_name,
+      resetLink,
+    });
+
+    // Log password reset request
+    await logAuthEvent({
+      userId: user.id,
+      eventType: 'password_reset_request',
+      success: true,
+      ipAddress,
+      userAgent,
+    });
+
+    return {
+      success: true,
+      message: 'If an account exists with this email, a password reset link has been sent.',
+    };
+  } catch (error) {
+    console.error('Password reset request error:', error);
+    return {
+      success: false,
+      message: 'Failed to process password reset request. Please try again.',
+    };
+  }
+}
+
+/**
+ * Resets a user's password using a valid reset token
+ *
+ * @param token - Password reset token
+ * @param newPassword - New password
+ * @param ipAddress - Request IP address for logging
+ * @param userAgent - Request user agent for logging
+ *
+ * @returns Success status and message
+ */
+export async function resetPassword(
+  token: string,
+  newPassword: string,
+  ipAddress?: string | null,
+  userAgent?: string | null
+): Promise<{ success: boolean; message: string }> {
+  try {
+    // Find valid reset token
+    const resetRecord = await prisma.password_resets.findFirst({
+      where: {
+        token,
+        used: false,
+        expires_at: {
+          gt: new Date()
+        }
+      },
+      include: {
+        users: {
+          select: {
+            id: true,
+            email: true,
+            full_name: true,
+            is_deleted: true,
+          }
+        }
+      },
+      orderBy: {
+        created_at: 'desc'
+      }
+    });
+
+    if (!resetRecord || resetRecord.users.is_deleted) {
+      return {
+        success: false,
+        message: 'Invalid or expired password reset token.',
+      };
+    }
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(newPassword, securityConstants.BCRYPT_COST_FACTOR);
+
+    // Update user password and reset failed login count
+    await prisma.users.update({
+      where: { id: resetRecord.user_id },
+      data: {
+        password_hash: passwordHash,
+        failed_login_count: 0,
+        locked_until: null,
+        updated_at: new Date(),
+      }
+    });
+
+    // Mark token as used
+    await prisma.password_resets.update({
+      where: { id: resetRecord.id },
+      data: {
+        used: true,
+        used_at: new Date(),
+      }
+    });
+
+    // Send confirmation email
+    await sendPasswordChangedEmail({
+      to: resetRecord.users.email,
+      userName: resetRecord.users.full_name,
+      changedAt: new Date(),
+    });
+
+    // Log password reset completion
+    await logAuthEvent({
+      userId: resetRecord.user_id,
+      eventType: 'password_reset_complete',
+      success: true,
+      ipAddress,
+      userAgent,
+    });
+
+    return {
+      success: true,
+      message: 'Password has been reset successfully. You can now log in with your new password.',
+    };
+  } catch (error) {
+    console.error('Password reset error:', error);
+    return {
+      success: false,
+      message: 'Failed to reset password. Please try again.',
+    };
+  }
+}
+
+/**
+ * Changes password for an authenticated user
+ *
+ * @param userId - User ID
+ * @param currentPassword - Current password
+ * @param newPassword - New password
+ * @param ipAddress - Request IP address for logging
+ * @param userAgent - Request user agent for logging
+ *
+ * @returns Success status and message
+ */
+export async function changePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+  ipAddress?: string | null,
+  userAgent?: string | null
+): Promise<{ success: boolean; message: string }> {
+  try {
+    // Get user with password hash
+    const user = await prisma.users.findFirst({
+      where: {
+        id: userId,
+        is_deleted: false
+      },
+      select: {
+        id: true,
+        email: true,
+        full_name: true,
+        password_hash: true,
+      }
+    });
+
+    if (!user || !user.password_hash) {
+      return {
+        success: false,
+        message: 'User not found.',
+      };
+    }
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isPasswordValid) {
+      return {
+        success: false,
+        message: 'Current password is incorrect.',
+      };
+    }
+
+    // Check if new password is same as current
+    const isSamePassword = await bcrypt.compare(newPassword, user.password_hash);
+    if (isSamePassword) {
+      return {
+        success: false,
+        message: 'New password must be different from current password.',
+      };
+    }
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(newPassword, securityConstants.BCRYPT_COST_FACTOR);
+
+    // Update password
+    await prisma.users.update({
+      where: { id: userId },
+      data: {
+        password_hash: passwordHash,
+        updated_at: new Date(),
+      }
+    });
+
+    // Send confirmation email
+    await sendPasswordChangedEmail({
+      to: user.email,
+      userName: user.full_name,
+      changedAt: new Date(),
+    });
+
+    // Log password change
+    await logAuthEvent({
+      userId,
+      eventType: 'password_change',
+      success: true,
+      ipAddress,
+      userAgent,
+    });
+
+    return {
+      success: true,
+      message: 'Password has been changed successfully.',
+    };
+  } catch (error) {
+    console.error('Password change error:', error);
+    return {
+      success: false,
+      message: 'Failed to change password. Please try again.',
+    };
+  }
 }

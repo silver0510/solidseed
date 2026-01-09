@@ -33,6 +33,8 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -119,6 +121,45 @@ export default function RegisterPage() {
     }
   };
 
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    setResendMessage(null);
+
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setResendMessage({
+          type: 'error',
+          text: data.message || 'Failed to resend verification email.',
+        });
+        return;
+      }
+
+      setResendMessage({
+        type: 'success',
+        text: data.message || 'Verification email sent successfully!',
+      });
+    } catch (error) {
+      setResendMessage({
+        type: 'error',
+        text: 'An unexpected error occurred. Please try again.',
+      });
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   // Success state
   if (success) {
     return (
@@ -157,15 +198,24 @@ export default function RegisterPage() {
           </p>
         </div>
 
+        {resendMessage && (
+          <div className={`rounded-md p-4 ${resendMessage.type === 'success' ? 'bg-green-50' : 'bg-red-50'}`}>
+            <p className={`text-sm ${resendMessage.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
+              {resendMessage.text}
+            </p>
+          </div>
+        )}
+
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Didn't receive the email?{' '}
             <button
               type="button"
-              onClick={() => router.push('/resend-verification')}
-              className="font-medium text-blue-600 hover:text-blue-500"
+              onClick={handleResendVerification}
+              disabled={resendLoading}
+              className="font-medium text-blue-600 hover:text-blue-500 disabled:text-gray-400 disabled:cursor-not-allowed"
             >
-              Resend verification email
+              {resendLoading ? 'Sending...' : 'Resend verification email'}
             </button>
           </p>
         </div>

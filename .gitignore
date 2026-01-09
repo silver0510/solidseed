@@ -66,4 +66,4 @@ public/workbox-*.js.map
 # Sentry Config File
 .env.sentry-build-plugin
 
-/src/generated/prisma
+/generated/prisma
