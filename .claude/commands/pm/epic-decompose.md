@@ -113,7 +113,8 @@ parallel: true # Can this run in parallel with other tasks?
 - [ ] Specific deliverable 1
 - [ ] Specific deliverable 2
 - [ ] Specific deliverable 3
-- [ ] Tests passing
+- [ ] Tests written (TDD: before implementation, or after)
+- [ ] All tests passing
 - [ ] Code reviewed
 
 ## Reference
@@ -289,6 +290,7 @@ Before finalizing tasks, verify:
 - [ ] Parallel tasks don't conflict with each other
 - [ ] Combined tasks cover all epic requirements
 - [ ] No technical implementation details in regular tasks (belongs in epic)
+- [ ] Each task checklist includes "Tests written" and "All tests passing"
 
 ### 10. Post-Decomposition
 

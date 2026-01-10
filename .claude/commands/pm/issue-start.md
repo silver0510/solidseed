@@ -4,43 +4,205 @@ allowed-tools: Bash, Read, Write, LS, Task
 
 # Issue Start
 
-Begin work on a GitHub issue with parallel agents based on work stream analysis.
+Begin work on a task with parallel agents based on work stream analysis.
+
+Works with both GitHub-synced issues and local-only tasks.
+
+Supports TDD (Test-Driven Development) workflow.
 
 ## Usage
 
+```bash
+# Standard mode - implement directly
+/pm:issue-start <issue_number|task_path>
+
+# TDD mode - write tests FIRST, then implement
+/pm:issue-start <issue_number|task_path> --tdd
+
+# Examples
+/pm:issue-start 123                                    # GitHub issue #123
+/pm:issue-start user-authentication/001 --tdd         # Local task with TDD
+/pm:issue-start .claude/epics/user-authentication/001.md  # Local task
 ```
-/pm:issue-start <issue_number>
-```
+
+## TDD Workflow
+
+When using `--tdd` flag:
+
+1. **Red Phase**: Agent writes failing tests based on acceptance criteria
+2. **Green Phase**: Implement code to make tests pass
+3. **Refactor Phase**: Improve code while keeping tests green
+4. **Complete**: Run `/pm:issue-complete` to verify all tests pass
 
 ## Quick Check
 
-1. **Get issue details:**
+### 1. Detect Flags and Input Type
 
-   ```bash
-   gh issue view $ARGUMENTS --json state,title,labels,body
-   ```
+Check for TDD flag and determine input type:
 
-   If it fails: "❌ Cannot access issue #$ARGUMENTS. Check number or run: gh auth login"
+```bash
+# Check for --tdd flag
+TDD_MODE=false
+if [[ "$ARGUMENTS" == *"--tdd"* ]]; then
+  TDD_MODE=true
+  # Remove --tdd from arguments
+  ARGUMENTS=$(echo "$ARGUMENTS" | sed 's/--tdd//g' | xargs)
+fi
 
-2. **Find local task file:**
-   - First check if `.claude/epics/*/$ARGUMENTS.md` exists (new naming)
-   - If not found, search for file containing `github:.*issues/$ARGUMENTS` in frontmatter (old naming)
-   - If not found: "❌ No local task for issue #$ARGUMENTS. This issue may have been created outside the PM system."
+# Check if argument is numeric (GitHub issue)
+if [[ "$ARGUMENTS" =~ ^[0-9]+$ ]]; then
+  MODE="github"
+  ISSUE_NUMBER="$ARGUMENTS"
+else
+  MODE="local"
+  TASK_PATH="$ARGUMENTS"
+fi
+```
 
-3. **Check for analysis:**
+### 2. Load Task Information
 
-   ```bash
-   test -f .claude/epics/*/$ARGUMENTS-analysis.md || echo "❌ No analysis found for issue #$ARGUMENTS
+**For GitHub Issue (MODE=github)**:
 
-   Run: /pm:issue-analyze $ARGUMENTS first
-   Or: /pm:issue-start $ARGUMENTS --analyze to do both"
-   ```
+```bash
+# Get issue details from GitHub
+gh issue view $ISSUE_NUMBER --json state,title,labels,body || {
+  echo "❌ Cannot access issue #$ISSUE_NUMBER"
+  echo "Check number or run: gh auth login"
+  exit 1
+}
 
-   If no analysis exists and no --analyze flag, stop execution.
+# Find local task file
+# Try: .claude/epics/*/$ISSUE_NUMBER.md
+# Or search for github:.*issues/$ISSUE_NUMBER in frontmatter
+TASK_FILE=$(find .claude/epics -name "$ISSUE_NUMBER.md" -o -path "*/$ISSUE_NUMBER.md")
+
+if [ -z "$TASK_FILE" ]; then
+  echo "❌ No local task for issue #$ISSUE_NUMBER"
+  echo "This issue may have been created outside the PM system"
+  exit 1
+fi
+```
+
+**For Local Task (MODE=local)**:
+
+```bash
+# Normalize path
+if [[ "$TASK_PATH" == .claude/epics/* ]]; then
+  TASK_FILE="$TASK_PATH"
+elif [[ "$TASK_PATH" == */*.md ]]; then
+  TASK_FILE=".claude/epics/$TASK_PATH"
+elif [[ "$TASK_PATH" == */* ]]; then
+  # Handle shorthand: user-authentication/001
+  TASK_FILE=".claude/epics/$TASK_PATH.md"
+else
+  echo "❌ Invalid task path format"
+  echo "Use: epic-name/task-number or full path"
+  exit 1
+fi
+
+# Check file exists
+if [ ! -f "$TASK_FILE" ]; then
+  echo "❌ Task file not found: $TASK_FILE"
+  exit 1
+fi
+
+# Extract task number from filename for tracking
+TASK_NUMBER=$(basename "$TASK_FILE" .md)
+```
+
+### 3. Extract Epic Information
+
+```bash
+# Get epic name from task file path
+# e.g., .claude/epics/user-authentication/001.md -> user-authentication
+EPIC_NAME=$(echo "$TASK_FILE" | sed 's|.claude/epics/||' | sed 's|/.*||')
+
+# Verify epic exists
+if [ ! -d ".claude/epics/$EPIC_NAME" ]; then
+  echo "❌ Epic directory not found: $EPIC_NAME"
+  exit 1
+fi
+```
+
+### 4. Check Task Dependencies
+
+Read task file frontmatter to check `depends_on` field:
+
+```bash
+# Extract depends_on from task frontmatter
+DEPENDS_ON=$(grep "depends_on:" "$TASK_FILE" | sed 's/depends_on: *\[\(.*\)\]/\1/' | tr -d ' ')
+
+if [ -n "$DEPENDS_ON" ] && [ "$DEPENDS_ON" != "[]" ]; then
+  echo "🔍 Checking dependencies for $TASK_ID..."
+
+  # Split comma-separated list
+  IFS=',' read -ra DEPS <<< "$DEPENDS_ON"
+
+  BLOCKED=false
+  INCOMPLETE_TASKS=""
+
+  for dep in "${DEPS[@]}"; do
+    DEP_FILE=".claude/epics/$EPIC_NAME/$dep.md"
+
+    if [ ! -f "$DEP_FILE" ]; then
+      echo "⚠️  Dependency task $dep not found"
+      continue
+    fi
+
+    # Check if dependency is completed
+    DEP_STATUS=$(grep "^status:" "$DEP_FILE" | sed 's/status: *//')
+
+    if [ "$DEP_STATUS" != "completed" ] && [ "$DEP_STATUS" != "closed" ]; then
+      BLOCKED=true
+      INCOMPLETE_TASKS="$INCOMPLETE_TASKS $dep($DEP_STATUS)"
+    fi
+  done
+
+  if [ "$BLOCKED" = true ]; then
+    echo ""
+    echo "❌ Cannot start $TASK_ID - dependencies not completed:"
+    for dep in $INCOMPLETE_TASKS; do
+      echo "   - Task $dep"
+    done
+    echo ""
+    echo "Complete these tasks first or remove them from depends_on."
+    exit 1
+  else
+    echo "✅ All dependencies completed"
+  fi
+fi
+```
+
+### 5. Check for Analysis
+
+```bash
+# Determine analysis file name
+if [ "$MODE" = "github" ]; then
+  ANALYSIS_FILE=".claude/epics/$EPIC_NAME/$ISSUE_NUMBER-analysis.md"
+  TASK_ID="issue #$ISSUE_NUMBER"
+else
+  ANALYSIS_FILE=".claude/epics/$EPIC_NAME/$TASK_NUMBER-analysis.md"
+  TASK_ID="task $TASK_NUMBER"
+fi
+
+# Check if analysis exists
+if [ ! -f "$ANALYSIS_FILE" ]; then
+  echo "❌ No analysis found for $TASK_ID"
+  echo ""
+  if [ "$MODE" = "github" ]; then
+    echo "Run: /pm:issue-analyze $ISSUE_NUMBER first"
+    echo "Or: /pm:issue-start $ISSUE_NUMBER --analyze"
+  else
+    echo "Run: /pm:issue-analyze $TASK_PATH first"
+    echo "Or: /pm:issue-start $TASK_PATH --analyze"
+  fi
+  exit 1
+fi
+```
 
 ## Instructions
 
-### 1. Ensure Worktree Exists
+### 6. Ensure Worktree Exists
 
 Check if epic worktree exists:
 
@@ -55,35 +217,42 @@ if ! git worktree list | grep -q "epic-$epic_name"; then
 fi
 ```
 
-### 2. Read Analysis
+### 7. Read Analysis
 
-Read `.claude/epics/{epic_name}/$ARGUMENTS-analysis.md`:
+Read analysis file (determined in Quick Check):
 
 - Parse parallel streams
 - Identify which can start immediately
 - Note dependencies between streams
 
-### 3. Setup Progress Tracking
+### 8. Setup Progress Tracking
 
 Get current datetime: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
 Create workspace structure:
 
 ```bash
-mkdir -p .claude/epics/{epic_name}/updates/$ARGUMENTS
+# Use TASK_NUMBER for tracking (from Quick Check)
+if [ "$MODE" = "github" ]; then
+  TRACKING_ID="$ISSUE_NUMBER"
+else
+  TRACKING_ID="$TASK_NUMBER"
+fi
+
+mkdir -p .claude/epics/$EPIC_NAME/updates/$TRACKING_ID
 ```
 
 Update task file frontmatter `updated` field with current datetime.
 
-### 4. Launch Parallel Agents
+### 9. Launch Parallel Agents
 
 For each stream that can start immediately:
 
-Create `.claude/epics/{epic_name}/updates/$ARGUMENTS/stream-{X}.md`:
+Create `.claude/epics/$EPIC_NAME/updates/$TRACKING_ID/stream-{X}.md`:
 
 ```markdown
 ---
-issue: $ARGUMENTS
+task: $TRACKING_ID
 stream: { stream_name }
 agent: { agent_type }
 started: { current_datetime }
@@ -107,12 +276,14 @@ status: in_progress
 
 Launch agent using Task tool:
 
+**Standard Mode (`TDD_MODE=false`)**:
+
 ```yaml
 Task:
-  description: 'Issue #$ARGUMENTS Stream {X}'
+  description: '{TASK_ID} Stream {X}'
   subagent_type: '{agent_type}'
   prompt: |
-    You are working on Issue #$ARGUMENTS in the epic worktree.
+    You are working on {TASK_ID} in the epic worktree.
 
     Worktree location: ../epic-{epic_name}/
     Your stream: {stream_name}
@@ -122,10 +293,11 @@ Task:
     - Work to complete: {stream_description}
 
     Requirements:
-    1. Read full task from: .claude/epics/{epic_name}/{task_file}
+    1. Read full task from: {TASK_FILE}
     2. Work ONLY in your assigned files
-    3. Commit frequently with format: "Issue #$ARGUMENTS: {specific change}"
-    4. Update progress in: .claude/epics/{epic_name}/updates/$ARGUMENTS/stream-{X}.md
+    3. Commit frequently with format: "{TASK_ID}: {specific change}"
+       Example: "task 001: Add database schema" or "issue #123: Add API endpoint"
+    4. Update progress in: .claude/epics/{epic_name}/updates/{TRACKING_ID}/stream-{X}.md
     5. Follow coordination rules in /rules/agent-coordination.md
 
     If you need to modify files outside your scope:
@@ -136,31 +308,131 @@ Task:
     Complete your stream's work and mark as completed when done.
 ```
 
-### 5. GitHub Assignment
+**TDD Mode (`TDD_MODE=true`)**:
+
+```yaml
+Task:
+  description: '{TASK_ID} Stream {X} (TDD)'
+  subagent_type: '{agent_type}'
+  prompt: |
+    You are working on {TASK_ID} in the epic worktree using TDD (Test-Driven Development).
+
+    Worktree location: ../epic-{epic_name}/
+    Your stream: {stream_name}
+
+    Your scope:
+    - Files to modify: {file_patterns}
+    - Work to complete: {stream_description}
+
+    TDD WORKFLOW - Follow this order strictly:
+
+    PHASE 1 - RED (Write Failing Tests):
+    1. Read full task from: {TASK_FILE}
+    2. Read acceptance criteria from task checklist
+    3. Write comprehensive tests FIRST based on acceptance criteria
+    4. Tests should cover:
+       - Happy path scenarios
+       - Edge cases
+       - Error handling
+       - Validation rules
+    5. Run tests - they MUST fail (no implementation yet)
+    6. Commit: "{TASK_ID}: Add tests for [feature]"
+
+    PHASE 2 - GREEN (Make Tests Pass):
+    7. Implement MINIMAL code to make tests pass
+    8. Run tests after each small change
+    9. Commit frequently: "{TASK_ID}: Implement [specific functionality]"
+    10. DO NOT add features not covered by tests
+
+    PHASE 3 - REFACTOR (Improve Code):
+    11. Improve code structure while keeping tests green
+    12. Run tests after each refactor
+    13. Commit: "{TASK_ID}: Refactor [what was improved]"
+
+    Requirements:
+    - Work ONLY in your assigned files
+    - Run tests frequently (after each change)
+    - Update progress in: .claude/epics/{epic_name}/updates/{TRACKING_ID}/stream-{X}.md
+    - Follow coordination rules in /rules/agent-coordination.md
+    - Include test status in progress updates
+
+    Progress updates should include:
+    - ✅ Tests written: X scenarios
+    - 🔴 Tests failing: X (expected in red phase)
+    - 🟢 Tests passing: X (after implementation)
+
+    Complete your stream when all tests are green and code is refactored.
+```
+
+### 10. GitHub Assignment (GitHub Issues Only)
+
+**Only for GitHub issues (MODE=github)**:
 
 ```bash
 # Assign to self and mark in-progress
-gh issue edit $ARGUMENTS --add-assignee @me --add-label "in-progress"
+gh issue edit $ISSUE_NUMBER --add-assignee @me --add-label "in-progress"
 ```
 
-### 6. Output
+**For local tasks (MODE=local)**: Skip GitHub operations entirely.
+
+### 11. Output
+
+**For GitHub Issues**:
 
 ```
-✅ Started parallel work on issue #$ARGUMENTS
+✅ Started parallel work on issue #$ISSUE_NUMBER {TDD_MODE ? "(TDD Mode)" : ""}
 
 Epic: {epic_name}
 Worktree: ../epic-{epic_name}/
+{TDD_MODE ? "Mode: Test-Driven Development" : ""}
 
 Launching {count} parallel agents:
   Stream A: {name} (Agent-1) ✓ Started
   Stream B: {name} (Agent-2) ✓ Started
   Stream C: {name} - Waiting (depends on A)
 
+{if TDD_MODE:}
+TDD Workflow:
+  1. RED: Agents writing failing tests first
+  2. GREEN: Implement code to pass tests
+  3. REFACTOR: Improve code structure
+  4. Complete: Run /pm:issue-complete to verify
+
 Progress tracking:
-  .claude/epics/{epic_name}/updates/$ARGUMENTS/
+  .claude/epics/{epic_name}/updates/$ISSUE_NUMBER/
 
 Monitor with: /pm:epic-status {epic_name}
-Sync updates: /pm:issue-sync $ARGUMENTS
+{TDD_MODE ? "Complete with: /pm:issue-complete " + ISSUE_NUMBER : "Sync updates: /pm:issue-sync " + ISSUE_NUMBER}
+```
+
+**For Local Tasks**:
+
+```
+✅ Started parallel work on task $TASK_NUMBER {TDD_MODE ? "(TDD Mode)" : ""}
+
+Epic: {epic_name}
+Task: {task_file}
+Worktree: ../epic-{epic_name}/
+{TDD_MODE ? "Mode: Test-Driven Development" : ""}
+
+Launching {count} parallel agents:
+  Stream A: {name} (Agent-1) ✓ Started
+  Stream B: {name} (Agent-2) ✓ Started
+  Stream C: {name} - Waiting (depends on A)
+
+{if TDD_MODE:}
+TDD Workflow:
+  1. RED: Agents writing failing tests first
+  2. GREEN: Implement code to pass tests
+  3. REFACTOR: Improve code structure
+  4. Complete: Run /pm:issue-complete to verify
+
+Progress tracking:
+  .claude/epics/{epic_name}/updates/$TASK_NUMBER/
+
+Monitor with: /pm:epic-status {epic_name}
+{TDD_MODE ? "Complete with: /pm:issue-complete " + TASK_PATH : ""}
+Note: This task is local-only (not synced to GitHub)
 ```
 
 ## Error Handling

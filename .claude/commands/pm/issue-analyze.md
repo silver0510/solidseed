@@ -4,42 +4,112 @@ allowed-tools: Bash, Read, Write, LS
 
 # Issue Analyze
 
-Analyze an issue to identify parallel work streams for maximum efficiency.
+Analyze a task to identify parallel work streams for maximum efficiency.
+
+Works with both GitHub-synced issues and local-only tasks.
 
 ## Usage
 
-```
+```bash
+# GitHub issue (synced)
 /pm:issue-analyze <issue_number>
+
+# Local task (not synced)
+/pm:issue-analyze <task_path>
+
+# Examples
+/pm:issue-analyze 123                                    # GitHub issue #123
+/pm:issue-analyze .claude/epics/user-authentication/001.md  # Local task
+/pm:issue-analyze user-authentication/001                   # Shorthand for local task
 ```
 
 ## Quick Check
 
-1. **Find local task file:**
-   - First check if `.claude/epics/*/$ARGUMENTS.md` exists (new naming convention)
-   - If not found, search for file containing `github:.*issues/$ARGUMENTS` in frontmatter (old naming)
-   - If not found: "❌ No local task for issue #$ARGUMENTS. Run: /pm:import first"
+### 1. Detect Input Type and Load Task
 
-2. **Check for existing analysis:**
-   ```bash
-   test -f .claude/epics/*/$ARGUMENTS-analysis.md && echo "⚠️ Analysis already exists. Overwrite? (yes/no)"
-   ```
+```bash
+# Check if argument is numeric (GitHub issue)
+if [[ "$ARGUMENTS" =~ ^[0-9]+$ ]]; then
+  MODE="github"
+  ISSUE_NUMBER="$ARGUMENTS"
+
+  # Find local task file
+  TASK_FILE=$(find .claude/epics -name "$ISSUE_NUMBER.md" -o -path "*/$ISSUE_NUMBER.md" | head -1)
+
+  if [ -z "$TASK_FILE" ]; then
+    echo "❌ No local task for issue #$ISSUE_NUMBER"
+    echo "Run: /pm:import first"
+    exit 1
+  fi
+
+  TASK_NUMBER="$ISSUE_NUMBER"
+  TASK_ID="issue #$ISSUE_NUMBER"
+else
+  MODE="local"
+  TASK_PATH="$ARGUMENTS"
+
+  # Normalize path
+  if [[ "$TASK_PATH" == .claude/epics/* ]]; then
+    TASK_FILE="$TASK_PATH"
+  elif [[ "$TASK_PATH" == */*.md ]]; then
+    TASK_FILE=".claude/epics/$TASK_PATH"
+  elif [[ "$TASK_PATH" == */* ]]; then
+    TASK_FILE=".claude/epics/$TASK_PATH.md"
+  else
+    echo "❌ Invalid task path format"
+    echo "Use: epic-name/task-number or full path"
+    exit 1
+  fi
+
+  # Check file exists
+  if [ ! -f "$TASK_FILE" ]; then
+    echo "❌ Task file not found: $TASK_FILE"
+    exit 1
+  fi
+
+  TASK_NUMBER=$(basename "$TASK_FILE" .md)
+  TASK_ID="task $TASK_NUMBER"
+fi
+
+# Extract epic name
+EPIC_NAME=$(echo "$TASK_FILE" | sed 's|.claude/epics/||' | sed 's|/.*||')
+```
+
+### 2. Check for Existing Analysis
+
+```bash
+ANALYSIS_FILE=".claude/epics/$EPIC_NAME/$TASK_NUMBER-analysis.md"
+
+if [ -f "$ANALYSIS_FILE" ]; then
+  echo "⚠️ Analysis already exists for $TASK_ID"
+  echo "Overwrite? (yes/no)"
+  # Only proceed with explicit 'yes'
+fi
+```
 
 ## Instructions
 
-### 1. Read Issue Context
+### 1. Read Task Context
+
+**For GitHub Issues (MODE=github)**:
 
 Get issue details from GitHub:
 
 ```bash
-gh issue view $ARGUMENTS --json title,body,labels
+gh issue view $ISSUE_NUMBER --json title,body,labels
 ```
 
-Read local task file to understand:
+**For Both Modes**:
 
-- Technical requirements
-- Acceptance criteria
+Read local task file (`$TASK_FILE`) to understand:
+
+- Description
+- Checklist items
+- Referenced epic sections
 - Dependencies
 - Effort estimate
+
+Also read epic.md to understand full technical context.
 
 ### 2. Identify Parallel Work Streams
 
@@ -65,18 +135,18 @@ Analyze the issue to identify independent work that can run in parallel:
 
 Get current datetime: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
-Create `.claude/epics/{epic_name}/$ARGUMENTS-analysis.md`:
+Create `$ANALYSIS_FILE` (determined in Quick Check):
 
 ```markdown
 ---
-issue: $ARGUMENTS
-title: { issue_title }
+task: $TASK_NUMBER
+title: { task_title }
 analyzed: { current_datetime }
 estimated_hours: { total_hours }
 parallelization_factor: { 1.0-5.0 }
 ---
 
-# Parallel Work Analysis: Issue #$ARGUMENTS
+# Parallel Work Analysis: {TASK_ID}
 
 ## Overview
 
@@ -180,8 +250,10 @@ Ensure:
 
 ### 5. Output
 
+**For GitHub Issues**:
+
 ```
-✅ Analysis complete for issue #$ARGUMENTS
+✅ Analysis complete for issue #$ISSUE_NUMBER
 
 Identified {count} parallel work streams:
   Stream A: {name} ({hours}h)
@@ -195,7 +267,28 @@ Parallelization potential: {factor}x speedup
 Files at risk of conflict:
   {list shared files if any}
 
-Next: Start work with /pm:issue-start $ARGUMENTS
+Next: Start work with /pm:issue-start $ISSUE_NUMBER
+```
+
+**For Local Tasks**:
+
+```
+✅ Analysis complete for task $TASK_NUMBER
+
+Identified {count} parallel work streams:
+  Stream A: {name} ({hours}h)
+  Stream B: {name} ({hours}h)
+  Stream C: {name} ({hours}h)
+
+Parallelization potential: {factor}x speedup
+  Sequential time: {total}h
+  Parallel time: {reduced}h
+
+Files at risk of conflict:
+  {list shared files if any}
+
+Next: Start work with /pm:issue-start $TASK_PATH
+Note: This is a local-only task (not synced to GitHub)
 ```
 
 ## Important Notes
