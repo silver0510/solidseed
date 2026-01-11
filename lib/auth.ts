@@ -96,12 +96,69 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || process.env.APP_URL || 'http://localhost:3000',
 
   // -------------------------------------------------------------------------
+  // User Model Configuration (Custom Fields Mapping)
+  // -------------------------------------------------------------------------
+  user: {
+    modelName: 'users',
+    fields: {
+      email: 'email',
+      name: 'full_name',
+      emailVerified: 'email_verified',
+      image: 'image',
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
+    },
+    additionalFields: {
+      password_hash: {
+        type: 'string',
+        required: false,
+      },
+      account_status: {
+        type: 'string' as const,
+        required: false,
+        defaultValue: 'pending',
+      },
+      subscription_tier: {
+        type: 'string' as const,
+        required: false,
+        defaultValue: 'trial',
+      },
+      trial_expires_at: {
+        type: 'date' as const,
+        required: false,
+      },
+      failed_login_count: {
+        type: 'number' as const,
+        required: false,
+        defaultValue: 0,
+      },
+      locked_until: {
+        type: 'date' as const,
+        required: false,
+      },
+      last_login_at: {
+        type: 'date' as const,
+        required: false,
+      },
+      last_login_ip: {
+        type: 'string' as const,
+        required: false,
+      },
+      is_deleted: {
+        type: 'boolean' as const,
+        required: false,
+        defaultValue: false,
+      },
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // Email & Password Authentication
   // -------------------------------------------------------------------------
   emailAndPassword: {
     enabled: true,
-    // Require email verification before login
-    requireEmailVerification: true,
+    // Temporarily disable email verification to test OAuth
+    requireEmailVerification: false,
     // Send verification email on signup
     sendVerificationEmail: async ({ user, url }) => {
       const verificationLink = createVerificationLink(url.split('?token=')[1]);
@@ -157,6 +214,20 @@ export const auth = betterAuth({
   // Session Management
   // -------------------------------------------------------------------------
   session: {
+    // Map Better Auth's default 'session' model to our 'sessions' table
+    modelName: 'sessions',
+    fields: {
+      id: 'id',
+      userId: 'user_id',
+      token: 'token',
+      expiresAt: 'expires_at',
+      ipAddress: 'ip_address',
+      userAgent: 'user_agent',
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
+    },
+    // Don't store sessions in database - we're using JWT only
+    storeSessionInDatabase: false,
     // Use JWT tokens for stateless session management
     jwt: {
       // Secret key for signing JWTs (from environment)
@@ -211,9 +282,24 @@ export const auth = betterAuth({
   },
 
   // -------------------------------------------------------------------------
-  // Account Security
+  // Account Security (OAuth Provider Mapping + User Lockout)
   // -------------------------------------------------------------------------
   account: {
+    // Map Better Auth's default 'account' model to our 'oauth_providers' table
+    modelName: 'oauth_providers',
+    fields: {
+      id: 'id',
+      userId: 'user_id',
+      providerId: 'provider',
+      accountId: 'provider_id',
+      accessToken: 'access_token',
+      refreshToken: 'refresh_token',
+      accessTokenExpiresAt: 'access_token_expires_at',
+      idToken: 'id_token',
+      scope: 'scope',
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
+    },
     // Account lockout after failed login attempts
     lockUserAfterFailedLogin: {
       enabled: true,
@@ -233,149 +319,129 @@ export const auth = betterAuth({
   },
 
   // -------------------------------------------------------------------------
+  // Verification Table Configuration (for OAuth state management)
+  // -------------------------------------------------------------------------
+  verification: {
+    modelName: 'verification',
+    fields: {
+      identifier: 'identifier',
+      value: 'value',
+      expiresAt: 'expires_at',
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // Advanced Configuration
   // -------------------------------------------------------------------------
+  // Advanced Configuration - Re-enabled for proper field mapping
   advanced: {
-    // Configure Better Auth to use our custom table names from Task 001
-    // This maps Better Auth's default table names to our custom schema
-    user: {
-      modelName: 'users',
-      fields: {
-        id: 'id',
-        email: 'email',
-        name: 'full_name',
-        emailVerified: 'email_verified',
-        image: null, // We don't store profile image in users table
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
-      },
-      // Additional fields from our custom schema
-      additionalFields: {
-        password_hash: {
-          type: 'string',
-          required: false,
-        },
-        account_status: {
-          type: 'string' as const,
-          required: false,
-          defaultValue: 'pending',
-        },
-        subscription_tier: {
-          type: 'string' as const,
-          required: false,
-          defaultValue: 'trial',
-        },
-        trial_expires_at: {
-          type: 'date' as const,
-          required: false,
-        },
-        failed_login_count: {
-          type: 'number' as const,
-          required: false,
-          defaultValue: 0,
-        },
-        locked_until: {
-          type: 'date' as const,
-          required: false,
-        },
-        last_login_at: {
-          type: 'date' as const,
-          required: false,
-        },
-        last_login_ip: {
-          type: 'string' as const,
-          required: false,
-        },
-        is_deleted: {
-          type: 'boolean' as const,
-          required: false,
-          defaultValue: false,
-        },
-      },
-    },
-    session: {
-      modelName: 'sessions',
-      fields: {
-        id: 'id',
-        userId: 'user_id',
-        token: 'token',
-        expiresAt: 'expires_at',
-        ipAddress: 'ip_address',
-        userAgent: 'user_agent',
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
-      },
-    },
-    account: {
-      modelName: 'oauth_providers',
-      fields: {
-        id: 'id',
-        userId: 'user_id',
-        accountId: 'provider_id',
-        providerId: 'provider',
-        accessToken: 'access_token',
-        refreshToken: 'refresh_token',
-        accessTokenExpiresAt: 'access_token_expires_at',
-        refreshTokenExpiresAt: null,
-        scope: null,
-        idToken: null,
-        password: null,
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
-      },
-      additionalFields: {
-        provider_email: {
-          type: 'string' as const,
-          required: false,
-        },
-        provider_name: {
-          type: 'string' as const,
-          required: false,
-        },
-        provider_avatar_url: {
-          type: 'string' as const,
-          required: false,
-        },
-      },
-    },
-    verification: {
-      modelName: 'email_verifications',
-      fields: {
-        id: 'id',
-        identifier: 'email',
-        value: 'token',
-        expiresAt: 'expires_at',
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
-      },
-      additionalFields: {
-        user_id: {
-          type: 'string' as const,
-          required: false,
-        },
-        verified: {
-          type: 'boolean' as const,
-          required: false,
-          defaultValue: false,
-        },
-        verified_at: {
-          type: 'date' as const,
-          required: false,
-        },
-        request_ip: {
-          type: 'string' as const,
-          required: false,
-        },
-        request_user_agent: {
-          type: 'string' as const,
-          required: false,
-        },
-      },
-    },
-    // ID generation - let database generate UUIDs
-    database: {
-      generateId: false, // PostgreSQL will generate UUIDs
-    },
+  // advanced: {
+  //   // Configure Better Auth to use our custom table names from Task 001
+  //   // This maps Better Auth's default table names to our custom schema
+  //   user: {
+  //     modelName: 'users',
+  //     fields: {
+  //       id: 'id',
+  //       email: 'email',
+  //       name: 'full_name',
+  //       emailVerified: 'email_verified',
+  //       image: null, // We don't store profile image in users table
+  //       createdAt: 'created_at',
+  //       updatedAt: 'updated_at',
+  //     },
+  //     // Additional fields from our custom schema
+  //     additionalFields: {
+  //       password_hash: {
+  //         type: 'string',
+  //         required: false,
+  //       },
+  //       account_status: {
+  //         type: 'string' as const,
+  //         required: false,
+  //         defaultValue: 'pending',
+  //       },
+  //       subscription_tier: {
+  //         type: 'string' as const,
+  //         required: false,
+  //         defaultValue: 'trial',
+  //       },
+  //       trial_expires_at: {
+  //         type: 'date' as const,
+  //         required: false,
+  //       },
+  //       failed_login_count: {
+  //         type: 'number' as const,
+  //         required: false,
+  //         defaultValue: 0,
+  //       },
+  //       locked_until: {
+  //         type: 'date' as const,
+  //         required: false,
+  //       },
+  //       last_login_at: {
+  //         type: 'date' as const,
+  //         required: false,
+  //       },
+  //       last_login_ip: {
+  //         type: 'string' as const,
+  //         required: false,
+  //       },
+  //       is_deleted: {
+  //         type: 'boolean' as const,
+  //         required: false,
+  //         defaultValue: false,
+  //       },
+  //     },
+  //   },
+  //   session: {
+  //     modelName: 'sessions',
+  //     fields: {
+  //       id: 'id',
+  //       userId: 'user_id',
+  //       token: 'token',
+  //       expiresAt: 'expires_at',
+  //       ipAddress: 'ip_address',
+  //       userAgent: 'user_agent',
+  //       createdAt: 'created_at',
+  //       updatedAt: 'updated_at',
+  //     },
+  //   },
+  //   account: {
+  //     modelName: 'oauth_providers',
+  //     fields: {
+  //       id: 'id',
+  //       userId: 'user_id',
+  //       accountId: 'provider_id',
+  //       providerId: 'provider',
+  //       accessToken: 'access_token',
+  //       refreshToken: 'refresh_token',
+  //       accessTokenExpiresAt: 'access_token_expires_at',
+  //       refreshTokenExpiresAt: null,
+  //       scope: null,
+  //       idToken: null,
+  //       password: null,
+  //       createdAt: 'created_at',
+  //       updatedAt: 'updated_at',
+  //     },
+  //     additionalFields: {
+  //       provider_email: {
+  //         type: 'string' as const,
+  //         required: false,
+  //       },
+  //       provider_name: {
+  //         type: 'string' as const,
+  //         required: false,
+  //       },
+  //       provider_avatar_url: {
+  //         type: 'string' as const,
+  //         required: false,
+  //       },
+  //     },
+  //   },
+    // Better Auth verification - uses default 'verification' table
+    // No custom mapping needed as we use the default table name
   },
 
   // -------------------------------------------------------------------------

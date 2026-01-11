@@ -3,12 +3,12 @@
 -- Data retention: 7 days (purge job handles cleanup)
 
 CREATE TABLE IF NOT EXISTS auth_logs (
-    -- Primary key
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- Primary key (VARCHAR to support CUID)
+    id VARCHAR(255) PRIMARY KEY,
 
     -- Optional foreign key to users table
     -- Nullable for failed login attempts where user doesn't exist
-    user_id UUID,
+    user_id VARCHAR(255),
 
     -- Event type for categorization
     event_type VARCHAR(50) NOT NULL,
@@ -74,7 +74,7 @@ CREATE INDEX IF NOT EXISTS idx_auth_logs_target_email
 
 -- Add comments for documentation
 COMMENT ON TABLE auth_logs IS 'Authentication event audit log (7-day retention)';
-COMMENT ON COLUMN auth_logs.id IS 'Unique identifier (UUID v4)';
+COMMENT ON COLUMN auth_logs.id IS 'Unique identifier (CUID)';
 COMMENT ON COLUMN auth_logs.user_id IS 'Reference to users table (null for failed lookups)';
 COMMENT ON COLUMN auth_logs.event_type IS 'Type of authentication event';
 COMMENT ON COLUMN auth_logs.event_details IS 'JSON object with event-specific details';

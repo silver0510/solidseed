@@ -30,9 +30,18 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
-.env*
+# env files (exclude sensitive ones, allow templates)
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.test
+.env.*.local
+.env.sentry-build-plugin
+
+# Allow these to be committed
 !.env.example
+!.env.development
 
 # vercel
 .vercel
@@ -40,10 +49,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# Environment variables
-.env.local
-.env.*.local
 
 # OAuth credentials (for local development)
 oauth-credentials.json

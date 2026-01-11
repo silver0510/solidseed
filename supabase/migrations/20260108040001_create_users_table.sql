@@ -7,8 +7,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
-    -- Primary key
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- Primary key (VARCHAR to support CUID from Better Auth)
+    id VARCHAR(255) PRIMARY KEY,
 
     -- Core identity fields
     email VARCHAR(255) NOT NULL,
@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS users (
     -- Email verification status
     email_verified BOOLEAN NOT NULL DEFAULT false,
     email_verified_at TIMESTAMPTZ,
+
+    -- OAuth profile image URL
+    image VARCHAR(500),
 
     -- Account status and subscription
     account_status VARCHAR(50) NOT NULL DEFAULT 'pending',
@@ -82,12 +85,13 @@ CREATE TRIGGER update_users_updated_at
 
 -- Add comments for documentation
 COMMENT ON TABLE users IS 'Core user accounts for Korella CRM authentication';
-COMMENT ON COLUMN users.id IS 'Unique identifier (UUID v4)';
+COMMENT ON COLUMN users.id IS 'Unique identifier (CUID)';
 COMMENT ON COLUMN users.email IS 'User email address, used for login';
 COMMENT ON COLUMN users.password_hash IS 'Bcrypt hashed password, null for OAuth-only accounts';
 COMMENT ON COLUMN users.full_name IS 'User display name';
 COMMENT ON COLUMN users.email_verified IS 'Whether email has been verified';
 COMMENT ON COLUMN users.email_verified_at IS 'Timestamp when email was verified';
+COMMENT ON COLUMN users.image IS 'OAuth profile image URL';
 COMMENT ON COLUMN users.account_status IS 'Account status: pending, active, suspended, deactivated';
 COMMENT ON COLUMN users.subscription_tier IS 'Subscription level: trial, free, pro, enterprise';
 COMMENT ON COLUMN users.trial_expires_at IS 'When trial period ends (14 days from verification)';

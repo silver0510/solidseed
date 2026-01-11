@@ -217,8 +217,16 @@ export async function logout(): Promise<void> {
 
 /**
  * Initiate OAuth login
+ * Uses Better Auth client library to handle OAuth flow
  */
-export function initiateOAuth(provider: 'google' | 'microsoft'): void {
-  const redirectUrl = `${API_BASE}/api/auth/oauth/${provider}`;
-  window.location.href = redirectUrl;
+export async function initiateOAuth(provider: 'google' | 'microsoft'): Promise<void> {
+  // Import dynamically to avoid SSR issues
+  const { authClient } = await import('./client');
+
+  // Use Better Auth client to initiate OAuth flow
+  // This will redirect to the OAuth provider
+  await authClient.signIn.social({
+    provider,
+    callbackURL: '/dashboard',
+  });
 }

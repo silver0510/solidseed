@@ -29,7 +29,8 @@ export function SocialLoginButton({
   const handleClick = async () => {
     try {
       setInternalLoading(true);
-      initiateOAuth(provider);
+      // This will redirect, so the loading state will persist until redirect
+      await initiateOAuth(provider);
     } catch (error) {
       const errorMessage =
         error instanceof Error

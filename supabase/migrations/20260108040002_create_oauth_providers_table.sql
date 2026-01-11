@@ -3,11 +3,11 @@
 -- Enables social login and account linking
 
 CREATE TABLE IF NOT EXISTS oauth_providers (
-    -- Primary key
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- Primary key (VARCHAR to support CUID from Better Auth)
+    id VARCHAR(255) PRIMARY KEY,
 
     -- Foreign key to users table
-    user_id UUID NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
 
     -- OAuth provider information
     provider VARCHAR(50) NOT NULL,
@@ -19,6 +19,12 @@ CREATE TABLE IF NOT EXISTS oauth_providers (
     access_token TEXT,
     refresh_token TEXT,
     access_token_expires_at TIMESTAMPTZ,
+
+    -- OAuth ID token (JWT from provider)
+    id_token TEXT,
+
+    -- OAuth scope/permissions
+    scope TEXT,
 
     -- Provider profile data (cached)
     provider_email VARCHAR(255),
@@ -60,13 +66,15 @@ CREATE TRIGGER update_oauth_providers_updated_at
 
 -- Add comments for documentation
 COMMENT ON TABLE oauth_providers IS 'OAuth provider account mappings for social login';
-COMMENT ON COLUMN oauth_providers.id IS 'Unique identifier (UUID v4)';
+COMMENT ON COLUMN oauth_providers.id IS 'Unique identifier (CUID)';
 COMMENT ON COLUMN oauth_providers.user_id IS 'Reference to users table';
 COMMENT ON COLUMN oauth_providers.provider IS 'OAuth provider name (google, microsoft)';
 COMMENT ON COLUMN oauth_providers.provider_id IS 'User ID from the OAuth provider';
 COMMENT ON COLUMN oauth_providers.access_token IS 'OAuth access token (encrypted at rest by Supabase)';
 COMMENT ON COLUMN oauth_providers.refresh_token IS 'OAuth refresh token for token renewal';
 COMMENT ON COLUMN oauth_providers.access_token_expires_at IS 'When the access token expires';
+COMMENT ON COLUMN oauth_providers.id_token IS 'OAuth ID token (JWT)';
+COMMENT ON COLUMN oauth_providers.scope IS 'OAuth scope/permissions';
 COMMENT ON COLUMN oauth_providers.provider_email IS 'Email from OAuth provider profile';
 COMMENT ON COLUMN oauth_providers.provider_name IS 'Display name from OAuth provider profile';
 COMMENT ON COLUMN oauth_providers.provider_avatar_url IS 'Avatar URL from OAuth provider profile';
