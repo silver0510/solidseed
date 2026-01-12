@@ -20,8 +20,8 @@ import {
   getLockExpirationTime,
   hasRequiredTier,
   getUserSubscriptionStatus,
-} from '../../../src/services/session.service';
-import { securityConstants } from '../../../src/config/database';
+} from '../../../services/session.service';
+import { securityConstants } from '../../../config/database';
 
 // Mock the database
 vi.mock('@neondatabase/serverless', () => ({
