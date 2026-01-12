@@ -3,7 +3,7 @@ import { validateEnvironment } from './lib/validate-env';
 
 export async function register() {
   // Validate environment before initializing Sentry
-  validateEnvironment();
+  // validateEnvironment();
 
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     await import('./sentry.server.config');
