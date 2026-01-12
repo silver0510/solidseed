@@ -1,7 +1,7 @@
 ---
 created: 2026-01-09T14:43:01Z
-last_updated: 2026-01-09T14:43:01Z
-version: 1.0
+last_updated: 2026-01-12T01:29:05Z
+version: 1.1
 author: Claude Code PM System
 ---
 
@@ -26,31 +26,60 @@ author: Claude Code PM System
 ### Supabase (PostgreSQL)
 
 - **Version**: Latest
-- **Status**: ✅ Configured and tested
+- **Status**: ✅ Configured and operational
 - **Project ID**: renpowxmbkprtwjklbcb
 - **Purpose**: Managed PostgreSQL database and storage
 - **Key Features**:
-  - PostgreSQL database (migrations pending)
+  - PostgreSQL database with 7 authentication tables
   - Supabase Studio for database management
   - Built-in connection pooling
   - Automatic backups
-  - Storage bucket (client-documents)
+  - Storage bucket (client-documents with RLS policies)
 - **Connection**: Via `SUPABASE_DATABASE_URL` environment variable
 - **Client Library**: `lib/db.ts` (Supabase client configured)
+- **ORM**: Prisma Client for type-safe database queries
+
+### Prisma ORM
+
+- **Version**: ^6.10.0
+- **Status**: ✅ Integrated with Better Auth
+- **Purpose**: Type-safe database access layer
+- **Key Features**:
+  - Type-safe database queries
+  - Auto-generated TypeScript types
+  - Database schema migrations
+  - Introspection and validation
+  - Better Auth adapter integration
+- **Schema Location**: `prisma/schema.prisma`
+- **Generated Client**: `generated/prisma` (project root)
+- **Migrations**: 7 migrations created for authentication schema
+  - `20260108040001_create_users_table.sql`
+  - `20260108040002_create_oauth_providers_table.sql`
+  - `20260108040003_create_password_resets_table.sql`
+  - `20260108040004_create_email_verifications_table.sql`
+  - `20260108040005_create_auth_logs_table.sql`
+  - `20260108040006_create_verification_table.sql`
+  - `20260108040007_create_sessions_table.sql`
 
 ### Better Auth
 
-- **Status**: ⏳ Pending installation (Task 002)
+- **Version**: ^1.4.10
+- **Status**: ✅ Integrated with Prisma adapter
 - **Purpose**: Authentication framework
 - **Key Features**:
-  - OAuth 2.0 integration (Google, Microsoft)
-  - Email/password authentication
-  - Email verification (24-hour tokens)
+  - OAuth 2.0 integration (Google configured, Microsoft pending)
+  - Email/password authentication with verification
+  - Email verification (24-hour token expiration)
   - JWT token generation and validation
   - Password hashing (bcrypt cost 12)
-  - Rate limiting and account lockout
-- **Adapter**: Supabase PostgreSQL adapter
-- **Configuration**: To be created in `lib/auth.ts`
+  - Rate limiting and account lockout (5 attempts → 30 min lock)
+  - Session management (3-day default, 30-day with "remember me")
+  - Trial period management (14 days from email verification)
+- **Adapter**: Prisma adapter for type-safe database access
+- **Configuration**: `lib/auth.ts` (main config)
+- **Service Layer**: `services/auth.service.ts` (authentication logic)
+- **API Routes**: `/api/auth/[...all]/route.ts` (Better Auth handler)
+- **Frontend**: `lib/auth/client.ts` (client-side integration)
 
 ## Frontend Stack
 
@@ -99,9 +128,21 @@ author: Claude Code PM System
 - Composable schemas
 - **Use Cases**:
   - Environment variable validation (`lib/env.ts`)
-  - Form validation (authentication forms)
+  - Form validation (authentication forms, password strength)
   - API request/response validation
+  - Password reset and change validation
 - Bundle Size: ~5KB
+
+**jsonwebtoken**
+- **Version**: ^9.0.3
+- **Status**: ✅ Integrated with Better Auth
+- **Purpose**: JWT token generation and validation
+- **Use Cases**:
+  - Session token generation (login, OAuth)
+  - Token validation middleware
+  - Custom JWT payload (user_id, email, subscription_tier)
+  - Token expiration management (3-day default, 30-day remember me)
+- **Types**: @types/jsonwebtoken ^9.0.10
 
 **Total Forms Bundle**: ~50KB
 
@@ -184,17 +225,20 @@ author: Claude Code PM System
 ### OAuth Providers
 
 **Google OAuth 2.0**
-- **Status**: ✅ Configured
+- **Status**: ✅ Configured and operational
 - GCP project created: "Korella CRM"
 - OAuth consent screen configured (External user type)
 - Scopes: email, profile, openid
 - Client ID and secret stored in .env.local
 - Redirect URI: `{APP_URL}/api/auth/callback/google`
+- Integration: Better Auth with Prisma adapter
+- Bug fix: Fixed user registration issue (2470a78 commit)
 
 **Microsoft OAuth**
-- **Status**: ⏳ Pending setup
+- **Status**: ⏳ Pending setup (next priority)
 - Azure AD app registration required
 - Scopes: email, profile, openid, User.Read
+- Configuration ready in Better Auth (awaiting credentials)
 
 ### PWA Support
 
@@ -213,7 +257,7 @@ author: Claude Code PM System
 
 **Vitest**
 - **Version**: 4.0.16
-- **Status**: ✅ Configured with jsdom
+- **Status**: ✅ Configured with 63 tests passing
 - **Purpose**: Unit and integration testing
 - **Features**:
   - 50% faster than Jest (native ESM)
@@ -221,6 +265,11 @@ author: Claude Code PM System
   - Built-in TypeScript support
   - Component testing with React Testing Library
 - **Test Files**: `tests/unit/**/*.test.ts`
+- **Test Coverage**:
+  - Session service: 28 tests
+  - JWT utilities: 33 tests
+  - Core authentication: 2 tests
+  - **Total**: 63 tests passing
 - **Coverage Target**: >80%
 
 **Playwright**
@@ -237,12 +286,27 @@ author: Claude Code PM System
 ### Development Tools
 
 **Supabase CLI**
-- **Status**: ✅ Installed and initialized
+- **Status**: ✅ Installed and operational
 - **Purpose**: Database migrations and management
 - **Key Commands**:
   - `supabase migration new <name>` - Create migration
-  - `supabase db push` - Apply migrations
+  - `supabase db push` - Apply migrations to remote
   - `supabase link` - Connect to remote project (completed)
+- **Migrations**: 7 authentication migrations created and applied
+
+**tsx**
+- **Version**: ^4.21.0
+- **Status**: ✅ Installed for running TypeScript scripts
+- **Purpose**: Execute TypeScript files directly without compilation
+- **Use Cases**:
+  - Database management scripts
+  - Test utilities
+  - Seed data generation
+- **Scripts Using tsx**:
+  - `npm run db:test` - Test database connection
+  - `npm run db:clear-auth` - Clear authentication data
+  - `npm run db:seed-users` - Seed test users
+  - `npm run db:reset-auth` - Reset authentication data
 
 **Vercel CLI**
 - **Status**: ✅ Configured
@@ -507,31 +571,44 @@ Error:
 korella/
 ├── .claude/                      # Project management (CCPM)
 │   ├── commands/                 # Slash commands
-│   ├── context/                  # Context files
-│   ├── epics/                    # Technical plans
-│   ├── prds/                     # Product requirements
+│   ├── context/                  # Context files (5 total)
+│   ├── epics/                    # Technical plans (2 complete)
+│   ├── prds/                     # Product requirements (2 total)
 │   └── rules/                    # Development guidelines
-├── app/                          # Next.js App Router
-│   ├── (auth)/                   # Auth route group (public)
-│   │   ├── login/
-│   │   ├── register/
-│   │   └── layout.tsx
-│   ├── (dashboard)/              # Dashboard route group (protected)
-│   │   ├── clients/
-│   │   ├── documents/
-│   │   ├── settings/
+├── app/                          # Next.js App Router (root-level)
+│   ├── (auth)/                   # Auth route group (public) ✅
+│   │   ├── login/page.tsx        # Login page ✅
+│   │   ├── register/page.tsx     # Registration page ✅
+│   │   ├── verify-email/page.tsx # Email verification ✅
+│   │   ├── forgot-password/page.tsx # Password reset request ✅
+│   │   ├── reset-password/page.tsx # Password reset completion ✅
+│   │   └── layout.tsx            # Auth layout ✅
+│   ├── (dashboard)/              # Dashboard route group (pending)
+│   │   ├── clients/              # Client management (pending)
+│   │   ├── documents/            # Document management (pending)
+│   │   ├── settings/             # User settings (pending)
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── api/
-│   │   ├── auth/[...all]/        # Better Auth API handler
-│   │   ├── clients/
-│   │   ├── documents/
-│   │   ├── health/               # Health check endpoint ✅
+│   │   ├── auth/
+│   │   │   ├── [...all]/route.ts    # Better Auth handler ✅
+│   │   │   ├── me/route.ts          # Current user profile ✅
+│   │   │   ├── verify-email/route.ts # Email verification ✅
+│   │   │   ├── forgot-password/route.ts # Password reset request ✅
+│   │   │   ├── reset-password/route.ts # Password reset completion ✅
+│   │   │   ├── change-password/route.ts # Password change ✅
+│   │   │   └── logout/route.ts      # Logout ✅
+│   │   ├── health/route.ts       # Health check endpoint ✅
 │   │   └── test/                 # Test endpoints ✅
 │   ├── global-error.tsx          # Sentry error handler ✅
 │   ├── layout.tsx                # Root layout ✅
 │   └── page.tsx                  # Home page ✅
 ├── components/
+│   ├── auth/                     # Authentication components ✅
+│   │   ├── SocialLoginButton.tsx
+│   │   ├── PasswordStrengthIndicator.tsx
+│   │   ├── FormInput.tsx
+│   │   └── Button.tsx
 │   ├── ui/                       # shadcn/ui components
 │   ├── forms/                    # Reusable form components
 │   └── layouts/                  # Layout components
@@ -541,24 +618,38 @@ korella/
 │   ├── email.ts                  # Email service ✅
 │   ├── env.ts                    # Environment validation ✅
 │   ├── validate-env.ts           # Env validation middleware ✅
-│   ├── auth.ts                   # Better Auth config (pending)
-│   ├── api-client.ts             # Fetch wrapper (pending)
-│   └── utils.ts                  # Utility functions
-├── features/                     # Feature-based modules
+│   ├── auth.ts                   # Better Auth config ✅
 │   ├── auth/
-│   ├── clients/
-│   └── documents/
+│   │   ├── client.ts             # Client-side auth utilities ✅
+│   │   └── api.ts                # Auth API client ✅
+│   ├── password-validation.ts    # Password strength checker ✅
+│   └── utils.ts                  # Utility functions ✅
+├── services/
+│   ├── auth.service.ts           # Authentication logic ✅
+│   └── email.service.ts          # Email sending service ✅
+├── prisma/
+│   ├── schema.prisma             # Prisma schema ✅
+│   └── migrations/               # Database migrations (7 total) ✅
+├── generated/
+│   └── prisma/                   # Generated Prisma Client ✅
 ├── supabase/
 │   ├── .temp/                    # CLI temp files
-│   └── migrations/               # Database migrations (pending)
+│   └── migrations/               # Supabase SQL migrations ✅
 ├── tests/
 │   ├── e2e/                      # Playwright tests ✅
-│   └── unit/                     # Vitest tests ✅
+│   └── unit/                     # Vitest tests (63 passing) ✅
 ├── public/
 │   ├── manifest.json             # PWA manifest ✅
 │   └── icons/
 ├── scripts/
-│   └── health-check.sh           # Health monitoring ✅
+│   ├── health-check.sh           # Health monitoring ✅
+│   ├── test-db-connection.ts     # Database connection test ✅
+│   ├── test-connection-string.sh # Connection string test ✅
+│   ├── clear-auth-data.ts        # Clear auth data (TypeScript) ✅
+│   ├── clear-auth-data.sh        # Clear auth data (Bash) ✅
+│   ├── seed-test-users.ts        # Seed test users ✅
+│   ├── reset-auth-data.ts        # Reset auth data ✅
+│   └── README.md                 # Scripts documentation ✅
 ├── instrumentation.ts            # Sentry instrumentation ✅
 ├── sentry.server.config.ts       # Sentry configs ✅
 ├── sentry.client.config.ts
@@ -571,10 +662,10 @@ korella/
 ├── vercel.json                   # Vercel deployment ✅
 ├── .env.local                    # Environment variables ✅
 ├── .env.example                  # Env template ✅
-├── package.json                  # Dependencies ✅
-├── CLAUDE.md                     # Developer guide
-├── DEPLOYMENT.md                 # Deployment checklist
-└── LOCAL_MODE.md                 # Local workflow guide
+├── package.json                  # Dependencies (updated) ✅
+├── CLAUDE.md                     # Developer guide ✅
+├── DEPLOYMENT.md                 # Deployment checklist ✅
+└── LOCAL_MODE.md                 # Local workflow guide ✅
 ```
 
 **File Organization Principles**:
@@ -585,22 +676,35 @@ korella/
 
 ## Database Schema
 
-### Authentication Tables (5 tables)
+### Authentication Tables (7 tables via Prisma)
 
 1. **users** - User accounts with subscription tiers
-   - Fields: id, email, password_hash, subscription_tier, trial_expires_at, failed_login_count, locked_until, is_deleted, created_at, updated_at
+   - Fields: id, name, email, emailVerified, image, subscription_tier, trial_expires_at, failed_login_count, locked_until, is_deleted, createdAt, updatedAt
+   - Managed by Better Auth + Prisma
 
-2. **oauth_providers** - Social login mappings
-   - Fields: id, user_id, provider (google/microsoft), provider_user_id, created_at
+2. **accounts** - OAuth provider accounts
+   - Fields: id, userId, type, provider, providerAccountId, refresh_token, access_token, expires_at, token_type, scope, id_token
+   - Managed by Better Auth (OAuth connections)
 
-3. **password_resets** - Password reset tokens
-   - Fields: id, user_id, token, expires_at, created_at
+3. **sessions** - User sessions with JWT
+   - Fields: id, userId, sessionToken, expiresAt, ipAddress, userAgent
+   - 3-day default expiration, 30-day with "remember me"
 
-4. **email_verifications** - Email verification tokens
-   - Fields: id, user_id, token, expires_at, created_at
+4. **verification_tokens** - Email verification tokens
+   - Fields: identifier, token, expires
+   - 24-hour expiration, auto-purged after use
 
-5. **auth_logs** - Security audit trail
+5. **password_resets** - Password reset tokens
+   - Fields: id, user_id, token, expires_at, used, created_at
+   - 1-hour expiration, single-use tokens
+
+6. **oauth_providers** - OAuth provider metadata (legacy)
+   - Fields: id, user_id, provider, provider_user_id, created_at
+   - Supplementary to accounts table
+
+7. **auth_logs** - Security audit trail
    - Fields: id, user_id, event_type, ip_address, user_agent, created_at
+   - 7-day retention, auto-purged via cron job
 
 ### Client Hub Tables (5 tables)
 
@@ -619,7 +723,7 @@ korella/
 5. **client_tasks** - Task management
    - Fields: id, client_id, task_text, due_date, priority, is_completed, created_at, updated_at
 
-**Total**: 10 tables for MVP
+**Total**: 12 tables for MVP (7 authentication ✅, 5 client hub pending)
 
 ## Environment Variables
 
@@ -739,9 +843,13 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 
 ## Notes
 
-- Infrastructure setup ~90% complete
-- Database migrations pending (Task 001 of User Authentication epic)
-- Better Auth integration pending (Task 002)
-- Frontend UI implementation pending (Task 006)
+- Infrastructure setup ✅ Complete
+- User Authentication epic ✅ Complete (10 tasks, 63 tests passing)
+- Database migrations ✅ Complete (7 Prisma migrations applied)
+- Better Auth integration ✅ Complete (Prisma adapter)
+- Frontend UI ✅ Complete (5 auth pages, 7+ components)
+- Google OAuth ✅ Operational (Microsoft pending)
 - Total bundle size optimized for mobile: ~185KB
 - All services have generous free tiers for MVP validation
+- Next major feature: Client Hub (PRD ready, needs epic decomposition)
+- Branch: epic/user-authentication (ready to merge to main)
