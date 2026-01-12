@@ -69,6 +69,12 @@ For each context file, determine if updates are needed:
 
 **Check each file systematically:**
 
+#### `README.md` - **Rarely Update**
+
+- Static documentation about context system
+- Only update if context workflow changes
+- Usually remains stable
+
 #### `progress.md` - **Always Update**
 
 - Check: Recent commits, current branch, uncommitted changes
@@ -76,53 +82,35 @@ For each context file, determine if updates are needed:
 - Run: `git log --oneline -5` to get recent commit messages
 - Include completion percentages if applicable
 
-#### `project-structure.md` - **Update if Changed**
+#### `project.md` - **Update for Major Changes**
 
-- Check: `git diff --name-status HEAD~10..HEAD | grep -E '^A'` for new files
-- Update: New directories, moved files, structural reorganization
-- Only update if significant structural changes occurred
+- Check: New features implemented, scope changes, key decisions
+- Update sections:
+  - Current Status (if phase or progress changed significantly)
+  - Core Features (if new features completed or started)
+  - Key Decisions (if major technical decisions made)
+  - Success Metrics (if metrics or criteria changed)
+- Only update if significant project-level changes occurred
 
-#### `tech-context.md` - **Update if Dependencies Changed**
+#### `tech-stack.md` - **Update if Dependencies or Architecture Changed**
 
 - Check: Package files for new dependencies or version changes
-- Update: New libraries, upgraded versions, new dev tools
+- Check: New architecture patterns adopted
+- Update sections:
+  - Core Technologies (if versions changed)
+  - Services & Tools (if new services added)
+  - Architecture Patterns (if new patterns adopted)
+  - Directory Structure (if significant restructuring)
+  - Database Schema (if tables added/modified)
+  - Environment Variables (if new vars added)
 - Include security updates or breaking changes
 
-#### `system-patterns.md` - **Update if Architecture Changed**
-
-- Check: New design patterns, architectural decisions
-- Update: New patterns adopted, refactoring done
-- Only update for significant architectural changes
-
-#### `product-context.md` - **Update if Requirements Changed**
-
-- Check: New features implemented, user feedback incorporated
-- Update: New user stories, changed requirements
-- Include any pivot in product direction
-
-#### `project-brief.md` - **Rarely Update**
-
-- Check: Only if fundamental project goals changed
-- Update: Major scope changes, new objectives
-- Usually remains stable
-
-#### `project-overview.md` - **Update for Major Milestones**
-
-- Check: Major features completed, significant progress
-- Update: Feature status, capability changes
-- Update when reaching project milestones
-
-#### `project-vision.md` - **Rarely Update**
-
-- Check: Strategic direction changes
-- Update: Only for major vision shifts
-- Usually remains stable
-
-#### `project-style-guide.md` - **Update if Conventions Changed**
+#### `style-guide.md` - **Update if Conventions Changed**
 
 - Check: New linting rules, style decisions
 - Update: Convention changes, new patterns adopted
 - Include examples of new patterns
+- Usually remains stable
 
 ### 2. Smart Update Strategy
 
@@ -196,13 +184,12 @@ Provide detailed summary of updates:
 
 📝 Updated Files:
   ✅ progress.md - Updated recent commits, current status
-  ✅ tech-context.md - Added 3 new dependencies
-  ✅ project-structure.md - Noted new /utils directory
+  ✅ tech-stack.md - Added 3 new dependencies
+  ✅ project.md - Updated feature status
 
 ⏭️ Skipped Files (no changes):
-  - project-brief.md (last updated: 5 days ago)
-  - project-vision.md (last updated: 2 weeks ago)
-  - system-patterns.md (last updated: 3 days ago)
+  - README.md (last updated: 5 days ago)
+  - style-guide.md (last updated: 2 weeks ago)
 
 ⚠️ Issues:
   {any warnings or errors}

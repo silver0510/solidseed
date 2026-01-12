@@ -72,3 +72,4 @@ public/workbox-*.js.map
 .env.sentry-build-plugin
 
 /generated/prisma
+

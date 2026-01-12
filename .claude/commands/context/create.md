@@ -86,24 +86,46 @@ author: Claude Code PM System
 
 Generate the following initial context files:
 
-- `progress.md` - Document current project status, completed work, and immediate next steps
-  - Include: Current branch, recent commits, outstanding changes
-- `project-structure.md` - Map out the directory structure and file organization
-  - Include: Key directories, file naming patterns, module organization
-- `tech-context.md` - Catalog current dependencies, technologies, and development tools
-  - Include: Language version, framework versions, dev dependencies
-- `system-patterns.md` - Identify existing architectural patterns and design decisions
-  - Include: Design patterns observed, architectural style, data flow
-- `product-context.md` - Define product requirements, target users, and core functionality
-  - Include: User personas, core features, use cases
-- `project-brief.md` - Establish project scope, goals, and key objectives
-  - Include: What it does, why it exists, success criteria
-- `project-overview.md` - Provide a high-level summary of features and capabilities
-  - Include: Feature list, current state, integration points
-- `project-vision.md` - Articulate long-term vision and strategic direction
-  - Include: Future goals, potential expansions, strategic priorities
-- `project-style-guide.md` - Document coding standards, conventions, and style preferences
-  - Include: Naming conventions, file structure patterns, comment style
+#### Core Context Files (5 files):
+
+1. **`README.md`** - Introduction to the context system
+   - Purpose of context files
+   - How to use context commands
+   - Context workflow overview
+   - No frontmatter required (static documentation)
+
+2. **`progress.md`** - Current project status and recent work
+   - Include: Current phase, completed tasks, next steps
+   - Include: Recent commits, outstanding changes, blockers
+   - Include: Timeline and milestone tracking
+
+3. **`project.md`** - Consolidated project overview
+   - Include: What we're building (elevator pitch)
+   - Include: Current status (brief)
+   - Include: Core features (3-5 main features with brief descriptions)
+   - Include: Project scope (in scope, out of scope)
+   - Include: Key decisions (technology choices, architecture decisions)
+   - Include: Success metrics (MVP criteria, business metrics)
+   - Include: Competitive advantages
+   - Include: Project constraints and risks
+
+4. **`tech-stack.md`** - Technology stack and architecture
+   - Include: Core technologies (database, backend, frontend)
+   - Include: Services & tools (email, monitoring, storage, testing)
+   - Include: Architecture patterns (mobile-first, soft delete, auth patterns)
+   - Include: Directory structure (streamlined version)
+   - Include: Database schema (tables overview)
+   - Include: Environment variables (key variables)
+   - Include: Integration requirements (setup instructions)
+   - Include: Performance targets and cost analysis
+
+5. **`style-guide.md`** - Coding standards and conventions
+   - Include: Documentation standards (markdown, frontmatter, datetime)
+   - Include: Code standards (naming, comments, error handling)
+   - Include: Database standards (table names, migrations)
+   - Include: API standards (endpoints, responses)
+   - Include: Testing standards (test structure, coverage)
+   - Include: Git standards (commits, branches)
 
 ### 4. Quality Validation
 
@@ -111,7 +133,7 @@ After creating each file:
 
 - Verify file was created successfully
 - Check file is not empty (minimum 10 lines of content)
-- Ensure frontmatter is present and valid
+- Ensure frontmatter is present and valid (except README.md)
 - Validate markdown formatting is correct
 
 ### 5. Error Handling
@@ -136,7 +158,7 @@ Provide comprehensive summary:
 📋 Context Creation Complete
 
 📁 Created context in: .claude/context/
-✅ Files created: {count}/9
+✅ Files created: {count}/5
 
 📊 Context Summary:
   - Project Type: {detected_type}
@@ -145,9 +167,11 @@ Provide comprehensive summary:
   - Dependencies: {count} packages
 
 📝 File Details:
-  ✅ progress.md ({lines} lines) - Current status and recent work
-  ✅ project-structure.md ({lines} lines) - Directory organization
-  [... list all files with line counts and brief description ...]
+  ✅ README.md ({lines} lines) - Context system documentation
+  ✅ progress.md ({lines} lines) - Current status and next steps
+  ✅ project.md ({lines} lines) - Project overview and scope
+  ✅ tech-stack.md ({lines} lines) - Technology stack and architecture
+  ✅ style-guide.md ({lines} lines) - Coding standards
 
 ⏰ Created: {timestamp}
 🔄 Next: Use /context:prime to load context in new sessions
@@ -164,7 +188,7 @@ Use these commands to gather project information:
 - Project README: Read `README.md` if exists
 - Package files: Check for package.json, requirements.txt, pyproject.toml, composer.json, Gemfile, Cargo.toml, go.mod, pom.xml, build.gradle, build.gradle.kts, _.sln, _.csproj, Package.swift, _.xcodeproj, _.xcworkspace, pubspec.yaml, CMakeLists.txt, Dockerfile, or docker-compose.yml etc.
 - Documentation scan: `find . -type f -name '*.md' -path '*/docs/*' 2>/dev/null | head -10`
-- Test detection: `find . \(  -path '*/.*' -prune\) -o \(  -type d \( -name 'test' -o -name 'tests' -o -name '__tests__' -o -name 'spec' \) -o -type f \( -name '*[._]test.*' -o -name '*[._]spec.*' -o -name 'test_*.*' -o -name '*_test.*' \)\) 2>/dev/null | head -10`
+- Test detection: `find . \( -path '*/.*' -prune \) -o \( -type d \( -name 'test' -o -name 'tests' -o -name '__tests__' -o -name 'spec' \) -o -type f \( -name '*[._]test.*' -o -name '*[._]spec.*' -o -name 'test_*.*' -o -name '*_test.*' \) \) 2>/dev/null | head -10`
 
 ## Important Notes
 
