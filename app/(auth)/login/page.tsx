@@ -98,7 +98,6 @@ export default function LoginPage() {
       {/* Social Login */}
       <div className="space-y-3">
         <SocialLoginButton provider="google" onError={(error) => setApiError(error)} />
-        <SocialLoginButton provider="microsoft" onError={(error) => setApiError(error)} />
       </div>
 
       <SocialLoginDivider />

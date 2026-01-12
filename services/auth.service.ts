@@ -596,9 +596,9 @@ export async function loginUser(
 }
 
 /**
- * Handles OAuth callback from Google or Microsoft
+ * Handles OAuth callback from Google
  *
- * @param provider - OAuth provider ('google' or 'microsoft')
+ * @param provider - OAuth provider ('google')
  * @param code - Authorization code from OAuth provider
  * @param state - OAuth state parameter for CSRF protection
  * @param ipAddress - Request IP address for logging
@@ -722,7 +722,7 @@ export async function handleOAuthCallback(
 /**
  * Generates OAuth authorization URL for redirecting user to provider
  *
- * @param provider - OAuth provider ('google' or 'microsoft')
+ * @param provider - OAuth provider ('google')
  *
  * @returns OAuth authorization URL
  */

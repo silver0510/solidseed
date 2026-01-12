@@ -116,7 +116,6 @@ export function truncateEmail(email: string): string {
 export function getOAuthProviderName(provider: string): string {
   const names: Record<string, string> = {
     google: 'Google',
-    microsoft: 'Microsoft',
     facebook: 'Facebook',
     apple: 'Apple',
   };
@@ -136,11 +135,6 @@ export function getOAuthProviderInfo(provider: string): {
       name: 'Google',
       color: '#4285f4',
       icon: 'G',
-    },
-    microsoft: {
-      name: 'Microsoft',
-      color: '#00a4ef',
-      icon: 'M',
     },
   };
 

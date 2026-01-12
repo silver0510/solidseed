@@ -4,7 +4,7 @@
  * This module configures Better Auth with:
  * - PostgreSQL database adapter (Supabase)
  * - Email and password authentication
- * - OAuth providers (Google, Microsoft)
+ * - OAuth provider (Google)
  * - Email verification
  * - JWT session management
  * - Password hashing with bcrypt
@@ -17,8 +17,6 @@
  * - SUPABASE_DATABASE_URL: PostgreSQL connection string
  * - GOOGLE_CLIENT_ID: Google OAuth client ID
  * - GOOGLE_CLIENT_SECRET: Google OAuth client secret
- * - MICROSOFT_CLIENT_ID: Microsoft OAuth client ID
- * - MICROSOFT_CLIENT_SECRET: Microsoft OAuth client secret
  * - RESEND_API_KEY: Resend API key for emails
  * - RESEND_FROM_EMAIL: Sender email address
  */
@@ -28,7 +26,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaClient } from '../generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
-import { googleOAuthConfig, microsoftOAuthConfig } from '../config/oauth.config';
+import { googleOAuthConfig } from '../config/oauth.config';
 import {
   sendEmailVerificationEmail,
   sendPasswordResetEmail,
@@ -201,11 +199,6 @@ export const auth = betterAuth({
     google: {
       clientId: googleOAuthConfig.clientId,
       clientSecret: googleOAuthConfig.clientSecret,
-      enabled: true,
-    },
-    microsoft: {
-      clientId: microsoftOAuthConfig.clientId,
-      clientSecret: microsoftOAuthConfig.clientSecret,
       enabled: true,
     },
   },

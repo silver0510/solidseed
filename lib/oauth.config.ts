@@ -3,8 +3,8 @@ import { z } from 'zod';
 /**
  * OAuth Provider Configuration
  *
- * This file defines the OAuth configuration structure for Google and Microsoft
- * providers used with Better Auth in the Korella CRM application.
+ * This file defines the OAuth configuration structure for Google provider
+ * used with Better Auth in the Korella CRM application.
  *
  * @see https://www.better-auth.com/docs/authentication/social
  * @see docs/oauth-setup.md for setup instructions
@@ -33,7 +33,6 @@ export interface OAuthProviderConfig {
  */
 export interface OAuthConfig {
   google: OAuthProviderConfig;
-  microsoft: OAuthProviderConfig;
 }
 
 // ============================================================================
@@ -50,16 +49,6 @@ export const GOOGLE_SCOPES = [
   'profile',
 ] as const;
 
-/**
- * Microsoft OAuth 2.0 scopes
- * @see https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent
- */
-export const MICROSOFT_SCOPES = [
-  'openid',
-  'email',
-  'profile',
-  'User.Read',
-] as const;
 
 // ============================================================================
 // Redirect URI Builders
@@ -73,7 +62,7 @@ export const MICROSOFT_SCOPES = [
  */
 export function buildRedirectUri(
   appUrl: string,
-  provider: 'google' | 'microsoft'
+  provider: 'google'
 ): string {
   // Remove trailing slash from app URL if present
   const baseUrl = appUrl.replace(/\/$/, '');
@@ -100,22 +89,6 @@ export const oauthEnvSchema = z.object({
     .string()
     .min(1, 'Google Client Secret is required'),
 
-  // Microsoft OAuth
-  MICROSOFT_CLIENT_ID: z
-    .string()
-    .min(1, 'Microsoft Client ID is required')
-    .refine(
-      (val) => {
-        // Microsoft Application IDs are UUIDs
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        return uuidRegex.test(val) || val.startsWith('your-');
-      },
-      'Microsoft Client ID should be a valid UUID'
-    ),
-  MICROSOFT_CLIENT_SECRET: z
-    .string()
-    .min(1, 'Microsoft Client Secret is required'),
-
   // App URL for building redirect URIs
   BETTER_AUTH_URL: z
     .string()
@@ -141,12 +114,6 @@ export function createOAuthConfig(env: OAuthEnv): OAuthConfig {
       clientSecret: env.GOOGLE_CLIENT_SECRET,
       redirectUri: buildRedirectUri(env.BETTER_AUTH_URL, 'google'),
       scopes: GOOGLE_SCOPES,
-    },
-    microsoft: {
-      clientId: env.MICROSOFT_CLIENT_ID,
-      clientSecret: env.MICROSOFT_CLIENT_SECRET,
-      redirectUri: buildRedirectUri(env.BETTER_AUTH_URL, 'microsoft'),
-      scopes: MICROSOFT_SCOPES,
     },
   };
 }
@@ -175,8 +142,6 @@ export function createOAuthConfig(env: OAuthEnv): OAuthConfig {
 export function getBetterAuthSocialProviders() {
   const googleClientId = process.env.GOOGLE_CLIENT_ID;
   const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const microsoftClientId = process.env.MICROSOFT_CLIENT_ID;
-  const microsoftClientSecret = process.env.MICROSOFT_CLIENT_SECRET;
 
   // Validate required variables
   if (!googleClientId || !googleClientSecret) {
@@ -185,20 +150,10 @@ export function getBetterAuthSocialProviders() {
     );
   }
 
-  if (!microsoftClientId || !microsoftClientSecret) {
-    throw new Error(
-      'Missing Microsoft OAuth credentials. Set MICROSOFT_CLIENT_ID and MICROSOFT_CLIENT_SECRET.'
-    );
-  }
-
   return {
     google: {
       clientId: googleClientId,
       clientSecret: googleClientSecret,
-    },
-    microsoft: {
-      clientId: microsoftClientId,
-      clientSecret: microsoftClientSecret,
     },
   };
 }
@@ -212,7 +167,6 @@ export function getBetterAuthSocialProviders() {
  */
 export const OAUTH_PROVIDER_NAMES = {
   google: 'Google',
-  microsoft: 'Microsoft',
 } as const;
 
 /**
@@ -220,13 +174,12 @@ export const OAUTH_PROVIDER_NAMES = {
  */
 export const OAUTH_PROVIDER_ICONS = {
   google: '/icons/google.svg',
-  microsoft: '/icons/microsoft.svg',
 } as const;
 
 /**
  * Supported OAuth providers
  */
-export const SUPPORTED_OAUTH_PROVIDERS = ['google', 'microsoft'] as const;
+export const SUPPORTED_OAUTH_PROVIDERS = ['google'] as const;
 
 export type SupportedOAuthProvider = (typeof SUPPORTED_OAUTH_PROVIDERS)[number];
 

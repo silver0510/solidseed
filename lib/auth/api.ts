@@ -219,7 +219,7 @@ export async function logout(): Promise<void> {
  * Initiate OAuth login
  * Uses Better Auth client library to handle OAuth flow
  */
-export async function initiateOAuth(provider: 'google' | 'microsoft'): Promise<void> {
+export async function initiateOAuth(provider: 'google'): Promise<void> {
   // Import dynamically to avoid SSR issues
   const { authClient } = await import('./client');
 

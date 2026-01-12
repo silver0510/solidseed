@@ -1,14 +1,11 @@
 /**
  * OAuth Provider Configuration for Korella CRM
  *
- * This module provides OAuth configuration for Google and Microsoft
- * social login providers.
+ * This module provides OAuth configuration for Google social login provider.
  *
  * Environment Variables Required:
  * - GOOGLE_CLIENT_ID: Google OAuth 2.0 Client ID
  * - GOOGLE_CLIENT_SECRET: Google OAuth 2.0 Client Secret
- * - MICROSOFT_CLIENT_ID: Microsoft Azure AD Application ID
- * - MICROSOFT_CLIENT_SECRET: Microsoft Azure AD Client Secret
  * - APP_URL: Base URL of the application (for OAuth callbacks)
  */
 
@@ -24,8 +21,6 @@ export function validateOAuthConfig(): void {
   const required = [
     'GOOGLE_CLIENT_ID',
     'GOOGLE_CLIENT_SECRET',
-    'MICROSOFT_CLIENT_ID',
-    'MICROSOFT_CLIENT_SECRET',
   ];
 
   const missing = required.filter((key) => !process.env[key]);
@@ -63,29 +58,12 @@ export const googleOAuthConfig = {
   }),
 } as const;
 
-/**
- * Microsoft OAuth configuration
- */
-export const microsoftOAuthConfig = {
-  clientId: process.env.MICROSOFT_CLIENT_ID || '',
-  clientSecret: process.env.MICROSOFT_CLIENT_SECRET || '',
-  redirectUri: `${appUrl}/api/auth/callback/microsoft`,
-  scopes: ['email', 'profile'],
-  // Map Microsoft profile fields to user fields
-  mapProfileToUser: (profile: Record<string, unknown>) => ({
-    name: profile.displayName as string,
-    email: profile.mail || profile.userPrincipalName as string,
-    image: null, // Microsoft doesn't always provide profile photo in basic profile
-    emailVerified: true, // Microsoft emails are pre-verified
-  }),
-} as const;
 
 /**
  * Combined OAuth providers configuration
  */
 export const oauthProviders = {
   google: googleOAuthConfig,
-  microsoft: microsoftOAuthConfig,
 } as const;
 
 /**
