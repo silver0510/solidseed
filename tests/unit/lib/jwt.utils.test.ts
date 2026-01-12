@@ -25,8 +25,8 @@ import {
   isExtendedSession,
   getTokenErrorMessage,
   getTokenErrorCode,
-} from '../../../src/lib/utils/jwt.utils';
-import { securityConstants } from '../../../src/config/database';
+} from '../../../lib/utils/jwt.utils';
+import { securityConstants } from '../../../config/database';
 
 describe('JWT Utils', () => {
   describe('extractTokenFromHeader', () => {

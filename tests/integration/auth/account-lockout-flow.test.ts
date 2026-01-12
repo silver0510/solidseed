@@ -26,7 +26,7 @@ describe('Account Lockout Flow Integration Tests', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        full_name: 'Lockout Test User',
+        fullName: 'Lockout Test User',
         email: testUserEmail,
         password: testUserPassword,
       }),
@@ -282,7 +282,7 @@ describe('Account Lockout Flow Integration Tests', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          full_name: 'Second User',
+          fullName: 'Second User',
           email: secondUserEmail,
           password: 'SecondUser123!',
         }),

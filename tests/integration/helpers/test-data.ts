@@ -5,10 +5,10 @@
  */
 
 export const testUser = {
-  full_name: 'Test User',
+  fullName: 'Test User',
   email: 'test@example.com',
   password: 'TestPassword123!',
-  weak_password: 'weak',
+  weakPassword: 'weak',
 };
 
 export const generateTestEmail = () => {
@@ -17,7 +17,7 @@ export const generateTestEmail = () => {
 
 export const generateTestUser = () => {
   return {
-    full_name: `Test User ${Date.now()}`,
+    fullName: `Test User ${Date.now()}`,
     email: generateTestEmail(),
     password: 'TestPassword123!',
   };
@@ -84,7 +84,7 @@ export const login = async (
     body: JSON.stringify({
       email,
       password,
-      remember_me: rememberMe,
+      rememberMe,
     }),
   });
 
