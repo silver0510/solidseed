@@ -1,0 +1,307 @@
+// Korella CRM Database Schema
+// Generated from Supabase migrations
+// Last synced: 2026-01-12
+//
+// This file is the source of truth for database structure documentation.
+// Use /pm:db-sync to validate against actual migrations.
+
+Project korella {
+  database_type: 'PostgreSQL'
+  note: 'Korella CRM - Real Estate Professional Platform'
+}
+
+// =============================================================================
+// AUTHENTICATION TABLES
+// =============================================================================
+
+// Core user accounts for Korella CRM authentication
+// Compatible with Better Auth library through field mapping
+Table users {
+  id varchar(255) [pk, note: 'Unique identifier (CUID from Better Auth)']
+
+  // Core identity fields
+  email varchar(255) [not null, unique, note: 'User email address, used for login']
+  password_hash varchar(255) [note: 'Bcrypt hashed password, null for OAuth-only accounts']
+  full_name varchar(255) [not null, note: 'User display name']
+
+  // Email verification status
+  email_verified boolean [not null, default: false, note: 'Whether email has been verified']
+  email_verified_at timestamptz [note: 'Timestamp when email was verified']
+
+  // OAuth profile image URL
+  image varchar(500) [note: 'OAuth profile image URL']
+
+  // Account status and subscription
+  account_status varchar(50) [not null, default: 'pending', note: 'Account status: pending, active, suspended, deactivated']
+  subscription_tier varchar(50) [not null, default: 'trial', note: 'Subscription level: trial, free, pro, enterprise']
+  trial_expires_at timestamptz [note: 'When trial period ends (14 days from verification)']
+
+  // Security: failed login tracking and account lockout
+  failed_login_count integer [not null, default: 0, note: 'Failed login attempts counter (resets on success)']
+  locked_until timestamptz [note: 'Account locked until this time (after 5 failed attempts)']
+
+  // Session tracking
+  last_login_at timestamptz [note: 'Timestamp of last successful login']
+  last_login_ip varchar(45) [note: 'IP address of last successful login (supports IPv6)']
+
+  // Soft delete flag for GDPR compliance
+  is_deleted boolean [not null, default: false, note: 'Soft delete flag for GDPR compliance']
+
+  // Timestamps
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`, note: 'Record creation timestamp']
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`, note: 'Record last update timestamp']
+
+  indexes {
+    email [name: 'idx_users_email']
+    account_status [name: 'idx_users_account_status']
+    subscription_tier [name: 'idx_users_subscription_tier']
+    email_verified [name: 'idx_users_email_verified']
+    is_deleted [name: 'idx_users_is_deleted']
+    (locked_until) [name: 'idx_users_locked_until', note: 'WHERE locked_until IS NOT NULL']
+  }
+
+  note: 'Core user accounts for Korella CRM authentication'
+}
+
+// OAuth provider account mappings for social login
+// Enables Google and Microsoft login and account linking
+Table oauth_providers {
+  id varchar(255) [pk, note: 'Unique identifier (CUID)']
+
+  // Foreign key to users table
+  user_id varchar(255) [not null, ref: > users.id, note: 'Reference to users table']
+
+  // OAuth provider information
+  provider varchar(50) [not null, note: 'OAuth provider name (google, microsoft)']
+  provider_id varchar(255) [not null, note: 'User ID from the OAuth provider']
+
+  // OAuth tokens (optional, for API access)
+  access_token text [note: 'OAuth access token (encrypted at rest by Supabase)']
+  refresh_token text [note: 'OAuth refresh token for token renewal']
+  access_token_expires_at timestamptz [note: 'When the access token expires']
+
+  // OAuth ID token (JWT from provider)
+  id_token text [note: 'OAuth ID token (JWT)']
+
+  // OAuth scope/permissions
+  scope text [note: 'OAuth scope/permissions']
+
+  // Provider profile data (cached)
+  provider_email varchar(255) [note: 'Email from OAuth provider profile']
+  provider_name varchar(255) [note: 'Display name from OAuth provider profile']
+  provider_avatar_url text [note: 'Avatar URL from OAuth provider profile']
+
+  // Timestamps
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`, note: 'Record creation timestamp']
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`, note: 'Record last update timestamp']
+
+  indexes {
+    user_id [name: 'idx_oauth_providers_user_id']
+    provider [name: 'idx_oauth_providers_provider']
+    (provider, provider_id) [name: 'idx_oauth_providers_provider_lookup', unique]
+  }
+
+  note: 'OAuth provider account mappings for social login'
+}
+
+// Temporary password reset tokens (1-hour expiration)
+Table password_resets {
+  id varchar(255) [pk, note: 'Unique identifier (CUID)']
+
+  // Foreign key to users table
+  user_id varchar(255) [not null, ref: > users.id, note: 'Reference to users table']
+
+  // Reset token (secure random string)
+  token varchar(255) [not null, unique, note: 'Secure random token for password reset']
+
+  // Token expiration (1 hour from creation)
+  expires_at timestamptz [not null, note: 'Token expiration time (1 hour from creation)']
+
+  // Whether token has been used
+  used boolean [not null, default: false, note: 'Whether token has been used']
+  used_at timestamptz [note: 'When token was used']
+
+  // Request metadata for security logging
+  request_ip varchar(45) [note: 'IP address that requested the reset']
+  request_user_agent text [note: 'User agent that requested the reset']
+
+  // Timestamps
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`, note: 'Record creation timestamp']
+
+  indexes {
+    user_id [name: 'idx_password_resets_user_id']
+    token [name: 'idx_password_resets_token']
+    expires_at [name: 'idx_password_resets_expires_at']
+    (token, expires_at, used) [name: 'idx_password_resets_valid', note: 'WHERE used = false']
+  }
+
+  note: 'Temporary password reset tokens (1-hour expiration)'
+}
+
+// Temporary email verification tokens (24-hour expiration)
+Table email_verifications {
+  id varchar(255) [pk, note: 'Unique identifier (CUID)']
+
+  // Foreign key to users table
+  user_id varchar(255) [not null, ref: > users.id, note: 'Reference to users table']
+
+  // Verification token (secure random string)
+  token varchar(255) [not null, unique, note: 'Secure random token for email verification']
+
+  // Email being verified (in case user changes email)
+  email varchar(255) [not null, note: 'Email address being verified']
+
+  // Token expiration (24 hours from creation)
+  expires_at timestamptz [not null, note: 'Token expiration time (24 hours from creation)']
+
+  // Whether token has been used
+  verified boolean [not null, default: false, note: 'Whether email has been verified using this token']
+  verified_at timestamptz [note: 'When verification was completed']
+
+  // Request metadata
+  request_ip varchar(45) [note: 'IP address that requested verification']
+  request_user_agent text [note: 'User agent that requested verification']
+
+  // Timestamps
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`, note: 'Record creation timestamp']
+
+  indexes {
+    user_id [name: 'idx_email_verifications_user_id']
+    token [name: 'idx_email_verifications_token']
+    expires_at [name: 'idx_email_verifications_expires_at']
+    (token, expires_at, verified) [name: 'idx_email_verifications_valid', note: 'WHERE verified = false']
+  }
+
+  note: 'Temporary email verification tokens (24-hour expiration)'
+}
+
+// Authentication event audit log (7-day retention)
+Table auth_logs {
+  id varchar(255) [pk, note: 'Unique identifier (CUID)']
+
+  // Optional foreign key to users table (null for failed lookups)
+  user_id varchar(255) [ref: > users.id, note: 'Reference to users table (null for failed lookups)']
+
+  // Event type for categorization
+  event_type varchar(50) [not null, note: 'Type of authentication event']
+  // Allowed values: login_success, login_fail, logout, password_reset_request,
+  // password_reset_complete, password_change, email_verification,
+  // email_verification_resend, account_lockout, account_unlock,
+  // oauth_login, oauth_link, oauth_unlink, registration,
+  // account_deactivate, account_reactivate
+
+  // Event details
+  event_details jsonb [note: 'JSON object with event-specific details']
+
+  // Request metadata
+  ip_address varchar(45) [note: 'Client IP address (supports IPv6)']
+  user_agent text [note: 'Client user agent string']
+  session_id varchar(255) [note: 'Session identifier if available']
+
+  // Target email (for events without user_id)
+  target_email varchar(255) [note: 'Email attempted (for failed login lookups)']
+
+  // Success/failure indicator
+  success boolean [not null, default: true, note: 'Whether the operation succeeded']
+  failure_reason text [note: 'Reason for failure if success is false']
+
+  // Timestamps
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`, note: 'Event timestamp']
+
+  indexes {
+    user_id [name: 'idx_auth_logs_user_id']
+    created_at [name: 'idx_auth_logs_created_at']
+    event_type [name: 'idx_auth_logs_event_type']
+    (ip_address, event_type, created_at) [name: 'idx_auth_logs_ip_event']
+    (user_id, event_type, created_at) [name: 'idx_auth_logs_user_activity', note: 'WHERE user_id IS NOT NULL']
+    (ip_address, created_at) [name: 'idx_auth_logs_failures', note: 'WHERE success = false']
+    target_email [name: 'idx_auth_logs_target_email', note: 'WHERE target_email IS NOT NULL']
+  }
+
+  note: 'Authentication event audit log (7-day retention)'
+}
+
+// Verification tokens for Better Auth (email, password reset, OAuth state)
+Table verification {
+  id varchar(255) [pk, note: 'Unique identifier (CUID from Better Auth)']
+
+  // Identifier being verified (email, phone, etc.)
+  identifier varchar(255) [not null, note: 'Email or other identifier being verified']
+
+  // Verification token/code
+  value varchar(255) [not null, note: 'Verification token or code']
+
+  // Expiration timestamp
+  expires_at timestamptz [not null, note: 'When the verification token expires']
+
+  // Timestamps
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`, note: 'Record creation timestamp']
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`, note: 'Record last update timestamp']
+
+  indexes {
+    identifier [name: 'idx_verification_identifier']
+    expires_at [name: 'idx_verification_expires_at']
+    (identifier, value) [name: 'idx_verification_identifier_value']
+  }
+
+  note: 'Verification tokens for Better Auth (email, password reset, OAuth state)'
+}
+
+// User sessions for authentication (JWT-based, minimal DB usage)
+Table sessions {
+  id varchar(255) [pk, note: 'Unique identifier (CUID from Better Auth)']
+
+  // Foreign key to users table
+  user_id varchar(255) [not null, ref: > users.id, note: 'Reference to users table']
+
+  // Session token (unique identifier)
+  token varchar(255) [not null, unique, note: 'Session token (matches JWT)']
+
+  // Expiration timestamp
+  expires_at timestamptz [not null, note: 'When the session expires']
+
+  // Optional session metadata
+  ip_address varchar(45) [note: 'IP address of session creation (supports IPv6)']
+  user_agent text [note: 'Browser user agent string']
+
+  // Timestamps
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`, note: 'Record creation timestamp']
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`, note: 'Record last update timestamp']
+
+  indexes {
+    user_id [name: 'idx_sessions_user_id']
+    token [name: 'idx_sessions_token']
+    expires_at [name: 'idx_sessions_expires_at']
+  }
+
+  note: 'User sessions for authentication (JWT-based, minimal DB usage)'
+}
+
+// =============================================================================
+// TABLE GROUPS
+// =============================================================================
+
+TableGroup authentication {
+  users
+  oauth_providers
+  password_resets
+  email_verifications
+  auth_logs
+  verification
+  sessions
+}
+
+// =============================================================================
+// ENUMS (Represented as CHECK constraints in PostgreSQL)
+// =============================================================================
+
+// Note: These are implemented as CHECK constraints in the actual database
+//
+// account_status: pending, active, suspended, deactivated
+// subscription_tier: trial, free, pro, enterprise
+// oauth_provider: google, microsoft
+// event_type: login_success, login_fail, logout, password_reset_request,
+//             password_reset_complete, password_change, email_verification,
+//             email_verification_resend, account_lockout, account_unlock,
+//             oauth_login, oauth_link, oauth_unlink, registration,
+//             account_deactivate, account_reactivate

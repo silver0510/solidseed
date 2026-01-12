@@ -11,6 +11,7 @@ This command updates the project context documentation in `.claude/context/` to 
 **IMPORTANT:** Before executing this command, read and follow:
 
 - `.claude/rules/datetime.md` - For getting real current date/time
+- `.claude/rules/database-operations.md` - For database schema conventions
 
 ## Preflight Checklist
 
@@ -56,6 +57,12 @@ Gather information about what has changed:
 - C/C++: `git diff HEAD~5..HEAD CMakeLists.txt 2>/dev/null`
 - Check if new dependencies were added or versions changed across any build system
 
+**Database Schema Changes:**
+
+- Check migrations: `git diff HEAD~5..HEAD supabase/migrations/ 2>/dev/null`
+- Check DBML: `git diff HEAD~5..HEAD .claude/database/database.dbml 2>/dev/null`
+- If migrations changed but DBML didn't, suggest: "⚠️ Migrations changed but database.dbml may be out of sync. Consider running /pm:db-sync validate"
+
 ### 3. Get Current DateTime
 
 - Run: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
@@ -96,12 +103,15 @@ For each context file, determine if updates are needed:
 
 - Check: Package files for new dependencies or version changes
 - Check: New architecture patterns adopted
+- Check: Database schema changes in `.claude/database/database.dbml`
 - Update sections:
   - Core Technologies (if versions changed)
   - Services & Tools (if new services added)
   - Architecture Patterns (if new patterns adopted)
   - Directory Structure (if significant restructuring)
-  - Database Schema (if tables added/modified)
+  - Database Schema (if tables added/modified in DBML)
+    - Update table list from database.dbml
+    - Update table group information
   - Environment Variables (if new vars added)
 - Include security updates or breaking changes
 

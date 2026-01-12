@@ -17,6 +17,7 @@ Convert PRD to technical implementation epic.
 **IMPORTANT:** Before executing this command, read and follow:
 
 - `.claude/rules/datetime.md` - For getting real current date/time
+- `.claude/rules/database-operations.md` - For database schema conventions
 
 ## Preflight Checklist
 
@@ -49,6 +50,11 @@ Do not bother the user with preflight checks progress ("I'm not going to ..."). 
    - Ensure `.claude/epics/` directory exists or can be created
    - If cannot create, tell user: "❌ Cannot create epic directory. Please check permissions."
 
+6. **Load current database schema:**
+   - Read `.claude/database/database.dbml` if it exists
+   - Use this as reference for existing tables and conventions
+   - If DBML doesn't exist, warn: "⚠️ No database.dbml found. Run /pm:db-sync generate to create one."
+
 ## Instructions
 
 You are a technical lead converting a Product Requirements Document into a detailed implementation epic for: **$ARGUMENTS**
@@ -68,6 +74,10 @@ You are a technical lead converting a Product Requirements Document into a detai
 - Determine technology stack and approaches
 - Map functional requirements to technical components
 - Identify integration points and dependencies
+- **Reference existing database schema** from `.claude/database/database.dbml`:
+  - Identify existing tables that can be reused
+  - Plan new tables following established naming conventions
+  - Note relationships with existing tables
 
 ### 3. File Format with Frontmatter
 
@@ -113,17 +123,43 @@ Brief technical summary (2-3 sentences) of the implementation approach and key t
 
 ### Database Schema
 
+**Reference**: See `.claude/database/database.dbml` for existing schema and conventions.
+
+**Existing Tables Used**:
+- [List tables from DBML that this feature will use]
+
+**New Tables** (follow conventions from database.dbml):
+
 ```sql
--- Complete SQL for all tables with comments
+-- Complete SQL for all new tables with comments
+-- Use VARCHAR(255) for IDs (CUID compatibility with Better Auth)
 CREATE TABLE table_name (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id VARCHAR(255) PRIMARY KEY,
   field_name TYPE CONSTRAINTS,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- All indexes
-CREATE INDEX idx_name ON table_name(field);
-CREATE INDEX idx_composite ON table_name(field1, field2);
+-- All indexes (follow idx_{table}_{column} naming)
+CREATE INDEX idx_table_field ON table_name(field);
+CREATE INDEX idx_table_composite ON table_name(field1, field2);
+```
+
+**DBML Addition** (to be added to database.dbml):
+
+```dbml
+Table table_name {
+  id varchar(255) [pk, note: 'Unique identifier (CUID)']
+  // ... columns
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    field [name: 'idx_table_field']
+  }
+
+  note: 'Table description'
+}
 ```
 
 [Include complete schema from PRD with all tables, indexes, constraints]
@@ -324,6 +360,8 @@ Before saving the epic, verify:
 - [ ] Success criteria are measurable and testable
 - [ ] Effort estimates are realistic
 - [ ] NO "Task Breakdown Preview" section (redundant with actual tasks)
+- [ ] Database schema references existing DBML conventions
+- [ ] New tables include DBML addition section for /pm:db-sync
 
 ### 7. Post-Creation
 
@@ -337,6 +375,7 @@ After successfully creating the epic:
    - Third-Party Setup services documented
    - Estimated effort
 3. Suggest next step: "Ready to break down into tasks? Run: /pm:epic-decompose $ARGUMENTS"
+4. If new database tables are defined: "Remember to update database.dbml after creating migrations: /pm:db-sync update"
 
 **Quality Check**: Epic should be 400-600 lines with comprehensive implementation details.
 

@@ -11,6 +11,7 @@ This command creates the initial project context documentation in `.claude/conte
 **IMPORTANT:** Before executing this command, read and follow:
 
 - `.claude/rules/datetime.md` - For getting real current date/time
+- `.claude/rules/database-operations.md` - For database schema conventions
 
 ## Preflight Checklist
 
@@ -46,6 +47,12 @@ Do not bother the user with preflight checks progress ("I'm not going to ..."). 
 
 - Run: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
 - Store this value for use in all context file frontmatter
+
+### 5. Check Database Schema
+
+- Check if `.claude/database/database.dbml` exists
+- If exists, load it for database documentation in tech-stack.md
+- If not, note: "⚠️ No database.dbml found. Consider running /pm:db-sync generate"
 
 ## Instructions
 
@@ -114,7 +121,10 @@ Generate the following initial context files:
    - Include: Services & tools (email, monitoring, storage, testing)
    - Include: Architecture patterns (mobile-first, soft delete, auth patterns)
    - Include: Directory structure (streamlined version)
-   - Include: Database schema (tables overview)
+   - Include: Database schema overview from `.claude/database/database.dbml`:
+     - List all tables with brief descriptions
+     - Note table groups (authentication, client_hub, etc.)
+     - Reference the DBML file for full details
    - Include: Environment variables (key variables)
    - Include: Integration requirements (setup instructions)
    - Include: Performance targets and cost analysis

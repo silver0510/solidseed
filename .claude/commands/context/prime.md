@@ -76,7 +76,17 @@ After loading context files:
 - Check for `.env.example` or similar for environment setup needs
 - Check if there are PRDs or epics in `.claude/prds/` or `.claude/epics/`
 
-### 4. Error Recovery
+### 4. Load Database Schema
+
+- Check if `.claude/database/database.dbml` exists
+- If exists, load and parse:
+  - Count total tables
+  - Identify table groups
+  - Note key relationships
+- If not exists, note: "⚠️ No database.dbml found - database schema not documented"
+- Include database summary in project understanding
+
+### 5. Error Recovery
 
 **If critical files are missing:**
 
@@ -90,7 +100,7 @@ After loading context files:
 - Suggest running `/context:update` to refresh context
 - Continue with partial context but note limitations
 
-### 5. Loading Summary
+### 6. Loading Summary
 
 Provide comprehensive summary after priming:
 
@@ -109,6 +119,11 @@ Provide comprehensive summary after priming:
   - Status: {current_status from progress.md}
   - Branch: {git_branch}
 
+🗄️ Database Schema:
+  - Tables: {count} tables in {groups_count} groups
+  - Source: .claude/database/database.dbml
+  - Groups: {list table groups e.g., authentication, client_hub}
+
 📊 Key Metrics:
   - Last Updated: {most_recent_update}
   - Context Version: {version}
@@ -119,6 +134,7 @@ Provide comprehensive summary after priming:
 
 🎯 Ready State:
   ✅ Project context loaded
+  ✅ Database schema understood
   ✅ Current status understood
   ✅ Ready for development work
 
@@ -126,7 +142,7 @@ Provide comprehensive summary after priming:
   {2-3 sentence summary of what the project is and current state}
 ```
 
-### 6. Partial Context Handling
+### 7. Partial Context Handling
 
 If some files fail to load:
 
@@ -136,7 +152,7 @@ If some files fail to load:
   - "Missing project overview - run /context:create to rebuild"
   - "Progress file corrupted - run /context:update to refresh"
 
-### 7. Performance Optimization
+### 8. Performance Optimization
 
 For large contexts:
 

@@ -17,6 +17,7 @@ Break epic into concrete, actionable tasks.
 **IMPORTANT:** Before executing this command, read and follow:
 
 - `.claude/rules/datetime.md` - For getting real current date/time
+- `.claude/rules/database-operations.md` - For database schema conventions
 
 ## Preflight Checklist
 
@@ -40,6 +41,11 @@ Do not bother the user with preflight checks progress ("I'm not going to ..."). 
 
 4. **Check epic status:**
    - If epic status is already "completed", warn user: "⚠️ Epic is marked as completed. Are you sure you want to decompose it again?"
+
+5. **Load database schema reference:**
+   - Read `.claude/database/database.dbml` if it exists
+   - Use this to understand existing tables for database-related tasks
+   - If epic has database changes, ensure tasks include DBML update step
 
 ## Instructions
 
@@ -212,6 +218,7 @@ Save tasks as: `.claude/epics/$ARGUMENTS/{task_number}.md`
 
 - **Setup tasks**: Environment, dependencies, scaffolding
 - **Data tasks**: Models, schemas, migrations
+  - **IMPORTANT**: Database migration tasks MUST include a checklist item: "Update .claude/database/database.dbml"
 - **API tasks**: Endpoints, services, integration
 - **UI tasks**: Components, pages, styling
 - **Testing tasks**: Unit tests, integration tests
@@ -291,6 +298,7 @@ Before finalizing tasks, verify:
 - [ ] Combined tasks cover all epic requirements
 - [ ] No technical implementation details in regular tasks (belongs in epic)
 - [ ] Each task checklist includes "Tests written" and "All tests passing"
+- [ ] Database migration tasks include "Update .claude/database/database.dbml" checklist item
 
 ### 10. Post-Decomposition
 
