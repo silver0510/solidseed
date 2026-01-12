@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:test": "npx env-cmd -f .env.test npm run dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

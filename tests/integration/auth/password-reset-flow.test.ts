@@ -28,7 +28,7 @@ describe('Password Reset Flow Integration Tests', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        full_name: 'Reset Test User',
+        fullName: 'Reset Test User',
         email: testUserEmail,
         password: testUserPassword,
       }),

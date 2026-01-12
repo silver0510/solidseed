@@ -198,7 +198,9 @@ export function formatValidationError(error: z.ZodError): {
   message: string;
   details: Array<{ field: string; message: string }>;
 } {
-  const details = error.errors.map((err) => ({
+  // Use .issues (primary) or .errors (alias) with defensive fallback
+  const issues = error.issues || error.errors || [];
+  const details = issues.map((err) => ({
     field: err.path.join('.'),
     message: err.message,
   }));
@@ -224,6 +226,17 @@ export async function validateRequestBody<T>(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { data: null as any, error: formatValidationError(error) };
+    }
+    // Handle JSON parsing errors
+    if (error instanceof SyntaxError) {
+      return {
+        data: null as any,
+        error: {
+          error: 'Validation Error',
+          message: 'Invalid JSON in request body',
+          details: [{ field: 'body', message: error.message }],
+        },
+      };
     }
     throw error;
   }

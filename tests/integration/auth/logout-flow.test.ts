@@ -28,7 +28,7 @@ describe('Logout Flow Integration Tests', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        full_name: 'Logout Test User',
+        fullName: 'Logout Test User',
         email: testUserEmail,
         password: testUserPassword,
       }),
@@ -167,7 +167,7 @@ describe('Logout Flow Integration Tests', () => {
         body: JSON.stringify({
           email: testUserEmail,
           password: testUserPassword,
-          remember_me: true,
+          rememberMe: true,
         }),
       });
 
@@ -203,7 +203,7 @@ describe('Logout Flow Integration Tests', () => {
         body: JSON.stringify({
           email: testUserEmail,
           password: testUserPassword,
-          remember_me: true,
+          rememberMe: true,
         }),
       });
 
