@@ -278,6 +278,139 @@ Table sessions {
 }
 
 // =============================================================================
+// CLIENT HUB TABLES
+// =============================================================================
+
+// Core client profiles managed by real estate professionals
+Table clients {
+  id varchar(255) [pk, note: 'Unique identifier (CUID)']
+
+  // Client identity
+  name varchar(255) [not null, note: 'Client full name']
+  email varchar(255) [not null, unique, note: 'Client email address']
+  phone varchar(50) [not null, unique, note: 'Phone in +1-XXX-XXX-XXXX format']
+  birthday date [note: 'Client birthday for relationship building']
+  address text [note: 'Client mailing/home address']
+
+  // Search optimization
+  search_vector tsvector [note: 'Full-text search vector (auto-generated)']
+
+  // Ownership and access control
+  created_by varchar(255) [not null, ref: > users.id, note: 'User who created the client']
+  assigned_to varchar(255) [not null, ref: > users.id, note: 'Agent assigned to client']
+
+  // Soft delete
+  is_deleted boolean [not null, default: false, note: 'Soft delete flag for GDPR']
+
+  // Timestamps
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    assigned_to [name: 'idx_clients_assigned_to']
+    is_deleted [name: 'idx_clients_is_deleted']
+    created_at [name: 'idx_clients_created_at']
+    email [name: 'idx_clients_email']
+    phone [name: 'idx_clients_phone']
+    search_vector [name: 'idx_clients_search_vector', type: GIN]
+  }
+
+  note: 'Core client profiles managed by real estate professionals'
+}
+
+// Flexible tagging system for client organization
+Table client_tags {
+  id varchar(255) [pk, note: 'Unique identifier (CUID)']
+  client_id varchar(255) [not null, ref: > clients.id, note: 'Reference to client']
+  tag_name varchar(100) [not null, note: 'Tag label']
+  created_by varchar(255) [not null, ref: > users.id, note: 'User who created tag']
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    client_id [name: 'idx_client_tags_client_id']
+    tag_name [name: 'idx_client_tags_tag_name']
+    (client_id, tag_name) [unique, name: 'idx_client_tags_unique']
+  }
+
+  note: 'Flexible tagging system for client organization'
+}
+
+// Document storage for client files
+Table client_documents {
+  id varchar(255) [pk, note: 'Unique identifier (CUID)']
+  client_id varchar(255) [not null, ref: > clients.id, note: 'Reference to client']
+
+  // File metadata
+  file_name varchar(255) [not null, note: 'Original filename']
+  file_path text [not null, unique, note: 'Supabase Storage path']
+  file_size integer [not null, note: 'File size in bytes (max 10MB)']
+  file_type varchar(50) [not null, note: 'MIME type']
+  description text [note: 'Document description']
+
+  // Audit
+  uploaded_by varchar(255) [not null, ref: > users.id, note: 'User who uploaded']
+  uploaded_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    client_id [name: 'idx_client_documents_client_id']
+    uploaded_at [name: 'idx_client_documents_uploaded_at']
+  }
+
+  note: 'Document storage for client files (max 10MB per file)'
+}
+
+// Activity and interaction notes
+Table client_notes {
+  id varchar(255) [pk, note: 'Unique identifier (CUID)']
+  client_id varchar(255) [not null, ref: > clients.id, note: 'Reference to client']
+  content text [not null, note: 'Note content (min 1 char)']
+  is_important boolean [not null, default: false, note: 'Important flag for highlighting']
+  created_by varchar(255) [not null, ref: > users.id, note: 'User who created note']
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    client_id [name: 'idx_client_notes_client_id']
+    created_at [name: 'idx_client_notes_created_at']
+    is_important [name: 'idx_client_notes_is_important']
+  }
+
+  note: 'Activity and interaction notes for clients'
+}
+
+// Task management with due dates and priorities
+Table client_tasks {
+  id varchar(255) [pk, note: 'Unique identifier (CUID)']
+  client_id varchar(255) [not null, ref: > clients.id, note: 'Reference to client']
+
+  // Task details
+  title varchar(255) [not null, note: 'Task title']
+  description text [note: 'Task description']
+  due_date date [not null, note: 'Task due date']
+  priority varchar(20) [not null, default: 'medium', note: 'Priority: low, medium, high']
+  status varchar(20) [not null, default: 'pending', note: 'Status: pending, completed']
+  completed_at timestamptz [note: 'When task was completed']
+
+  // Ownership
+  created_by varchar(255) [not null, ref: > users.id, note: 'User who created task']
+  assigned_to varchar(255) [not null, ref: > users.id, note: 'User assigned to task']
+
+  // Timestamps
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    client_id [name: 'idx_client_tasks_client_id']
+    assigned_to [name: 'idx_client_tasks_assigned_to']
+    due_date [name: 'idx_client_tasks_due_date']
+    status [name: 'idx_client_tasks_status']
+    priority [name: 'idx_client_tasks_priority']
+  }
+
+  note: 'Task management with due dates and priorities'
+}
+
+// =============================================================================
 // TABLE GROUPS
 // =============================================================================
 
@@ -289,6 +422,14 @@ TableGroup authentication {
   auth_logs
   verification
   sessions
+}
+
+TableGroup client_hub {
+  clients
+  client_tags
+  client_documents
+  client_notes
+  client_tasks
 }
 
 // =============================================================================
