@@ -1,8 +1,8 @@
 ---
 name: client-hub
-status: backlog
+status: in-progress
 created: 2026-01-12T04:02:10Z
-progress: 14%
+progress: 28%
 prd: .claude/prds/client-hub.md
 github: [Will be updated when synced to GitHub]
 ---
