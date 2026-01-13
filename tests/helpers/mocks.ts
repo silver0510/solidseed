@@ -4,6 +4,9 @@
  * Provides mock implementations for external services and dependencies.
  */
 
+import { randomUUID } from 'crypto';
+import { TEST_IDS } from './fixtures';
+
 /**
  * Mock email service for testing email-related flows
  */
@@ -113,8 +116,8 @@ export const mockJWT = {
   } = {}) => {
     const now = Math.floor(Date.now() / 1000);
     return {
-      sub: overrides.userId || 'user-123',
-      userId: overrides.userId || 'user-123',
+      sub: overrides.userId || TEST_IDS.USER_1,
+      userId: overrides.userId || TEST_IDS.USER_1,
       email: overrides.email || 'test@example.com',
       name: 'Test User',
       subscriptionTier: overrides.subscriptionTier || 'trial',
@@ -128,8 +131,8 @@ export const mockJWT = {
   createExpiredPayload: () => {
     const now = Math.floor(Date.now() / 1000);
     return {
-      sub: 'user-123',
-      userId: 'user-123',
+      sub: TEST_IDS.USER_1,
+      userId: TEST_IDS.USER_1,
       email: 'test@example.com',
       name: 'Test User',
       subscriptionTier: 'trial',
@@ -143,8 +146,8 @@ export const mockJWT = {
     const now = Math.floor(Date.now() / 1000);
     const thirtyDays = 30 * 24 * 60 * 60;
     return {
-      sub: 'user-123',
-      userId: 'user-123',
+      sub: TEST_IDS.USER_1,
+      userId: TEST_IDS.USER_1,
       email: 'test@example.com',
       name: 'Test User',
       subscriptionTier: 'pro',
@@ -169,7 +172,7 @@ export const mockDatabase = {
     is_locked?: boolean;
     email_verified?: boolean;
   } = {}) => ({
-    id: overrides.id || 'user-123',
+    id: overrides.id || TEST_IDS.USER_1,
     full_name: 'Test User',
     email: overrides.email || 'test@example.com',
     subscription_tier: overrides.subscription_tier || 'trial',
@@ -191,8 +194,8 @@ export const mockDatabase = {
     success?: boolean;
     ip_address?: string;
   } = {}) => ({
-    id: 'log-123',
-    user_id: overrides.user_id || 'user-123',
+    id: TEST_IDS.LOG_1,
+    user_id: overrides.user_id || TEST_IDS.USER_1,
     event_type: overrides.event_type || 'login',
     success: overrides.success ?? true,
     ip_address: overrides.ip_address || '127.0.0.1',

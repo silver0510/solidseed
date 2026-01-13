@@ -9,6 +9,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { TEST_IDS } from '../../helpers/fixtures';
 
 // =============================================================================
 // Mock Setup - Must be before imports
@@ -116,7 +117,7 @@ describe('Security Service Unit Tests', () => {
     // Set default successful response for INSERT queries
     setMockResults([{
       id: 'mock-id-123',
-      user_id: 'user-123',
+      user_id: TEST_IDS.USER_1,
       event_type: 'login_success',
       success: true,
       created_at: new Date().toISOString(),
@@ -132,7 +133,7 @@ describe('Security Service Unit Tests', () => {
       it('should log authentication event successfully', async () => {
         setMockResults([{
           id: 'mock-id-123',
-          user_id: 'user-123',
+          user_id: TEST_IDS.USER_1,
           event_type: 'login_success',
           success: true,
           ip_address: '192.168.1.1',
@@ -141,7 +142,7 @@ describe('Security Service Unit Tests', () => {
         }]);
 
         const result = await logAuthEvent({
-          userId: 'user-123',
+          userId: TEST_IDS.USER_1,
           eventType: 'login_success',
           success: true,
           ipAddress: '192.168.1.1',
@@ -157,7 +158,7 @@ describe('Security Service Unit Tests', () => {
       it('should log event with optional fields', async () => {
         setMockResults([{
           id: 'mock-id-123',
-          user_id: 'user-123',
+          user_id: TEST_IDS.USER_1,
           event_type: 'login_fail',
           success: false,
           failure_reason: 'Invalid password',
@@ -167,7 +168,7 @@ describe('Security Service Unit Tests', () => {
         }]);
 
         const result = await logAuthEvent({
-          userId: 'user-123',
+          userId: TEST_IDS.USER_1,
           eventType: 'login_fail',
           success: false,
           failureReason: 'Invalid password',
@@ -187,7 +188,7 @@ describe('Security Service Unit Tests', () => {
 
         // This function returns void, so just verify it doesn't throw
         await expect(
-          logLoginSuccess('user-123', '192.168.1.1', 'Mozilla/5.0', 'session-456')
+          logLoginSuccess(TEST_IDS.USER_1, '192.168.1.1', 'Mozilla/5.0', 'session-456')
         ).resolves.not.toThrow();
 
         expect(mockSql).toHaveBeenCalled();
@@ -211,7 +212,7 @@ describe('Security Service Unit Tests', () => {
         setMockResults([{ id: 'log-123' }]);
 
         await expect(
-          logLogout('user-123', 'session-456')
+          logLogout(TEST_IDS.USER_1, 'session-456')
         ).resolves.not.toThrow();
 
         expect(mockSql).toHaveBeenCalled();
@@ -223,7 +224,7 @@ describe('Security Service Unit Tests', () => {
         setMockResults([{ id: 'log-123' }]);
 
         await expect(
-          logPasswordReset('user-123', '192.168.1.1', 'Mozilla/5.0')
+          logPasswordReset(TEST_IDS.USER_1, '192.168.1.1', 'Mozilla/5.0')
         ).resolves.not.toThrow();
 
         expect(mockSql).toHaveBeenCalled();
@@ -235,7 +236,7 @@ describe('Security Service Unit Tests', () => {
         setMockResults([{ id: 'log-123' }]);
 
         await expect(
-          logPasswordChange('user-123', '192.168.1.1', 'Mozilla/5.0')
+          logPasswordChange(TEST_IDS.USER_1, '192.168.1.1', 'Mozilla/5.0')
         ).resolves.not.toThrow();
 
         expect(mockSql).toHaveBeenCalled();
@@ -247,7 +248,7 @@ describe('Security Service Unit Tests', () => {
         setMockResults([{ id: 'log-123' }]);
 
         await expect(
-          logAccountLockout('user-123', '192.168.1.1', 5)
+          logAccountLockout(TEST_IDS.USER_1, '192.168.1.1', 5)
         ).resolves.not.toThrow();
 
         expect(mockSql).toHaveBeenCalled();
@@ -309,7 +310,7 @@ describe('Security Service Unit Tests', () => {
     describe('lockAccount', () => {
       it('should lock account and return lock details', async () => {
         // First call for UPDATE, second for SELECT failed_login_count, third for log
-        setMockResults([{ id: 'user-123' }]);
+        setMockResults([{ id: TEST_IDS.USER_1 }]);
 
         const result = await lockAccount('test@example.com');
 
@@ -372,7 +373,7 @@ describe('Security Service Unit Tests', () => {
       it('should reset failed count successfully', async () => {
         setMockResults([]);
 
-        const result = await resetFailedLoginCount('user-123');
+        const result = await resetFailedLoginCount(TEST_IDS.USER_1);
 
         expect(result).toBe(true);
         expect(mockSql).toHaveBeenCalled();
@@ -429,7 +430,7 @@ describe('Security Service Unit Tests', () => {
         ];
         setMockResults(mockLogs);
 
-        const result = await getUserAuthLogs('user-123');
+        const result = await getUserAuthLogs(TEST_IDS.USER_1);
 
         expect(result).toHaveLength(2);
         expect(result[0].event_type).toBe('login_success');
@@ -438,7 +439,7 @@ describe('Security Service Unit Tests', () => {
       it('should return empty array for user with no logs', async () => {
         setMockResults([]);
 
-        const result = await getUserAuthLogs('user-123');
+        const result = await getUserAuthLogs(TEST_IDS.USER_1);
 
         expect(result).toHaveLength(0);
       });
@@ -478,7 +479,7 @@ describe('Security Service Unit Tests', () => {
     });
 
     it('should use correct lockout duration (30 minutes)', async () => {
-      setMockResults([{ id: 'user-123' }]);
+      setMockResults([{ id: TEST_IDS.USER_1 }]);
 
       const result = await lockAccount('test@example.com');
 

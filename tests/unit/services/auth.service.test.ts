@@ -198,6 +198,7 @@ import {
   resetPassword,
   changePassword,
 } from '../../../services/auth.service';
+import { TEST_IDS } from '../../helpers/fixtures';
 
 // =============================================================================
 // Test Helpers
@@ -229,7 +230,7 @@ function resetAllMocks() {
 
 function createMockUser(overrides = {}) {
   return {
-    id: 'user-123',
+    id: TEST_IDS.USER_1,
     email: 'test@example.com',
     password_hash: 'hashed-password',
     full_name: 'Test User',
@@ -261,7 +262,7 @@ describe('Auth Service Unit Tests', () => {
     mockSendEmailVerificationEmail.mockResolvedValue({ success: true });
     mockSendPasswordResetEmail.mockResolvedValue({ success: true });
     mockSendPasswordChangedEmail.mockResolvedValue({ success: true });
-    mockPrismaAuthLogs.create.mockResolvedValue({ id: 'log-123' });
+    mockPrismaAuthLogs.create.mockResolvedValue({ id: TEST_IDS.LOG_1 });
   });
 
   afterEach(() => {
@@ -523,7 +524,7 @@ describe('Auth Service Unit Tests', () => {
     it('should verify email with valid token', async () => {
       const mockVerification = {
         id: 'verification-123',
-        user_id: 'user-123',
+        user_id: TEST_IDS.USER_1,
         token: 'valid-token',
         verified: false,
         expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -552,7 +553,7 @@ describe('Auth Service Unit Tests', () => {
     it('should reject expired token', async () => {
       const mockVerification = {
         id: 'verification-123',
-        user_id: 'user-123',
+        user_id: TEST_IDS.USER_1,
         token: 'expired-token',
         verified: false,
         expires_at: new Date(Date.now() - 60 * 60 * 1000), // Expired 1 hour ago
@@ -570,7 +571,7 @@ describe('Auth Service Unit Tests', () => {
     it('should handle already verified token', async () => {
       const mockVerification = {
         id: 'verification-123',
-        user_id: 'user-123',
+        user_id: TEST_IDS.USER_1,
         token: 'already-verified',
         verified: true,
         expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -773,7 +774,7 @@ describe('Auth Service Unit Tests', () => {
     it('should reset password with valid token', async () => {
       const mockReset = {
         id: 'reset-123',
-        user_id: 'user-123',
+        user_id: TEST_IDS.USER_1,
         token: 'valid-reset-token',
         used: false,
         expires_at: new Date(Date.now() + 60 * 60 * 1000),
@@ -810,7 +811,7 @@ describe('Auth Service Unit Tests', () => {
       mockPrismaUsers.update.mockResolvedValue(createMockUser());
 
       const result = await changePassword(
-        'user-123',
+        TEST_IDS.USER_1,
         'CurrentPassword123!',
         'NewPassword456!'
       );
@@ -824,7 +825,7 @@ describe('Auth Service Unit Tests', () => {
       mockBcryptCompare.mockResolvedValue(false);
 
       const result = await changePassword(
-        'user-123',
+        TEST_IDS.USER_1,
         'WrongPassword123!',
         'NewPassword456!'
       );
@@ -840,7 +841,7 @@ describe('Auth Service Unit Tests', () => {
         .mockResolvedValueOnce(true); // New password == current check
 
       const result = await changePassword(
-        'user-123',
+        TEST_IDS.USER_1,
         'SamePassword123!',
         'SamePassword123!'
       );

@@ -22,6 +22,7 @@ import {
   getUserSubscriptionStatus,
 } from '../../../services/session.service';
 import { securityConstants } from '../../../config/database';
+import { TEST_IDS } from '../../helpers/fixtures';
 
 // Mock the database
 vi.mock('@neondatabase/serverless', () => ({
@@ -39,12 +40,12 @@ describe('Session Service', () => {
     it('should return valid for active user', async () => {
       // This test would require mocking the database query
       // For now, we'll test the structure
-      const result = await validateSession('user-123');
+      const result = await validateSession(TEST_IDS.USER_1);
 
       // In a real test with mocked DB:
       // expect(result.valid).toBe(true);
       // expect(result.user).toBeDefined();
-      // expect(result.user?.id).toBe('user-123');
+      // expect(result.user?.id).toBe(TEST_IDS.USER_1);
     });
 
     it('should return error for deleted user', async () => {
@@ -80,14 +81,14 @@ describe('Session Service', () => {
   describe('logoutUser', () => {
     it('should successfully logout user', async () => {
       // Test would mock DB to log logout event
-      // const result = await logoutUser('user-123', '127.0.0.1', 'TestAgent');
+      // const result = await logoutUser(TEST_IDS.USER_1, '127.0.0.1', 'TestAgent');
       // expect(result.success).toBe(true);
       // expect(result.message).toBe('Logged out successfully');
     });
 
     it('should handle logout errors gracefully', async () => {
       // Test would mock DB to throw error
-      // const result = await logoutUser('user-123', '127.0.0.1', 'TestAgent');
+      // const result = await logoutUser(TEST_IDS.USER_1, '127.0.0.1', 'TestAgent');
       // expect(result.success).toBe(false);
       // expect(result.message).toBe('Failed to logout');
     });
@@ -139,7 +140,7 @@ describe('Session Service', () => {
   describe('getSessionState', () => {
     it('should return active for valid user', () => {
       const mockUser = {
-        id: 'user-123',
+        id: TEST_IDS.USER_1,
         email: 'test@example.com',
         email_verified: true,
         account_status: 'active',
@@ -155,7 +156,7 @@ describe('Session Service', () => {
 
     it('should return invalid for deleted user', () => {
       const mockUser = {
-        id: 'user-123',
+        id: TEST_IDS.USER_1,
         email: 'test@example.com',
         email_verified: true,
         account_status: 'active',
@@ -171,7 +172,7 @@ describe('Session Service', () => {
 
     it('should return revoked for deactivated user', () => {
       const mockUser = {
-        id: 'user-123',
+        id: TEST_IDS.USER_1,
         email: 'test@example.com',
         email_verified: true,
         account_status: 'deactivated',
@@ -190,7 +191,7 @@ describe('Session Service', () => {
       futureDate.setHours(futureDate.getHours() + 1);
 
       const mockUser = {
-        id: 'user-123',
+        id: TEST_IDS.USER_1,
         email: 'test@example.com',
         email_verified: true,
         account_status: 'active',
@@ -209,7 +210,7 @@ describe('Session Service', () => {
       pastDate.setHours(pastDate.getHours() - 1);
 
       const mockUser = {
-        id: 'user-123',
+        id: TEST_IDS.USER_1,
         email: 'test@example.com',
         email_verified: true,
         account_status: 'active',
@@ -224,7 +225,7 @@ describe('Session Service', () => {
 
     it('should return revoked for unverified user', () => {
       const mockUser = {
-        id: 'user-123',
+        id: TEST_IDS.USER_1,
         email: 'test@example.com',
         email_verified: false,
         account_status: 'active',
