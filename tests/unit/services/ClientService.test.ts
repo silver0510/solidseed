@@ -324,3 +324,492 @@ describe('ClientService.createClient', () => {
     await expect(service.createClient(clientInput)).rejects.toThrow('Database connection failed');
   });
 });
+
+describe('ClientService.listClients', () => {
+  let service: ClientService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    service = new ClientService();
+  });
+
+  describe('Pagination', () => {
+    it('should use default limit of 20 items', async () => {
+      const mockClients = Array.from({ length: 20 }, (_, i) => ({
+        id: `client_${i}`,
+        name: `Client ${i}`,
+        email: `client${i}@example.com`,
+        created_by: 'user_123',
+        assigned_to: 'user_123',
+        is_deleted: false,
+        created_at: new Date(Date.now() - i * 1000).toISOString(),
+        updated_at: new Date(Date.now() - i * 1000).toISOString(),
+      }));
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 100,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      const result = await service.listClients({});
+
+      expect(mockChain.limit).toHaveBeenCalledWith(20);
+      expect(result.data).toHaveLength(20);
+      expect(result.total_count).toBe(100);
+    });
+
+    it('should respect custom limit parameter', async () => {
+      const mockClients = Array.from({ length: 10 }, (_, i) => ({
+        id: `client_${i}`,
+        name: `Client ${i}`,
+        email: `client${i}@example.com`,
+        created_by: 'user_123',
+        assigned_to: 'user_123',
+        is_deleted: false,
+        created_at: new Date(Date.now() - i * 1000).toISOString(),
+        updated_at: new Date(Date.now() - i * 1000).toISOString(),
+      }));
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 50,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      const result = await service.listClients({ limit: 10 });
+
+      expect(mockChain.limit).toHaveBeenCalledWith(10);
+      expect(result.data).toHaveLength(10);
+    });
+
+    it('should enforce max limit of 100 items', async () => {
+      const mockClients = Array.from({ length: 100 }, (_, i) => ({
+        id: `client_${i}`,
+        name: `Client ${i}`,
+        email: `client${i}@example.com`,
+        created_by: 'user_123',
+        assigned_to: 'user_123',
+        is_deleted: false,
+        created_at: new Date(Date.now() - i * 1000).toISOString(),
+        updated_at: new Date(Date.now() - i * 1000).toISOString(),
+      }));
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 500,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      // Request 200 but should get capped at 100
+      const result = await service.listClients({ limit: 200 });
+
+      expect(mockChain.limit).toHaveBeenCalledWith(100);
+      expect(result.data).toHaveLength(100);
+    });
+
+    it('should use cursor for pagination', async () => {
+      const cursor = '2026-01-10T10:00:00Z';
+      const mockClients = Array.from({ length: 20 }, (_, i) => ({
+        id: `client_${i}`,
+        name: `Client ${i}`,
+        email: `client${i}@example.com`,
+        created_by: 'user_123',
+        assigned_to: 'user_123',
+        is_deleted: false,
+        created_at: new Date(Date.now() - (i + 100) * 1000).toISOString(),
+        updated_at: new Date(Date.now() - (i + 100) * 1000).toISOString(),
+      }));
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        lt: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 100,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      await service.listClients({ cursor });
+
+      expect(mockChain.lt).toHaveBeenCalledWith('created_at', cursor);
+    });
+
+    it('should return next_cursor when more data exists', async () => {
+      const mockClients = Array.from({ length: 20 }, (_, i) => ({
+        id: `client_${i}`,
+        name: `Client ${i}`,
+        email: `client${i}@example.com`,
+        created_by: 'user_123',
+        assigned_to: 'user_123',
+        is_deleted: false,
+        created_at: new Date(Date.now() - i * 1000).toISOString(),
+        updated_at: new Date(Date.now() - i * 1000).toISOString(),
+      }));
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 100, // More items exist
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      const result = await service.listClients({ limit: 20 });
+
+      // next_cursor should be the created_at of the last item
+      expect(result.next_cursor).toBe(mockClients[19].created_at);
+    });
+
+    it('should not return next_cursor when no more data exists', async () => {
+      const mockClients = Array.from({ length: 15 }, (_, i) => ({
+        id: `client_${i}`,
+        name: `Client ${i}`,
+        email: `client${i}@example.com`,
+        created_by: 'user_123',
+        assigned_to: 'user_123',
+        is_deleted: false,
+        created_at: new Date(Date.now() - i * 1000).toISOString(),
+        updated_at: new Date(Date.now() - i * 1000).toISOString(),
+      }));
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 15,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      const result = await service.listClients({ limit: 20 });
+
+      // Less than limit returned, so no next_cursor
+      expect(result.next_cursor).toBeUndefined();
+    });
+  });
+
+  describe('Search', () => {
+    it('should search by name', async () => {
+      const mockClients = [
+        {
+          id: 'client_1',
+          name: 'John Doe',
+          email: 'john@example.com',
+          created_by: 'user_123',
+          assigned_to: 'user_123',
+          is_deleted: false,
+          created_at: '2026-01-13T10:00:00Z',
+          updated_at: '2026-01-13T10:00:00Z',
+        },
+      ];
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        or: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 1,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      await service.listClients({ search: 'John' });
+
+      expect(mockChain.or).toHaveBeenCalledWith('name.ilike.%John%,email.ilike.%John%');
+    });
+
+    it('should search by email', async () => {
+      const mockClients = [
+        {
+          id: 'client_1',
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          created_by: 'user_123',
+          assigned_to: 'user_123',
+          is_deleted: false,
+          created_at: '2026-01-13T10:00:00Z',
+          updated_at: '2026-01-13T10:00:00Z',
+        },
+      ];
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        or: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 1,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      await service.listClients({ search: 'jane@' });
+
+      expect(mockChain.or).toHaveBeenCalledWith('name.ilike.%jane@%,email.ilike.%jane@%');
+    });
+
+    it('should return matching results only', async () => {
+      const mockClients = [
+        {
+          id: 'client_1',
+          name: 'John Doe',
+          email: 'john@example.com',
+          created_by: 'user_123',
+          assigned_to: 'user_123',
+          is_deleted: false,
+          created_at: '2026-01-13T10:00:00Z',
+          updated_at: '2026-01-13T10:00:00Z',
+        },
+        {
+          id: 'client_2',
+          name: 'Johnny Walker',
+          email: 'johnny@example.com',
+          created_by: 'user_123',
+          assigned_to: 'user_123',
+          is_deleted: false,
+          created_at: '2026-01-13T09:00:00Z',
+          updated_at: '2026-01-13T09:00:00Z',
+        },
+      ];
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        or: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 2,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      const result = await service.listClients({ search: 'John' });
+
+      expect(result.data).toHaveLength(2);
+      expect(result.total_count).toBe(2);
+    });
+  });
+
+  describe('Filtering', () => {
+    it('should filter by tag', async () => {
+      const mockClients = [
+        {
+          id: 'client_1',
+          name: 'John Doe',
+          email: 'john@example.com',
+          created_by: 'user_123',
+          assigned_to: 'user_123',
+          is_deleted: false,
+          created_at: '2026-01-13T10:00:00Z',
+          updated_at: '2026-01-13T10:00:00Z',
+          client_tags: [{ tag_name: 'VIP' }],
+        },
+      ];
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        contains: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 1,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      await service.listClients({ tag: 'VIP' });
+
+      expect(mockChain.contains).toHaveBeenCalledWith('client_tags', [{ tag_name: 'VIP' }]);
+    });
+
+    it('should always exclude soft-deleted clients', async () => {
+      const mockClients = [
+        {
+          id: 'client_1',
+          name: 'Active Client',
+          email: 'active@example.com',
+          created_by: 'user_123',
+          assigned_to: 'user_123',
+          is_deleted: false,
+          created_at: '2026-01-13T10:00:00Z',
+          updated_at: '2026-01-13T10:00:00Z',
+        },
+      ];
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 1,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      await service.listClients({});
+
+      // Verify is_deleted = false is always applied
+      expect(mockChain.eq).toHaveBeenCalledWith('is_deleted', false);
+    });
+  });
+
+  describe('Sorting', () => {
+    it('should sort by created_at descending by default', async () => {
+      const mockClients = [
+        {
+          id: 'client_1',
+          name: 'Client 1',
+          email: 'client1@example.com',
+          created_by: 'user_123',
+          assigned_to: 'user_123',
+          is_deleted: false,
+          created_at: '2026-01-13T10:00:00Z',
+          updated_at: '2026-01-13T10:00:00Z',
+        },
+      ];
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 1,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      await service.listClients({});
+
+      expect(mockChain.order).toHaveBeenCalledWith('created_at', { ascending: false });
+    });
+
+    it('should support sorting by name', async () => {
+      const mockClients = [
+        {
+          id: 'client_1',
+          name: 'Alice',
+          email: 'alice@example.com',
+          created_by: 'user_123',
+          assigned_to: 'user_123',
+          is_deleted: false,
+          created_at: '2026-01-13T10:00:00Z',
+          updated_at: '2026-01-13T10:00:00Z',
+        },
+      ];
+
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockClients,
+          error: null,
+          count: 1,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      await service.listClients({ sort: 'name' });
+
+      expect(mockChain.order).toHaveBeenCalledWith('name', { ascending: false });
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should throw error when database query fails', async () => {
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: null,
+          error: {
+            message: 'Database connection failed',
+          },
+          count: null,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      await expect(service.listClients({})).rejects.toThrow('Database connection failed');
+    });
+
+    it('should handle empty result set', async () => {
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: [],
+          error: null,
+          count: 0,
+        }),
+      };
+
+      mockSupabaseFrom.mockReturnValue(mockChain);
+
+      const result = await service.listClients({});
+
+      expect(result.data).toEqual([]);
+      expect(result.total_count).toBe(0);
+      expect(result.next_cursor).toBeUndefined();
+    });
+  });
+});
