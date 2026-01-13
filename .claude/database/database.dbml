@@ -312,7 +312,7 @@ Table clients {
     created_at [name: 'idx_clients_created_at']
     email [name: 'idx_clients_email']
     phone [name: 'idx_clients_phone']
-    search_vector [name: 'idx_clients_search_vector', type: GIN]
+    search_vector [name: 'idx_clients_search_vector']
   }
 
   note: 'Core client profiles managed by real estate professionals'
