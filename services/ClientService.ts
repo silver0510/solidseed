@@ -107,4 +107,83 @@ export class ClientService {
 
     return client;
   }
+
+  /**
+   * List clients with pagination, search, and filtering
+   *
+   * @param params - Query parameters for filtering and pagination
+   * @returns Promise<PaginatedClients> Paginated client list with total count and cursor
+   * @throws {Error} If database query fails
+   *
+   * @example
+   * ```typescript
+   * // Basic pagination
+   * const result = await clientService.listClients({ limit: 20 });
+   *
+   * // With cursor for next page
+   * const nextPage = await clientService.listClients({
+   *   cursor: result.next_cursor,
+   *   limit: 20
+   * });
+   *
+   * // Search by name or email
+   * const searchResults = await clientService.listClients({
+   *   search: 'john',
+   *   limit: 10
+   * });
+   *
+   * // Filter by tag
+   * const vipClients = await clientService.listClients({
+   *   tag: 'VIP',
+   *   limit: 50
+   * });
+   * ```
+   */
+  async listClients(params: ListClientsParams): Promise<PaginatedClients> {
+    // Enforce limit: default 20, max 100
+    const limit = Math.min(params.limit || 20, 100);
+
+    // Build query with count for pagination
+    let query = this.supabase
+      .from('clients')
+      .select('*, client_tags(tag_name)', { count: 'exact' })
+      .eq('is_deleted', false)
+      .order(params.sort || 'created_at', { ascending: false });
+
+    // Cursor-based pagination using created_at
+    if (params.cursor) {
+      query = query.lt('created_at', params.cursor);
+    }
+
+    // Search by name or email (case-insensitive)
+    if (params.search) {
+      query = query.or(`name.ilike.%${params.search}%,email.ilike.%${params.search}%`);
+    }
+
+    // Filter by tag
+    if (params.tag) {
+      query = query.contains('client_tags', [{ tag_name: params.tag }]);
+    }
+
+    // Apply limit last
+    query = query.limit(limit);
+
+    // Execute query
+    const { data, error, count } = await query;
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    // Calculate next cursor from last item's created_at
+    const next_cursor = data && data.length === limit
+      ? data[data.length - 1].created_at
+      : undefined;
+
+    return {
+      data: data || [],
+      next_cursor,
+      total_count: count || 0,
+    };
+  }
 }

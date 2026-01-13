@@ -3,16 +3,81 @@
  *
  * Handles client management operations.
  *
+ * GET - List clients with pagination, search, and filtering
  * POST - Create a new client
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { ClientService } from '@/services/ClientService';
 import { createClientSchema } from '@/lib/validation/client';
+import type { ListClientsParams } from '@/lib/types/client';
 import { z } from 'zod';
 
 // Initialize ClientService
 const clientService = new ClientService();
+
+/**
+ * GET /api/clients
+ *
+ * List clients with pagination, search, and filtering
+ *
+ * Query parameters:
+ * - cursor: string (optional) - Pagination cursor (created_at timestamp)
+ * - limit: number (optional) - Items per page (default: 20, max: 100)
+ * - search: string (optional) - Search by name or email
+ * - tag: string (optional) - Filter by tag name
+ * - sort: 'created_at' | 'name' (optional) - Sort field (default: created_at)
+ *
+ * Response:
+ * - 200: Paginated client list
+ * - 500: Internal server error
+ *
+ * @example
+ * ```typescript
+ * // Get first page
+ * const response = await fetch('/api/clients?limit=20');
+ *
+ * // Get next page
+ * const response = await fetch('/api/clients?cursor=2026-01-13T10:00:00Z&limit=20');
+ *
+ * // Search clients
+ * const response = await fetch('/api/clients?search=john&limit=10');
+ *
+ * // Filter by tag
+ * const response = await fetch('/api/clients?tag=VIP&limit=50');
+ * ```
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+
+    // Parse query parameters
+    const params: ListClientsParams = {
+      cursor: searchParams.get('cursor') || undefined,
+      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined,
+      search: searchParams.get('search') || undefined,
+      tag: searchParams.get('tag') || undefined,
+      sort: (searchParams.get('sort') as 'created_at' | 'name') || undefined,
+    };
+
+    // Get paginated clients
+    const result = await clientService.listClients(params);
+
+    return NextResponse.json(result, { status: 200 });
+  } catch (error) {
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message || 'Internal server error' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
 
 /**
  * POST /api/clients

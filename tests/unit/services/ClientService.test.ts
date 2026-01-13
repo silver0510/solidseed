@@ -333,6 +333,17 @@ describe('ClientService.listClients', () => {
     service = new ClientService();
   });
 
+  // Helper to create complete mock chain with all methods
+  const createMockChain = (resolvedValue: any) => ({
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockResolvedValue(resolvedValue),
+    lt: vi.fn().mockReturnThis(),
+    or: vi.fn().mockReturnThis(),
+    contains: vi.fn().mockReturnThis(),
+  });
+
   describe('Pagination', () => {
     it('should use default limit of 20 items', async () => {
       const mockClients = Array.from({ length: 20 }, (_, i) => ({
@@ -346,16 +357,11 @@ describe('ClientService.listClients', () => {
         updated_at: new Date(Date.now() - i * 1000).toISOString(),
       }));
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 100,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 100,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -378,16 +384,11 @@ describe('ClientService.listClients', () => {
         updated_at: new Date(Date.now() - i * 1000).toISOString(),
       }));
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 50,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 50,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -409,16 +410,11 @@ describe('ClientService.listClients', () => {
         updated_at: new Date(Date.now() - i * 1000).toISOString(),
       }));
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 500,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 500,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -442,17 +438,11 @@ describe('ClientService.listClients', () => {
         updated_at: new Date(Date.now() - (i + 100) * 1000).toISOString(),
       }));
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        lt: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 100,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 100,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -473,16 +463,11 @@ describe('ClientService.listClients', () => {
         updated_at: new Date(Date.now() - i * 1000).toISOString(),
       }));
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 100, // More items exist
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 100, // More items exist
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -504,16 +489,11 @@ describe('ClientService.listClients', () => {
         updated_at: new Date(Date.now() - i * 1000).toISOString(),
       }));
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 15,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 15,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -539,23 +519,18 @@ describe('ClientService.listClients', () => {
         },
       ];
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        or: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 1,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 1,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
-      await service.listClients({ search: 'John' });
+      const result = await service.listClients({ search: 'John' });
 
       expect(mockChain.or).toHaveBeenCalledWith('name.ilike.%John%,email.ilike.%John%');
+      expect(result.data).toHaveLength(1);
     });
 
     it('should search by email', async () => {
@@ -572,17 +547,11 @@ describe('ClientService.listClients', () => {
         },
       ];
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        or: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 1,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 1,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -615,17 +584,11 @@ describe('ClientService.listClients', () => {
         },
       ];
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        or: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 2,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 2,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -652,17 +615,11 @@ describe('ClientService.listClients', () => {
         },
       ];
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        contains: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 1,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 1,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -685,16 +642,11 @@ describe('ClientService.listClients', () => {
         },
       ];
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 1,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 1,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -720,16 +672,11 @@ describe('ClientService.listClients', () => {
         },
       ];
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 1,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 1,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -752,16 +699,11 @@ describe('ClientService.listClients', () => {
         },
       ];
 
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: mockClients,
-          error: null,
-          count: 1,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: mockClients,
+        error: null,
+        count: 1,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -773,18 +715,13 @@ describe('ClientService.listClients', () => {
 
   describe('Error Handling', () => {
     it('should throw error when database query fails', async () => {
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: null,
-          error: {
-            message: 'Database connection failed',
-          },
-          count: null,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: null,
+        error: {
+          message: 'Database connection failed',
+        },
+        count: null,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
@@ -792,16 +729,11 @@ describe('ClientService.listClients', () => {
     });
 
     it('should handle empty result set', async () => {
-      const mockChain = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({
-          data: [],
-          error: null,
-          count: 0,
-        }),
-      };
+      const mockChain = createMockChain({
+        data: [],
+        error: null,
+        count: 0,
+      });
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
