@@ -205,4 +205,162 @@ export class ClientService {
       total_count: count || 0,
     };
   }
+
+  /**
+   * Get client by ID with related data counts
+   *
+   * Retrieves a single client record with aggregated counts of related data:
+   * - documents_count: Number of documents attached to this client
+   * - notes_count: Number of notes recorded for this client
+   * - tasks_count: Number of tasks associated with this client
+   *
+   * Returns null for non-existent clients or soft-deleted clients.
+   * Row Level Security (RLS) policies ensure users can only access their own clients.
+   *
+   * @param id - The client ID to retrieve
+   * @returns Promise<Client | null> The client with related counts, or null if not found
+   * @throws {Error} If database query fails (non-404 errors)
+   *
+   * @example
+   * ```typescript
+   * const client = await clientService.getClientById('client_123');
+   *
+   * if (client) {
+   *   console.log(`Client: ${client.name}`);
+   *   console.log(`Documents: ${client.documents_count}`);
+   *   console.log(`Notes: ${client.notes_count}`);
+   *   console.log(`Tasks: ${client.tasks_count}`);
+   * } else {
+   *   console.log('Client not found');
+   * }
+   * ```
+   */
+  async getClientById(id: string): Promise<Client | null> {
+    const { data: client, error } = await this.supabase
+      .from('clients')
+      .select(`
+        *,
+        documents:client_documents(count),
+        notes:client_notes(count),
+        tasks:client_tasks(count)
+      `)
+      .eq('id', id)
+      .eq('is_deleted', false)
+      .single();
+
+    if (error) {
+      // PGRST116 is PostgREST's "row not found" error
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw new Error(error.message);
+    }
+
+    // Transform aggregated counts into simple numeric properties
+    return {
+      ...client,
+      documents_count: client.documents[0]?.count || 0,
+      notes_count: client.notes[0]?.count || 0,
+      tasks_count: client.tasks[0]?.count || 0,
+    };
+  }
+
+  /**
+   * Update client data
+   *
+   * Updates one or more fields of an existing client record.
+   * Only provided fields are updated; omitted fields remain unchanged.
+   *
+   * Returns null for non-existent clients or soft-deleted clients.
+   * Row Level Security (RLS) policies ensure users can only update their own clients.
+   *
+   * @param id - The client ID to update
+   * @param data - Partial client data to update (validated by updateClientSchema)
+   * @returns Promise<Client | null> The updated client, or null if not found
+   * @throws {Error} If database query fails (non-404 errors)
+   *
+   * @example
+   * ```typescript
+   * // Update single field
+   * const updated = await clientService.updateClient('client_123', {
+   *   phone: '+1-555-999-8888'
+   * });
+   *
+   * // Update multiple fields
+   * const updated = await clientService.updateClient('client_123', {
+   *   name: 'Jane Smith Updated',
+   *   email: 'jane.updated@example.com',
+   *   address: '456 Oak Ave, New York, NY 10001'
+   * });
+   *
+   * if (updated) {
+   *   console.log('Client updated successfully');
+   * } else {
+   *   console.log('Client not found');
+   * }
+   * ```
+   */
+  async updateClient(id: string, data: UpdateClientInput): Promise<Client | null> {
+    const { data: client, error } = await this.supabase
+      .from('clients')
+      .update(data)
+      .eq('id', id)
+      .eq('is_deleted', false)
+      .select()
+      .single();
+
+    if (error) {
+      // PGRST116 is PostgREST's "row not found" error
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw new Error(error.message);
+    }
+
+    return client;
+  }
+
+  /**
+   * Soft delete a client
+   *
+   * Marks a client as deleted by setting is_deleted = true.
+   * This is a SOFT DELETE - the record remains in the database for audit purposes
+   * but will be filtered out from all queries.
+   *
+   * NEVER performs hard deletion (DELETE FROM) - this ensures GDPR compliance
+   * and maintains referential integrity with related records.
+   *
+   * Returns true on success, or throws an error if the operation fails.
+   * Row Level Security (RLS) policies ensure users can only delete their own clients.
+   *
+   * @param id - The client ID to soft delete
+   * @returns Promise<boolean> True if deletion succeeded
+   * @throws {Error} If database query fails
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   await clientService.softDeleteClient('client_123');
+   *   console.log('Client soft deleted successfully');
+   *
+   *   // Client still exists in database but is_deleted = true
+   *   // It will not appear in listClients() or getClientById() results
+   * } catch (error) {
+   *   console.error('Failed to delete client:', error.message);
+   * }
+   * ```
+   */
+  async softDeleteClient(id: string): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('clients')
+      .update({ is_deleted: true })
+      .eq('id', id)
+      .eq('is_deleted', false);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return true;
+  }
 }

@@ -745,3 +745,423 @@ describe('ClientService.listClients', () => {
     });
   });
 });
+
+describe('ClientService.getClientById', () => {
+  let service: ClientService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    service = new ClientService();
+  });
+
+  it('should retrieve client by ID with related counts', async () => {
+    const mockClient = {
+      id: 'client_123',
+      name: 'John Doe',
+      email: 'john@example.com',
+      phone: '+1-555-123-4567',
+      created_by: 'user_123',
+      assigned_to: 'user_123',
+      is_deleted: false,
+      created_at: '2026-01-13T10:00:00Z',
+      updated_at: '2026-01-13T10:00:00Z',
+      documents: [{ count: 5 }],
+      notes: [{ count: 3 }],
+      tasks: [{ count: 2 }],
+    };
+
+    const mockChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockClient,
+        error: null,
+      }),
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    const result = await service.getClientById('client_123');
+
+    expect(mockSupabaseFrom).toHaveBeenCalledWith('clients');
+    expect(mockChain.select).toHaveBeenCalledWith(expect.stringContaining('documents:client_documents(count)'));
+    expect(mockChain.eq).toHaveBeenCalledWith('id', 'client_123');
+    expect(mockChain.eq).toHaveBeenCalledWith('is_deleted', false);
+    expect(result).toMatchObject({
+      id: 'client_123',
+      name: 'John Doe',
+      email: 'john@example.com',
+      documents_count: 5,
+      notes_count: 3,
+      tasks_count: 2,
+    });
+  });
+
+  it('should return null for non-existent ID', async () => {
+    const mockChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: {
+          code: 'PGRST116', // PostgREST "not found" error
+          message: 'Row not found',
+        },
+      }),
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    const result = await service.getClientById('non_existent');
+
+    expect(result).toBeNull();
+  });
+
+  it('should filter out soft-deleted clients', async () => {
+    const mockChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: {
+          code: 'PGRST116',
+          message: 'Row not found',
+        },
+      }),
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    const result = await service.getClientById('deleted_client');
+
+    // Verify is_deleted filter was applied
+    expect(mockChain.eq).toHaveBeenCalledWith('is_deleted', false);
+    expect(result).toBeNull();
+  });
+
+  it('should handle clients with zero related items', async () => {
+    const mockClient = {
+      id: 'client_456',
+      name: 'Jane Smith',
+      email: 'jane@example.com',
+      created_by: 'user_123',
+      assigned_to: 'user_123',
+      is_deleted: false,
+      created_at: '2026-01-13T10:00:00Z',
+      updated_at: '2026-01-13T10:00:00Z',
+      documents: [{ count: 0 }],
+      notes: [{ count: 0 }],
+      tasks: [{ count: 0 }],
+    };
+
+    const mockChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockClient,
+        error: null,
+      }),
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    const result = await service.getClientById('client_456');
+
+    expect(result?.documents_count).toBe(0);
+    expect(result?.notes_count).toBe(0);
+    expect(result?.tasks_count).toBe(0);
+  });
+
+  it('should throw error for non-404 database errors', async () => {
+    const mockChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: {
+          code: '42000',
+          message: 'Database connection failed',
+        },
+      }),
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    await expect(service.getClientById('client_123')).rejects.toThrow('Database connection failed');
+  });
+});
+
+describe('ClientService.updateClient', () => {
+  let service: ClientService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    service = new ClientService();
+  });
+
+  it('should update client fields', async () => {
+    const updateData = {
+      name: 'John Updated',
+      email: 'john.updated@example.com',
+    };
+
+    const updatedClient = {
+      id: 'client_123',
+      ...updateData,
+      phone: '+1-555-123-4567',
+      created_by: 'user_123',
+      assigned_to: 'user_123',
+      is_deleted: false,
+      created_at: '2026-01-13T10:00:00Z',
+      updated_at: '2026-01-13T12:00:00Z',
+    };
+
+    const mockChain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: updatedClient,
+        error: null,
+      }),
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    const result = await service.updateClient('client_123', updateData);
+
+    expect(mockSupabaseFrom).toHaveBeenCalledWith('clients');
+    expect(mockChain.update).toHaveBeenCalledWith(updateData);
+    expect(mockChain.eq).toHaveBeenCalledWith('id', 'client_123');
+    expect(mockChain.eq).toHaveBeenCalledWith('is_deleted', false);
+    expect(result).toMatchObject({
+      id: 'client_123',
+      name: 'John Updated',
+      email: 'john.updated@example.com',
+    });
+  });
+
+  it('should return updated client', async () => {
+    const updateData = {
+      phone: '+1-555-999-8888',
+    };
+
+    const updatedClient = {
+      id: 'client_456',
+      name: 'Jane Smith',
+      email: 'jane@example.com',
+      phone: '+1-555-999-8888',
+      created_by: 'user_123',
+      assigned_to: 'user_123',
+      is_deleted: false,
+      created_at: '2026-01-13T10:00:00Z',
+      updated_at: '2026-01-13T12:00:00Z',
+    };
+
+    const mockChain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: updatedClient,
+        error: null,
+      }),
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    const result = await service.updateClient('client_456', updateData);
+
+    expect(result?.phone).toBe('+1-555-999-8888');
+  });
+
+  it('should return null for non-existent ID', async () => {
+    const updateData = {
+      name: 'Updated Name',
+    };
+
+    const mockChain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: {
+          code: 'PGRST116',
+          message: 'Row not found',
+        },
+      }),
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    const result = await service.updateClient('non_existent', updateData);
+
+    expect(result).toBeNull();
+  });
+
+  it('should not update soft-deleted clients', async () => {
+    const updateData = {
+      name: 'Should Not Update',
+    };
+
+    const mockChain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: {
+          code: 'PGRST116',
+          message: 'Row not found',
+        },
+      }),
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    const result = await service.updateClient('deleted_client', updateData);
+
+    // Verify is_deleted filter was applied
+    expect(mockChain.eq).toHaveBeenCalledWith('is_deleted', false);
+    expect(result).toBeNull();
+  });
+
+  it('should throw error for non-404 database errors', async () => {
+    const updateData = {
+      name: 'Updated Name',
+    };
+
+    const mockChain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: {
+          code: '42000',
+          message: 'Database connection failed',
+        },
+      }),
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    await expect(service.updateClient('client_123', updateData)).rejects.toThrow('Database connection failed');
+  });
+});
+
+describe('ClientService.softDeleteClient', () => {
+  let service: ClientService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    service = new ClientService();
+  });
+
+  it('should set is_deleted = true (NOT hard delete)', async () => {
+    const mockChain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn(function(this: any) {
+        // Return this for chaining on first call, return promise on second
+        if (this._eqCallCount === undefined) {
+          this._eqCallCount = 0;
+        }
+        this._eqCallCount++;
+
+        if (this._eqCallCount < 2) {
+          return this;
+        }
+        return Promise.resolve({ data: null, error: null });
+      }),
+      _eqCallCount: 0,
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    const result = await service.softDeleteClient('client_123');
+
+    expect(mockSupabaseFrom).toHaveBeenCalledWith('clients');
+    expect(mockChain.update).toHaveBeenCalledWith({ is_deleted: true });
+    expect(mockChain.eq).toHaveBeenCalledWith('id', 'client_123');
+    expect(mockChain.eq).toHaveBeenCalledWith('is_deleted', false);
+    expect(result).toBe(true);
+  });
+
+  it('should return true on success', async () => {
+    const mockChain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn(function(this: any) {
+        if (this._eqCallCount === undefined) {
+          this._eqCallCount = 0;
+        }
+        this._eqCallCount++;
+
+        if (this._eqCallCount < 2) {
+          return this;
+        }
+        return Promise.resolve({ data: null, error: null });
+      }),
+      _eqCallCount: 0,
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    const result = await service.softDeleteClient('client_456');
+
+    expect(result).toBe(true);
+  });
+
+  it('should only soft delete clients that are not already deleted', async () => {
+    const mockChain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn(function(this: any) {
+        if (this._eqCallCount === undefined) {
+          this._eqCallCount = 0;
+        }
+        this._eqCallCount++;
+
+        if (this._eqCallCount < 2) {
+          return this;
+        }
+        return Promise.resolve({ data: null, error: null });
+      }),
+      _eqCallCount: 0,
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    await service.softDeleteClient('client_789');
+
+    // Verify is_deleted = false filter
+    expect(mockChain.eq).toHaveBeenCalledWith('is_deleted', false);
+  });
+
+  it('should throw error for database failures', async () => {
+    const mockChain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn(function(this: any) {
+        if (this._eqCallCount === undefined) {
+          this._eqCallCount = 0;
+        }
+        this._eqCallCount++;
+
+        if (this._eqCallCount < 2) {
+          return this;
+        }
+        return Promise.resolve({
+          data: null,
+          error: {
+            code: '42000',
+            message: 'Database connection failed',
+          },
+        });
+      }),
+      _eqCallCount: 0,
+    };
+
+    mockSupabaseFrom.mockReturnValue(mockChain);
+
+    await expect(service.softDeleteClient('client_123')).rejects.toThrow('Database connection failed');
+  });
+});
