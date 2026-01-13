@@ -2,8 +2,8 @@
 name: auth-simplification
 status: in-progress
 created: 2026-01-13T07:34:54Z
-updated: 2026-01-13T15:16:54Z
-progress: 29%
+updated: 2026-01-13T15:23:28Z
+progress: 43%
 prd: ../../prds/auth-simplification.md
 github: [Will be updated when synced to GitHub]
 ---
