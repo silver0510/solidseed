@@ -96,6 +96,22 @@ else
 fi
 ```
 
+### Cleanup Ephemeral Files
+
+Remove temporary progress tracking when tasks complete:
+
+```markdown
+# Remove updates folder when closing tasks
+if [ -d ".claude/epics/$epic_name/updates/$task_number" ]; then
+  rm -rf ".claude/epics/$epic_name/updates/$task_number"
+fi
+```
+
+**Cleanup Policy:**
+- **Delete:** `updates/` folders when tasks close (ephemeral progress tracking)
+- **Keep:** `*-analysis.md` files (historical documentation)
+- **Keep:** Task files (`###.md`) with status closed (historical record)
+
 ## GitHub Operations
 
 ### Trust gh CLI
