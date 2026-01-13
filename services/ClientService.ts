@@ -55,5 +55,56 @@ export class ClientService {
     }
   }
 
-  // Methods will be added in subsequent steps
+  /**
+   * Create a new client
+   *
+   * @param data - Client data to create
+   * @returns Promise<Client> The created client record
+   * @throws {Error} If user is not authenticated
+   * @throws {Error} If email or phone already exists
+   * @throws {Error} If database operation fails
+   *
+   * @example
+   * ```typescript
+   * const client = await clientService.createClient({
+   *   name: "John Doe",
+   *   email: "john@example.com",
+   *   phone: "+1-555-123-4567"
+   * });
+   * ```
+   */
+  async createClient(data: CreateClientInput): Promise<Client> {
+    // Generate CUID for new client
+    const id = createId();
+
+    // Get authenticated user from Supabase auth
+    const { data: userData, error: authError } = await this.supabase.auth.getUser();
+
+    if (authError || !userData.user) {
+      throw new Error('Not authenticated');
+    }
+
+    // Insert client into database
+    const { data: client, error } = await this.supabase
+      .from('clients')
+      .insert({
+        id,
+        ...data,
+        created_by: userData.user.id,
+        assigned_to: userData.user.id,
+        is_deleted: false,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      // Check for unique constraint violation (duplicate email/phone)
+      if (error.code === '23505') {
+        throw new Error('Email or phone already exists');
+      }
+      throw new Error(error.message);
+    }
+
+    return client;
+  }
 }
