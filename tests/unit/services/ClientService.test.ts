@@ -725,7 +725,7 @@ describe('ClientService.listClients', () => {
 
       mockSupabaseFrom.mockReturnValue(mockChain);
 
-      await expect(service.listClients({})).rejects.toThrow('Database connection failed');
+      await expect(service.listClients({})).rejects.toThrow('Failed to list clients: Database connection failed');
     });
 
     it('should handle empty result set', async () => {

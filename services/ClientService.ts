@@ -111,8 +111,18 @@ export class ClientService {
   /**
    * List clients with pagination, search, and filtering
    *
+   * Supports cursor-based pagination for efficient browsing of large datasets.
+   * Results are automatically filtered to exclude soft-deleted clients and
+   * respect Row Level Security (RLS) policies.
+   *
    * @param params - Query parameters for filtering and pagination
-   * @returns Promise<PaginatedClients> Paginated client list with total count and cursor
+   * @param params.cursor - Pagination cursor (created_at timestamp from previous page)
+   * @param params.limit - Items per page (default: 20, max: 100)
+   * @param params.search - Search term for name or email (case-insensitive)
+   * @param params.tag - Filter by tag name
+   * @param params.sort - Sort field: 'created_at' (default) or 'name'
+   *
+   * @returns Promise<PaginatedClients> Paginated client list with total count and next cursor
    * @throws {Error} If database query fails
    *
    * @example
@@ -137,11 +147,19 @@ export class ClientService {
    *   tag: 'VIP',
    *   limit: 50
    * });
+   *
+   * // Combine filters
+   * const filtered = await clientService.listClients({
+   *   search: 'smith',
+   *   tag: 'VIP',
+   *   sort: 'name',
+   *   limit: 25
+   * });
    * ```
    */
   async listClients(params: ListClientsParams): Promise<PaginatedClients> {
-    // Enforce limit: default 20, max 100
-    const limit = Math.min(params.limit || 20, 100);
+    // Validate and enforce limit: default 20, max 100
+    const limit = Math.min(Math.max(params.limit || 20, 1), 100);
 
     // Build query with count for pagination
     let query = this.supabase
@@ -172,10 +190,11 @@ export class ClientService {
     const { data, error, count } = await query;
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(`Failed to list clients: ${error.message}`);
     }
 
     // Calculate next cursor from last item's created_at
+    // Only include cursor if we returned a full page (indicating more data may exist)
     const next_cursor = data && data.length === limit
       ? data[data.length - 1].created_at
       : undefined;

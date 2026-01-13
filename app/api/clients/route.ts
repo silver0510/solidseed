@@ -51,13 +51,36 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
 
-    // Parse query parameters
+    // Parse and validate query parameters
+    const limitParam = searchParams.get('limit');
+    const sortParam = searchParams.get('sort');
+
+    // Validate limit is a positive integer
+    let limit: number | undefined;
+    if (limitParam) {
+      limit = parseInt(limitParam, 10);
+      if (isNaN(limit) || limit < 1) {
+        return NextResponse.json(
+          { error: 'Invalid limit parameter. Must be a positive integer.' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate sort parameter
+    if (sortParam && !['created_at', 'name'].includes(sortParam)) {
+      return NextResponse.json(
+        { error: 'Invalid sort parameter. Must be "created_at" or "name".' },
+        { status: 400 }
+      );
+    }
+
     const params: ListClientsParams = {
       cursor: searchParams.get('cursor') || undefined,
-      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined,
+      limit,
       search: searchParams.get('search') || undefined,
       tag: searchParams.get('tag') || undefined,
-      sort: (searchParams.get('sort') as 'created_at' | 'name') || undefined,
+      sort: sortParam as 'created_at' | 'name' | undefined,
     };
 
     // Get paginated clients
