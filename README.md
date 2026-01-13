@@ -16,14 +16,24 @@ npm install
 cp .env.example .env.local
 
 # 4. Configure environment variables
-# Edit .env.local with your credentials (see Setup Guide below)
+# Edit .env.local with your credentials (see Setup Guides below)
 
-# 5. Start development server
+# 5. Setup Supabase (see SUPABASE-SETUP.md)
+
+# 6. Start development server
 npm run dev
 
-# 6. Run integration tests
+# 7. Run integration tests
 ./scripts/integration-test.sh
 ```
+
+## Setup Guides
+
+- [SUPABASE-SETUP.md](./SUPABASE-SETUP.md) - Complete Supabase configuration guide (database, storage, RLS policies)
+- [OAuth Setup](#oauth-setup) - Google and Microsoft OAuth configuration
+- [Email Service Setup](#email-service-setup-resend) - Resend email service configuration
+- [Error Monitoring Setup](#error-monitoring-setup-sentry) - Sentry error tracking setup
+- [Vercel Deployment](#vercel-deployment) - Production deployment guide
 
 ## Project Status
 
@@ -570,17 +580,17 @@ See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for common issues and solutions.
 All environment variables are documented in `.env.example`.
 
 Required variables:
-- `SUPABASE_URL` - From Supabase dashboard
-- `SUPABASE_ANON_KEY` - From Supabase dashboard
-- `SUPABASE_DATABASE_URL` - PostgreSQL connection string
-- `GOOGLE_CLIENT_ID` - From Google Cloud Console
-- `GOOGLE_CLIENT_SECRET` - From Google Cloud Console
-- `RESEND_API_KEY` - From Resend dashboard
+- `SUPABASE_URL` - From Supabase dashboard (see [SUPABASE-SETUP.md](./SUPABASE-SETUP.md))
+- `SUPABASE_ANON_KEY` - From Supabase dashboard (see [SUPABASE-SETUP.md](./SUPABASE-SETUP.md))
+- `SUPABASE_DATABASE_URL` - PostgreSQL connection string (see [SUPABASE-SETUP.md](./SUPABASE-SETUP.md))
+- `GOOGLE_CLIENT_ID` - From Google Cloud Console (see [OAuth Setup](#oauth-setup))
+- `GOOGLE_CLIENT_SECRET` - From Google Cloud Console (see [OAuth Setup](#oauth-setup))
+- `RESEND_API_KEY` - From Resend dashboard (see [Email Service Setup](#email-service-setup-resend))
 - `JWT_SECRET` - Generate random 32+ character string
 
 Optional variables:
-- `SENTRY_DSN` - For error monitoring
-- `NEXT_PUBLIC_SENTRY_DSN` - For client-side monitoring
+- `SENTRY_DSN` - For error monitoring (see [Error Monitoring Setup](#error-monitoring-setup-sentry))
+- `NEXT_PUBLIC_SENTRY_DSN` - For client-side monitoring (see [Error Monitoring Setup](#error-monitoring-setup-sentry))
 
 ## Project Structure
 
@@ -607,7 +617,8 @@ See `.claude/` directory for:
 - Context documentation
 - Project management files
 
-Additional documentation:
+Setup and operational documentation:
+- [SUPABASE-SETUP.md](./SUPABASE-SETUP.md) - Complete Supabase setup guide
 - [TESTING.md](./TESTING.md) - Manual testing checklist
 - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Common issues and solutions
 
