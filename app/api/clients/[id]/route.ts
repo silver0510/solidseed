@@ -55,6 +55,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Validate ID parameter is provided
+    if (!params.id) {
+      return NextResponse.json(
+        { error: 'Client ID is required' },
+        { status: 400 }
+      );
+    }
+
     const client = await clientService.getClientById(params.id);
 
     if (!client) {
@@ -65,9 +73,10 @@ export async function GET(
     }
 
     return NextResponse.json(client, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
@@ -110,10 +119,26 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Validate ID parameter is provided
+    if (!params.id) {
+      return NextResponse.json(
+        { error: 'Client ID is required' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
 
     // Validate input using Zod schema
     const validatedData = updateClientSchema.parse(body);
+
+    // Check if at least one field is provided for update
+    if (Object.keys(validatedData).length === 0) {
+      return NextResponse.json(
+        { error: 'At least one field must be provided for update' },
+        { status: 400 }
+      );
+    }
 
     // Update client
     const client = await clientService.updateClient(params.id, validatedData);
@@ -126,7 +151,7 @@ export async function PATCH(
     }
 
     return NextResponse.json(client, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -135,8 +160,9 @@ export async function PATCH(
       );
     }
 
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
@@ -169,6 +195,14 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Validate ID parameter is provided
+    if (!params.id) {
+      return NextResponse.json(
+        { error: 'Client ID is required' },
+        { status: 400 }
+      );
+    }
+
     const success = await clientService.softDeleteClient(params.id);
 
     if (!success) {
@@ -180,9 +214,10 @@ export async function DELETE(
 
     // 204 No Content - successful deletion with no response body
     return new NextResponse(null, { status: 204 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

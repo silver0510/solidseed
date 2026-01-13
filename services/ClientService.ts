@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createId } from '@paralleldrive/cuid2';
 import type {
   Client,
+  ClientWithCounts,
   CreateClientInput,
   UpdateClientInput,
   ListClientsParams,
@@ -218,7 +219,7 @@ export class ClientService {
    * Row Level Security (RLS) policies ensure users can only access their own clients.
    *
    * @param id - The client ID to retrieve
-   * @returns Promise<Client | null> The client with related counts, or null if not found
+   * @returns Promise<ClientWithCounts | null> The client with related counts, or null if not found
    * @throws {Error} If database query fails (non-404 errors)
    *
    * @example
@@ -235,7 +236,7 @@ export class ClientService {
    * }
    * ```
    */
-  async getClientById(id: string): Promise<Client | null> {
+  async getClientById(id: string): Promise<ClientWithCounts | null> {
     const { data: client, error } = await this.supabase
       .from('clients')
       .select(`

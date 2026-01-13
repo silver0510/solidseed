@@ -27,6 +27,19 @@ export interface Client {
 }
 
 /**
+ * Extended client record with related data counts
+ * Returned by getClientById() to include aggregated counts
+ */
+export interface ClientWithCounts extends Client {
+  /** Number of documents attached to this client */
+  documents_count: number;
+  /** Number of notes recorded for this client */
+  notes_count: number;
+  /** Number of tasks associated with this client */
+  tasks_count: number;
+}
+
+/**
  * Input data for creating a new client
  */
 export interface CreateClientInput {
