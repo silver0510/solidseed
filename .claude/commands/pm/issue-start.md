@@ -224,6 +224,7 @@ Read analysis file (determined in Quick Check):
 - Parse parallel streams
 - Identify which can start immediately
 - Note dependencies between streams
+- **Extract skills for each stream** (from "Skills:" field in analysis)
 
 ### 8. Setup Progress Tracking
 
@@ -248,6 +249,38 @@ Update task file frontmatter `updated` field with current datetime.
 
 For each stream that can start immediately:
 
+**First, load skills for this stream:**
+
+```bash
+# Extract skills from analysis (comma-separated in "Skills:" field)
+# Example: "Skills: backend-development, better-auth"
+STREAM_SKILLS="{extracted_from_analysis}"
+
+# Build skill context by reading each skill
+SKILL_CONTEXT=""
+if [ "$STREAM_SKILLS" != "none" ] && [ -n "$STREAM_SKILLS" ]; then
+  IFS=',' read -ra SKILLS <<< "$STREAM_SKILLS"
+  for skill in "${SKILLS[@]}"; do
+    # Trim whitespace
+    skill=$(echo "$skill" | xargs)
+    SKILL_FILE=".claude/skills/$skill/SKILL.md"
+
+    if [ -f "$SKILL_FILE" ]; then
+      SKILL_CONTEXT="$SKILL_CONTEXT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 SKILL: $skill
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+$(cat $SKILL_FILE)
+"
+    fi
+  done
+fi
+```
+
+**Then, create progress tracking:**
+
 Create `.claude/epics/$EPIC_NAME/updates/$TRACKING_ID/stream-{X}.md`:
 
 ```markdown
@@ -255,6 +288,7 @@ Create `.claude/epics/$EPIC_NAME/updates/$TRACKING_ID/stream-{X}.md`:
 task: $TRACKING_ID
 stream: { stream_name }
 agent: { agent_type }
+skills: { stream_skills }
 started: { current_datetime }
 status: in_progress
 ---
@@ -269,12 +303,16 @@ status: in_progress
 
 {file_patterns}
 
+## Skills Available
+
+{stream_skills or "none"}
+
 ## Progress
 
 - Starting implementation
 ```
 
-Launch agent using Task tool:
+**Finally, launch agent using Task tool:**
 
 **Standard Mode (`TDD_MODE=false`)**:
 
@@ -283,6 +321,22 @@ Task:
   description: '{TASK_ID} Stream {X}'
   subagent_type: '{agent_type}'
   prompt: |
+    {if SKILL_CONTEXT is not empty:}
+    ═══════════════════════════════════════════════════════════════════════
+    📚 SKILLS AVAILABLE FOR THIS TASK
+    ═══════════════════════════════════════════════════════════════════════
+
+    You have access to specialized skills that provide domain expertise.
+    Consult these skills for best practices, patterns, and guidance.
+
+    {SKILL_CONTEXT}
+
+    ═══════════════════════════════════════════════════════════════════════
+    END OF SKILLS
+    ═══════════════════════════════════════════════════════════════════════
+
+    {endif}
+
     You are working on {TASK_ID} in the epic worktree.
 
     Worktree location: ../epic-{epic_name}/
@@ -295,10 +349,11 @@ Task:
     Requirements:
     1. Read full task from: {TASK_FILE}
     2. Work ONLY in your assigned files
-    3. Commit frequently with format: "{TASK_ID}: {specific change}"
+    3. {if skills available} Consult the skills above for best practices and patterns
+    4. Commit frequently with format: "{TASK_ID}: {specific change}"
        Example: "task 001: Add database schema" or "issue #123: Add API endpoint"
-    4. Update progress in: .claude/epics/{epic_name}/updates/{TRACKING_ID}/stream-{X}.md
-    5. Follow coordination rules in /rules/agent-coordination.md
+    5. Update progress in: .claude/epics/{epic_name}/updates/{TRACKING_ID}/stream-{X}.md
+    6. Follow coordination rules in /rules/agent-coordination.md
 
     If you need to modify files outside your scope:
     - Check if another stream owns them
@@ -315,6 +370,22 @@ Task:
   description: '{TASK_ID} Stream {X} (TDD)'
   subagent_type: '{agent_type}'
   prompt: |
+    {if SKILL_CONTEXT is not empty:}
+    ═══════════════════════════════════════════════════════════════════════
+    📚 SKILLS AVAILABLE FOR THIS TASK
+    ═══════════════════════════════════════════════════════════════════════
+
+    You have access to specialized skills that provide domain expertise.
+    Consult these skills for best practices, patterns, and guidance.
+
+    {SKILL_CONTEXT}
+
+    ═══════════════════════════════════════════════════════════════════════
+    END OF SKILLS
+    ═══════════════════════════════════════════════════════════════════════
+
+    {endif}
+
     You are working on {TASK_ID} in the epic worktree using TDD (Test-Driven Development).
 
     Worktree location: ../epic-{epic_name}/
@@ -329,25 +400,28 @@ Task:
     PHASE 1 - RED (Write Failing Tests):
     1. Read full task from: {TASK_FILE}
     2. Read acceptance criteria from task checklist
-    3. Write comprehensive tests FIRST based on acceptance criteria
-    4. Tests should cover:
+    3. {if skills available} Consult skills for testing best practices
+    4. Write comprehensive tests FIRST based on acceptance criteria
+    5. Tests should cover:
        - Happy path scenarios
        - Edge cases
        - Error handling
        - Validation rules
-    5. Run tests - they MUST fail (no implementation yet)
-    6. Commit: "{TASK_ID}: Add tests for [feature]"
+    6. Run tests - they MUST fail (no implementation yet)
+    7. Commit: "{TASK_ID}: Add tests for [feature]"
 
     PHASE 2 - GREEN (Make Tests Pass):
-    7. Implement MINIMAL code to make tests pass
-    8. Run tests after each small change
-    9. Commit frequently: "{TASK_ID}: Implement [specific functionality]"
-    10. DO NOT add features not covered by tests
+    8. {if skills available} Consult skills for implementation patterns
+    9. Implement MINIMAL code to make tests pass
+    10. Run tests after each small change
+    11. Commit frequently: "{TASK_ID}: Implement [specific functionality]"
+    12. DO NOT add features not covered by tests
 
     PHASE 3 - REFACTOR (Improve Code):
-    11. Improve code structure while keeping tests green
-    12. Run tests after each refactor
-    13. Commit: "{TASK_ID}: Refactor [what was improved]"
+    13. {if skills available} Apply best practices from skills
+    14. Improve code structure while keeping tests green
+    15. Run tests after each refactor
+    16. Commit: "{TASK_ID}: Refactor [what was improved]"
 
     Requirements:
     - Work ONLY in your assigned files

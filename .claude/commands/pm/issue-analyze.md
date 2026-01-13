@@ -111,7 +111,35 @@ Read local task file (`$TASK_FILE`) to understand:
 
 Also read epic.md to understand full technical context.
 
-### 2. Identify Parallel Work Streams
+### 2. Scan Available Skills
+
+Before analyzing work streams, identify what skills are available to assist agents:
+
+```bash
+# List available skills with descriptions
+echo "📚 Available Skills:"
+echo ""
+
+if [ -d ".claude/skills" ]; then
+  for skill_dir in .claude/skills/*/; do
+    if [ -f "$skill_dir/SKILL.md" ]; then
+      skill_name=$(basename "$skill_dir")
+      # Extract description from frontmatter
+      description=$(grep '^description:' "$skill_dir/SKILL.md" | sed 's/^description: *//')
+
+      echo "- $skill_name"
+      echo "  $description"
+      echo ""
+    fi
+  done
+else
+  echo "No skills directory found"
+fi
+```
+
+**Note to AI**: Use these skill descriptions to intelligently select which skills each work stream should use based on the task requirements.
+
+### 3. Identify Parallel Work Streams
 
 Analyze the issue to identify independent work that can run in parallel:
 
@@ -130,8 +158,9 @@ Analyze the issue to identify independent work that can run in parallel:
 - Which changes can happen independently?
 - What are the dependencies between changes?
 - Where might conflicts occur?
+- **Which skills would help each stream?** (from available skills list)
 
-### 3. Create Analysis File
+### 4. Create Analysis File
 
 Get current datetime: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
@@ -161,10 +190,12 @@ parallelization_factor: { 1.0-5.0 }
 
 - {file_pattern_1}
 - {file_pattern_2}
-  **Agent Type**: {backend|frontend|fullstack|database}-specialist
-  **Can Start**: immediately
-  **Estimated Hours**: {hours}
-  **Dependencies**: none
+
+**Agent Type**: {general-purpose|Explore|etc}
+**Skills**: {skill-name-1, skill-name-2} # Pick from available skills list
+**Can Start**: immediately
+**Estimated Hours**: {hours}
+**Dependencies**: none
 
 ### Stream B: {Stream Name}
 
@@ -173,10 +204,12 @@ parallelization_factor: { 1.0-5.0 }
 
 - {file_pattern_1}
 - {file_pattern_2}
-  **Agent Type**: {agent_type}
-  **Can Start**: immediately
-  **Estimated Hours**: {hours}
-  **Dependencies**: none
+
+**Agent Type**: {agent_type}
+**Skills**: {skill-name} # Pick from available skills list, or "none"
+**Can Start**: immediately
+**Estimated Hours**: {hours}
+**Dependencies**: none
 
 ### Stream C: {Stream Name}
 
@@ -184,10 +217,12 @@ parallelization_factor: { 1.0-5.0 }
 **Files**:
 
 - {file_pattern_1}
-  **Agent Type**: {agent_type}
-  **Can Start**: after Stream A completes
-  **Estimated Hours**: {hours}
-  **Dependencies**: Stream A
+
+**Agent Type**: {agent_type}
+**Skills**: {skill-name-1, skill-name-2} # Pick from available skills list
+**Can Start**: after Stream A completes
+**Estimated Hours**: {hours}
+**Dependencies**: Stream A
 
 ## Coordination Points
 
