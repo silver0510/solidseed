@@ -3,8 +3,8 @@
 -- Required by Better Auth library
 
 CREATE TABLE IF NOT EXISTS verification (
-    -- Primary key (VARCHAR to support CUID from Better Auth)
-    id VARCHAR(255) PRIMARY KEY,
+    -- Primary key (UUID with auto-generation)
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Identifier being verified (email, phone, etc.)
     identifier VARCHAR(255) NOT NULL,
@@ -40,7 +40,7 @@ CREATE TRIGGER update_verification_updated_at
 
 -- Add comments for documentation
 COMMENT ON TABLE verification IS 'Verification tokens for email, password reset, and OAuth state';
-COMMENT ON COLUMN verification.id IS 'Unique identifier (CUID)';
+COMMENT ON COLUMN verification.id IS 'UUID primary key (PostgreSQL native, auto-generated)';
 COMMENT ON COLUMN verification.identifier IS 'Email or other identifier being verified';
 COMMENT ON COLUMN verification.value IS 'Verification token or code';
 COMMENT ON COLUMN verification.expires_at IS 'When the verification token expires';

@@ -8,8 +8,8 @@
 
 -- Client tasks
 CREATE TABLE client_tasks (
-  id VARCHAR(255) PRIMARY KEY,
-  client_id VARCHAR(255) NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
 
   -- Task details
   title VARCHAR(255) NOT NULL,
@@ -20,8 +20,8 @@ CREATE TABLE client_tasks (
   completed_at TIMESTAMPTZ,
 
   -- Ownership
-  created_by VARCHAR(255) NOT NULL REFERENCES users(id),
-  assigned_to VARCHAR(255) NOT NULL REFERENCES users(id),
+  created_by UUID NOT NULL REFERENCES users(id),
+  assigned_to UUID NOT NULL REFERENCES users(id),
 
   -- Timestamps
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

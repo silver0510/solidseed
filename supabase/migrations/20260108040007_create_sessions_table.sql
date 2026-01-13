@@ -4,11 +4,11 @@
 -- However, Better Auth still requires this table for session model validation
 
 CREATE TABLE IF NOT EXISTS sessions (
-    -- Primary key (VARCHAR to support CUID from Better Auth)
-    id VARCHAR(255) PRIMARY KEY,
+    -- Primary key (UUID with auto-generation)
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Foreign key to users table
-    user_id VARCHAR(255) NOT NULL,
+    user_id UUID NOT NULL,
 
     -- Session token (unique identifier)
     token VARCHAR(255) NOT NULL UNIQUE,
@@ -50,7 +50,7 @@ CREATE TRIGGER update_sessions_updated_at
 
 -- Add comments for documentation
 COMMENT ON TABLE sessions IS 'User sessions for authentication (JWT-based, minimal DB usage)';
-COMMENT ON COLUMN sessions.id IS 'Unique identifier (CUID)';
+COMMENT ON COLUMN sessions.id IS 'UUID primary key (PostgreSQL native, auto-generated)';
 COMMENT ON COLUMN sessions.user_id IS 'Reference to users table';
 COMMENT ON COLUMN sessions.token IS 'Session token (matches JWT)';
 COMMENT ON COLUMN sessions.expires_at IS 'When the session expires';

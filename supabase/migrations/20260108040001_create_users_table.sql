@@ -2,13 +2,13 @@
 -- This table stores core user account information
 -- Compatible with Better Auth library through field mapping
 
--- Enable UUID extension if not already enabled
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Enable UUID extension for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
-    -- Primary key (VARCHAR to support CUID from Better Auth)
-    id VARCHAR(255) PRIMARY KEY,
+    -- Primary key (UUID with auto-generation)
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Core identity fields
     email VARCHAR(255) NOT NULL,
@@ -85,7 +85,7 @@ CREATE TRIGGER update_users_updated_at
 
 -- Add comments for documentation
 COMMENT ON TABLE users IS 'Core user accounts for Korella CRM authentication';
-COMMENT ON COLUMN users.id IS 'Unique identifier (CUID)';
+COMMENT ON COLUMN users.id IS 'UUID primary key (PostgreSQL native, auto-generated)';
 COMMENT ON COLUMN users.email IS 'User email address, used for login';
 COMMENT ON COLUMN users.password_hash IS 'Bcrypt hashed password, null for OAuth-only accounts';
 COMMENT ON COLUMN users.full_name IS 'User display name';
