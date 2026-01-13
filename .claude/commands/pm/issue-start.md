@@ -4,7 +4,7 @@ allowed-tools: Bash, Read, Write, LS, Task
 
 # Issue Start
 
-Begin work on a task with parallel agents based on work stream analysis.
+Begin work on a task with parallel agents or sequential step-by-step execution.
 
 Works with both GitHub-synced issues and local-only tasks.
 
@@ -13,21 +13,40 @@ Supports TDD (Test-Driven Development) workflow.
 ## Usage
 
 ```bash
-# Standard mode - implement directly
+# Parallel mode (default) - launch multiple agents for parallel execution
 /pm:issue-start <issue_number|task_path>
 
-# TDD mode - write tests FIRST, then implement
+# Sequential mode - execute one step at a time
+/pm:issue-start <issue_number|task_path> --sequential
+
+# TDD mode - write tests FIRST, then implement (works with both modes)
 /pm:issue-start <issue_number|task_path> --tdd
+/pm:issue-start <issue_number|task_path> --sequential --tdd
 
 # Examples
-/pm:issue-start 123                                    # GitHub issue #123
-/pm:issue-start user-authentication/001 --tdd         # Local task with TDD
-/pm:issue-start .claude/epics/user-authentication/001.md  # Local task
+/pm:issue-start 123                                    # GitHub issue #123 (parallel)
+/pm:issue-start user-authentication/001 --sequential   # Local task (sequential)
+/pm:issue-start client-hub/003 --tdd                   # Local task (parallel + TDD)
+/pm:issue-start 456 --sequential --tdd                 # GitHub issue (sequential + TDD)
 ```
+
+## Execution Modes
+
+**Parallel Mode (default)**:
+- Launches multiple agents simultaneously
+- Executes independent work streams in parallel
+- Optimizes for speed
+- Requires coordination between agents
+
+**Sequential Mode (--sequential)**:
+- Executes one step at a time
+- Waits for each step to complete before starting next
+- Simpler coordination and tracking
+- Linear, predictable progress
 
 ## TDD Workflow
 
-When using `--tdd` flag:
+When using `--tdd` flag (works with both parallel and sequential modes):
 
 1. **Red Phase**: Agent writes failing tests based on acceptance criteria
 2. **Green Phase**: Implement code to make tests pass
@@ -38,9 +57,17 @@ When using `--tdd` flag:
 
 ### 1. Detect Flags and Input Type
 
-Check for TDD flag and determine input type:
+Check for flags and determine input type:
 
 ```bash
+# Check for --sequential flag
+SEQUENTIAL_MODE=false
+if [[ "$ARGUMENTS" == *"--sequential"* ]]; then
+  SEQUENTIAL_MODE=true
+  # Remove --sequential from arguments
+  ARGUMENTS=$(echo "$ARGUMENTS" | sed 's/--sequential//g' | xargs)
+fi
+
 # Check for --tdd flag
 TDD_MODE=false
 if [[ "$ARGUMENTS" == *"--tdd"* ]]; then
@@ -173,7 +200,7 @@ if [ -n "$DEPENDS_ON" ] && [ "$DEPENDS_ON" != "[]" ]; then
 fi
 ```
 
-### 5. Check for Analysis
+### 5. Check for Analysis and Validate Mode
 
 ```bash
 # Determine analysis file name
@@ -190,13 +217,56 @@ if [ ! -f "$ANALYSIS_FILE" ]; then
   echo "❌ No analysis found for $TASK_ID"
   echo ""
   if [ "$MODE" = "github" ]; then
-    echo "Run: /pm:issue-analyze $ISSUE_NUMBER first"
-    echo "Or: /pm:issue-start $ISSUE_NUMBER --analyze"
+    if [ "$SEQUENTIAL_MODE" = true ]; then
+      echo "Run: /pm:issue-analyze $ISSUE_NUMBER --sequential first"
+    else
+      echo "Run: /pm:issue-analyze $ISSUE_NUMBER first"
+    fi
   else
-    echo "Run: /pm:issue-analyze $TASK_PATH first"
-    echo "Or: /pm:issue-start $TASK_PATH --analyze"
+    if [ "$SEQUENTIAL_MODE" = true ]; then
+      echo "Run: /pm:issue-analyze $TASK_PATH --sequential first"
+    else
+      echo "Run: /pm:issue-analyze $TASK_PATH first"
+    fi
   fi
   exit 1
+fi
+
+# Validate analysis mode matches execution mode
+ANALYSIS_MODE=$(grep "^execution_mode:" "$ANALYSIS_FILE" | sed 's/execution_mode: *//')
+
+if [ "$SEQUENTIAL_MODE" = true ]; then
+  # Sequential mode requested
+  if [ "$ANALYSIS_MODE" != "sequential" ]; then
+    echo "❌ Analysis is for parallel mode, but --sequential requested"
+    echo ""
+    if [ "$MODE" = "github" ]; then
+      echo "Either:"
+      echo "  1. Run without --sequential: /pm:issue-start $ISSUE_NUMBER"
+      echo "  2. Re-analyze with --sequential: /pm:issue-analyze $ISSUE_NUMBER --sequential"
+    else
+      echo "Either:"
+      echo "  1. Run without --sequential: /pm:issue-start $TASK_PATH"
+      echo "  2. Re-analyze with --sequential: /pm:issue-analyze $TASK_PATH --sequential"
+    fi
+    exit 1
+  fi
+else
+  # Parallel mode (default)
+  if [ "$ANALYSIS_MODE" = "sequential" ]; then
+    echo "❌ Analysis is for sequential mode, but parallel execution requested"
+    echo ""
+    if [ "$MODE" = "github" ]; then
+      echo "Either:"
+      echo "  1. Run with --sequential: /pm:issue-start $ISSUE_NUMBER --sequential"
+      echo "  2. Re-analyze without --sequential: /pm:issue-analyze $ISSUE_NUMBER"
+    else
+      echo "Either:"
+      echo "  1. Run with --sequential: /pm:issue-start $TASK_PATH --sequential"
+      echo "  2. Re-analyze without --sequential: /pm:issue-analyze $TASK_PATH"
+    fi
+    exit 1
+  fi
 fi
 ```
 
@@ -245,7 +315,9 @@ mkdir -p .claude/epics/$EPIC_NAME/updates/$TRACKING_ID
 
 Update task file frontmatter `updated` field with current datetime.
 
-### 9. Launch Parallel Agents
+### 9. Execute Work (Parallel or Sequential)
+
+**For Parallel Mode (SEQUENTIAL_MODE=false)**:
 
 For each stream that can start immediately:
 
@@ -438,6 +510,185 @@ Task:
     Complete your stream when all tests are green and code is refactored.
 ```
 
+**For Sequential Mode (SEQUENTIAL_MODE=true)**:
+
+Execute steps one at a time from the sequential implementation plan:
+
+**Step-by-step execution loop**:
+
+```bash
+# Parse total number of steps from analysis
+TOTAL_STEPS=$(grep "^total_steps:" "$ANALYSIS_FILE" | sed 's/total_steps: *//')
+
+# Execute each step sequentially
+for step_num in $(seq 1 $TOTAL_STEPS); do
+  echo "═══════════════════════════════════════════════════════"
+  echo "Starting Step $step_num of $TOTAL_STEPS"
+  echo "═══════════════════════════════════════════════════════"
+
+  # Extract step details from analysis file
+  # (Step name, objective, files, skills, etc.)
+
+  # Create progress tracking file for this step
+  cat > ".claude/epics/$EPIC_NAME/updates/$TRACKING_ID/step-$step_num.md" <<EOF
+---
+task: $TRACKING_ID
+step: $step_num
+step_name: { step_name }
+started: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+status: in_progress
+---
+
+# Step $step_num: {step_name}
+
+## Progress
+- Starting step execution
+EOF
+
+  # Load skills for this step (same as parallel mode)
+  # Build SKILL_CONTEXT from Skills field
+
+  # Launch agent for THIS step only (blocking execution)
+done
+```
+
+**Launch agent for current step (standard mode)**:
+
+```yaml
+Task:
+  description: '{TASK_ID} Step {step_num}'
+  subagent_type: '{agent_type}'
+  prompt: |
+    {if SKILL_CONTEXT is not empty:}
+    ═══════════════════════════════════════════════════════════════════════
+    📚 SKILLS AVAILABLE FOR THIS TASK
+    ═══════════════════════════════════════════════════════════════════════
+
+    You have access to specialized skills that provide domain expertise.
+    Consult these skills for best practices, patterns, and guidance.
+
+    {SKILL_CONTEXT}
+
+    ═══════════════════════════════════════════════════════════════════════
+    END OF SKILLS
+    ═══════════════════════════════════════════════════════════════════════
+
+    {endif}
+
+    You are working on {TASK_ID} in the epic worktree (Sequential Mode - Step {step_num}/{TOTAL_STEPS}).
+
+    Worktree location: ../epic-{epic_name}/
+    Current step: {step_name}
+
+    ## Step Objective
+
+    {step_objective}
+
+    ## Actions to Complete
+
+    {step_actions_list}
+
+    ## Files to Create/Modify
+
+    {step_files_list}
+
+    ## Completion Criteria
+
+    {completion_criteria_checklist}
+
+    Requirements:
+    1. Read full task from: {TASK_FILE}
+    2. Complete ALL actions listed above for this step
+    3. {if skills available} Consult the skills above for best practices and patterns
+    4. Commit frequently with format: "{TASK_ID} Step {step_num}: {specific change}"
+       Example: "task 001 Step 1: Add database schema"
+    5. Update progress in: .claude/epics/{epic_name}/updates/{TRACKING_ID}/step-{step_num}.md
+    6. Verify ALL completion criteria before finishing
+
+    This is step {step_num} of {TOTAL_STEPS}. Focus ONLY on completing this step.
+    Do not proceed to subsequent steps.
+
+    When you have completed all actions and verified completion criteria,
+    mark the step as complete in your progress file.
+```
+
+**Launch agent for current step (TDD mode)**:
+
+```yaml
+Task:
+  description: '{TASK_ID} Step {step_num} (TDD)'
+  subagent_type: '{agent_type}'
+  prompt: |
+    {if SKILL_CONTEXT is not empty:}
+    ═══════════════════════════════════════════════════════════════════════
+    📚 SKILLS AVAILABLE FOR THIS TASK
+    ═══════════════════════════════════════════════════════════════════════
+
+    You have access to specialized skills that provide domain expertise.
+    Consult these skills for best practices, patterns, and guidance.
+
+    {SKILL_CONTEXT}
+
+    ═══════════════════════════════════════════════════════════════════════
+    END OF SKILLS
+    ═══════════════════════════════════════════════════════════════════════
+
+    {endif}
+
+    You are working on {TASK_ID} in the epic worktree using TDD (Sequential Mode - Step {step_num}/{TOTAL_STEPS}).
+
+    Worktree location: ../epic-{epic_name}/
+    Current step: {step_name}
+
+    ## Step Objective
+
+    {step_objective}
+
+    ## Actions to Complete
+
+    {step_actions_list}
+
+    ## Files to Create/Modify
+
+    {step_files_list}
+
+    ## Completion Criteria
+
+    {completion_criteria_checklist}
+
+    TDD WORKFLOW - Follow this order strictly:
+
+    PHASE 1 - RED (Write Failing Tests):
+    1. {if skills available} Consult skills for testing best practices
+    2. Write comprehensive tests FIRST for this step's functionality
+    3. Run tests - they MUST fail (no implementation yet)
+    4. Commit: "{TASK_ID} Step {step_num}: Add tests for [feature]"
+
+    PHASE 2 - GREEN (Make Tests Pass):
+    5. {if skills available} Consult skills for implementation patterns
+    6. Implement MINIMAL code to make tests pass
+    7. Complete all actions listed for this step
+    8. Run tests after each change
+    9. Commit frequently: "{TASK_ID} Step {step_num}: Implement [functionality]"
+
+    PHASE 3 - REFACTOR (Improve Code):
+    10. {if skills available} Apply best practices from skills
+    11. Improve code structure while keeping tests green
+    12. Verify ALL completion criteria
+    13. Commit: "{TASK_ID} Step {step_num}: Refactor [improvements]"
+
+    Requirements:
+    - Run tests frequently (after each change)
+    - Update progress in: .claude/epics/{epic_name}/updates/{TRACKING_ID}/step-{step_num}.md
+    - Verify completion criteria before finishing
+
+    This is step {step_num} of {TOTAL_STEPS}. Focus ONLY on completing this step.
+    Do not proceed to subsequent steps.
+
+    When all tests are green and completion criteria verified,
+    mark the step as complete in your progress file.
+```
+
 ### 10. GitHub Assignment (GitHub Issues Only)
 
 **Only for GitHub issues (MODE=github)**:
@@ -451,14 +702,14 @@ gh issue edit $ISSUE_NUMBER --add-assignee @me --add-label "in-progress"
 
 ### 11. Output
 
-**For GitHub Issues**:
+**For GitHub Issues (Parallel Mode)**:
 
 ```
 ✅ Started parallel work on issue #$ISSUE_NUMBER {TDD_MODE ? "(TDD Mode)" : ""}
 
 Epic: {epic_name}
 Worktree: ../epic-{epic_name}/
-{TDD_MODE ? "Mode: Test-Driven Development" : ""}
+Mode: Parallel execution{TDD_MODE ? " + TDD" : ""}
 
 Launching {count} parallel agents:
   Stream A: {name} (Agent-1) ✓ Started
@@ -479,7 +730,36 @@ Monitor with: /pm:epic-status {epic_name}
 {TDD_MODE ? "Complete with: /pm:issue-complete " + ISSUE_NUMBER : "Sync updates: /pm:issue-sync " + ISSUE_NUMBER}
 ```
 
-**For Local Tasks**:
+**For GitHub Issues (Sequential Mode)**:
+
+```
+✅ Started sequential work on issue #$ISSUE_NUMBER {TDD_MODE ? "(TDD Mode)" : ""}
+
+Epic: {epic_name}
+Worktree: ../epic-{epic_name}/
+Mode: Sequential execution (one step at a time){TDD_MODE ? " + TDD" : ""}
+
+Executing {count} steps in order:
+  Step 1: {name} ({hours}h) ⏳ In Progress
+  Step 2: {name} ({hours}h) ⏸ Waiting
+  Step 3: {name} ({hours}h) ⏸ Waiting
+
+{if TDD_MODE:}
+TDD Workflow (per step):
+  1. RED: Write failing tests first
+  2. GREEN: Implement code to pass tests
+  3. REFACTOR: Improve code structure
+  4. Next step starts after completion
+
+Progress tracking:
+  .claude/epics/{epic_name}/updates/$ISSUE_NUMBER/
+
+Each step completes before the next begins.
+Monitor with: /pm:epic-status {epic_name}
+Complete with: /pm:issue-complete $ISSUE_NUMBER
+```
+
+**For Local Tasks (Parallel Mode)**:
 
 ```
 ✅ Started parallel work on task $TASK_NUMBER {TDD_MODE ? "(TDD Mode)" : ""}
@@ -487,7 +767,7 @@ Monitor with: /pm:epic-status {epic_name}
 Epic: {epic_name}
 Task: {task_file}
 Worktree: ../epic-{epic_name}/
-{TDD_MODE ? "Mode: Test-Driven Development" : ""}
+Mode: Parallel execution{TDD_MODE ? " + TDD" : ""}
 
 Launching {count} parallel agents:
   Stream A: {name} (Agent-1) ✓ Started
@@ -506,6 +786,37 @@ Progress tracking:
 
 Monitor with: /pm:epic-status {epic_name}
 {TDD_MODE ? "Complete with: /pm:issue-complete " + TASK_PATH : ""}
+Note: This task is local-only (not synced to GitHub)
+```
+
+**For Local Tasks (Sequential Mode)**:
+
+```
+✅ Started sequential work on task $TASK_NUMBER {TDD_MODE ? "(TDD Mode)" : ""}
+
+Epic: {epic_name}
+Task: {task_file}
+Worktree: ../epic-{epic_name}/
+Mode: Sequential execution (one step at a time){TDD_MODE ? " + TDD" : ""}
+
+Executing {count} steps in order:
+  Step 1: {name} ({hours}h) ⏳ In Progress
+  Step 2: {name} ({hours}h) ⏸ Waiting
+  Step 3: {name} ({hours}h) ⏸ Waiting
+
+{if TDD_MODE:}
+TDD Workflow (per step):
+  1. RED: Write failing tests first
+  2. GREEN: Implement code to pass tests
+  3. REFACTOR: Improve code structure
+  4. Next step starts after completion
+
+Progress tracking:
+  .claude/epics/{epic_name}/updates/$TASK_NUMBER/
+
+Each step completes before the next begins.
+Monitor with: /pm:epic-status {epic_name}
+Complete with: /pm:issue-complete $TASK_PATH
 Note: This task is local-only (not synced to GitHub)
 ```
 
