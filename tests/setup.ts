@@ -33,6 +33,10 @@ const ensureEnvVar = (key: string, defaultValue: string) => {
 ensureEnvVar('SUPABASE_DATABASE_URL', 'postgresql://postgres:postgres@127.0.0.1:54322/postgres');
 ensureEnvVar('DATABASE_URL', process.env.SUPABASE_DATABASE_URL!);
 
+// Supabase - required for ClientService and other services
+ensureEnvVar('NEXT_PUBLIC_SUPABASE_URL', 'http://127.0.0.1:54321');
+ensureEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'test-anon-key-for-testing-purposes');
+
 // Authentication
 ensureEnvVar('BETTER_AUTH_SECRET', 'test-secret-key-minimum-32-characters-for-testing-purposes-only');
 ensureEnvVar('BETTER_AUTH_URL', 'http://localhost:3000');
