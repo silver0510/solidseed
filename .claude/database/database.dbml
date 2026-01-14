@@ -68,6 +68,7 @@ Table users {
 
 // OAuth provider account mappings for social login
 // Enables Google and Microsoft login and account linking
+// Also stores email/password credentials (Better Auth account table)
 Table oauth_providers {
   id uuid [pk, default: `gen_random_uuid()`, note: 'UUID primary key (PostgreSQL native, auto-generated)']
 
@@ -75,8 +76,11 @@ Table oauth_providers {
   user_id uuid [not null, ref: > users.id, note: 'Reference to users table']
 
   // OAuth provider information
-  provider varchar(50) [not null, note: 'OAuth provider name (google, microsoft)']
+  provider varchar(50) [not null, note: 'OAuth provider name (google, microsoft, credential)']
   provider_id varchar(255) [not null, note: 'User ID from the OAuth provider']
+
+  // Password for email/password authentication (when provider='credential')
+  password varchar(255) [note: 'Hashed password for email/password auth (null for OAuth providers)']
 
   // OAuth tokens (optional, for API access)
   access_token text [note: 'OAuth access token (encrypted at rest by Supabase)']
@@ -104,7 +108,7 @@ Table oauth_providers {
     (provider, provider_id) [name: 'idx_oauth_providers_provider_lookup', unique]
   }
 
-  note: 'OAuth provider account mappings for social login'
+  note: 'OAuth provider account mappings and email/password credentials (Better Auth account table)'
 }
 
 // Temporary password reset tokens (1-hour expiration)
