@@ -333,7 +333,7 @@ export function isValidEmail(email: string): boolean {
  * Creates a verification link
  */
 export function createVerificationLink(token: string): string {
-  return `${appUrl}/api/auth/verify-email?token=${token}`;
+  return `${appUrl}/verify-email?token=${token}`;
 }
 
 /**

@@ -142,7 +142,7 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
  */
 export async function verifyEmail(token: string): Promise<AuthResponse> {
   return request<AuthResponse>(`/api/auth/verify-email?token=${token}`, {
-    method: 'POST',
+    method: 'GET',
   });
 }
 
