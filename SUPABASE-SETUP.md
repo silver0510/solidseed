@@ -255,6 +255,51 @@ Better Auth automatically uses PostgreSQL's UUID generation:
 - UUIDs are generated server-side in PostgreSQL
 - Application receives string representation
 
+### Next.js Configuration Requirements
+
+For Better Auth to work correctly with Next.js App Router, you must configure `trailingSlash: false`:
+
+```typescript
+// next.config.ts
+const nextConfig = {
+  trailingSlash: false,  // Required for Better Auth catch-all routes
+};
+```
+
+**Why this is required:** Better Auth's catch-all routes at `/api/auth/[...all]` are sensitive to trailing slash handling. Without this setting, all Better Auth endpoints will return 404 errors.
+
+**Reference:** [Better Auth Issue #6671](https://github.com/better-auth/better-auth/issues/6671)
+
+### Better Auth Plugins
+
+The `nextCookies()` plugin is required for proper cookie handling in Next.js server actions:
+
+```typescript
+import { betterAuth } from 'better-auth';
+import { nextCookies } from 'better-auth/next-js';
+
+export const auth = betterAuth({
+  database: pool,
+  plugins: [
+    nextCookies()  // Required for Next.js cookie management
+  ],
+  // ... rest of configuration
+});
+```
+
+**Reference:** [Better Auth Next.js Integration](https://www.better-auth.com/docs/integrations/next)
+
+### Password Storage
+
+Better Auth stores email/password credentials in the `oauth_providers` table (mapped to Better Auth's `account` table):
+
+```sql
+-- The oauth_providers table includes a password column for email/password auth
+ALTER TABLE oauth_providers ADD COLUMN password VARCHAR(255);
+```
+
+This allows Better Auth to store both OAuth credentials and email/password credentials in the same table, using `providerId='credential'` for email/password accounts.
+
 ### Field Mapping
 
 Better Auth maps to our custom schema:
