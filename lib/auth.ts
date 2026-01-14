@@ -28,6 +28,7 @@
  */
 
 import { betterAuth } from 'better-auth';
+import { nextCookies } from 'better-auth/next-js';
 import { Pool } from 'pg';
 import { googleOAuthConfig } from '../config/oauth.config';
 import {
@@ -266,6 +267,15 @@ export const auth = betterAuth({
       updatedAt: 'updated_at',
     },
   },
+
+  // -------------------------------------------------------------------------
+  // Plugins Configuration
+  // -------------------------------------------------------------------------
+  plugins: [
+    // Next.js cookies plugin - must be last in plugins array
+    // Automatically sets cookies for server actions
+    nextCookies(),
+  ],
 });
 
 // -------------------------------------------------------------------------
