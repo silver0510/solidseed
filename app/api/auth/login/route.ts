@@ -10,7 +10,9 @@ import { auth } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    // Clone the request so we can read the body twice if needed
+    const requestClone = request.clone();
+    const body = await requestClone.json();
 
     // Validate required fields
     if (!body.email || !body.password) {
@@ -30,12 +32,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Better Auth returns user and session data on successful login
-    if (result.user && result.session) {
+    // Better Auth returns user and token data on successful login
+    if (result.user && result.token) {
       return NextResponse.json({
         success: true,
         message: 'Login successful',
-        token: result.session.token,
+        token: result.token,
         user: {
           id: result.user.id,
           email: result.user.email,
