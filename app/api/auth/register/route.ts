@@ -10,7 +10,9 @@ import { auth } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    // Clone the request so we can read the body twice
+    const requestClone = request.clone();
+    const body = await requestClone.json();
 
     // Validate required fields
     if (!body.email || !body.password) {
@@ -20,7 +22,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call Better Auth's sign-up endpoint
+    // Call Better Auth's sign-up endpoint with the original request
     const result = await auth.api.signUpEmail({
       body: {
         email: body.email,
