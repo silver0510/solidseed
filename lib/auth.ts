@@ -80,8 +80,16 @@ export const auth = betterAuth({
   // -------------------------------------------------------------------------
   database: pool,
 
-  // Better Auth automatically uses gen_random_uuid() for PostgreSQL
-  // No explicit generateId configuration needed - defaults to database UUID generation
+  // -------------------------------------------------------------------------
+  // Advanced Configuration - PostgreSQL Native UUID Generation
+  // -------------------------------------------------------------------------
+  advanced: {
+    database: {
+      // Disable Better Auth's ID generation to use PostgreSQL's gen_random_uuid()
+      // Our database schema uses: id UUID PRIMARY KEY DEFAULT gen_random_uuid()
+      generateId: false,
+    },
+  },
 
   // -------------------------------------------------------------------------
   // Base Configuration
