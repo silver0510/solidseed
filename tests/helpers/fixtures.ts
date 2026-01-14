@@ -3,11 +3,17 @@
  *
  * Provides constant UUID values for use in tests.
  * These UUIDs are stable across test runs to ensure consistent test behavior.
+ *
+ * Database ID Type:
+ * - All database tables use PostgreSQL native UUID type (not VARCHAR)
+ * - Test fixtures use valid UUID v4 format to match database constraints
+ * - IDs are represented as strings in TypeScript
+ * - Format: 8-4-4-4-12 hex digits (e.g., 123e4567-e89b-12d3-a456-426614174000)
  */
 
 /**
  * Fixed UUID constants for testing
- * Using valid UUID v4 format
+ * Using valid UUID v4 format matching PostgreSQL UUID type
  */
 export const TEST_IDS = {
   // User IDs
@@ -63,6 +69,9 @@ export const TEST_IDS = {
 /**
  * Helper to generate a random UUID for dynamic test scenarios
  * Use this when you need a unique UUID per test run
+ *
+ * Note: Generates UUID v4 format matching PostgreSQL gen_random_uuid()
+ * The database uses gen_random_uuid() for actual UUID generation
  */
 export function generateTestUUID(): string {
   // Use Node.js crypto.randomUUID() for valid UUID v4
