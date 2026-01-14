@@ -33,14 +33,11 @@ import { googleOAuthConfig } from '../config/oauth.config';
 import {
   sendEmailVerificationEmail,
   sendPasswordResetEmail,
-  sendPasswordChangedEmail,
-  sendAccountLockoutAlertEmail,
   createVerificationLink,
   createPasswordResetLink,
 } from '../services/email.service';
 import {
   securityConstants,
-  rateLimitConstants,
 } from '../config/database';
 
 // =============================================================================
@@ -51,7 +48,7 @@ import {
  * Get database URL from environment
  * Better Auth connects directly to PostgreSQL via pg Pool
  */
-const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || 'postgresql://postgres.renpowxmbkprtwjklbcb:AL39FVvSiDsz6Ho8@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres';
 
 if (!databaseUrl) {
   throw new Error('SUPABASE_DATABASE_URL or DATABASE_URL environment variable is required');
@@ -153,10 +150,18 @@ export const auth = betterAuth({
   // -------------------------------------------------------------------------
   emailAndPassword: {
     enabled: true,
-    // Temporarily disable email verification to test OAuth
-    requireEmailVerification: false,
-    // Note: Email sending (verification, password reset) will be configured
-    // using Better Auth plugins or hooks in a future update
+    // Require email verification before allowing login
+    requireEmailVerification: false, // Set to true after email service is tested
+    // Send password reset emails
+    sendResetPassword: async ({ user, url }) => {
+      const token = url.split('?token=')[1] || url.split('/').pop() || '';
+      const resetLink = createPasswordResetLink(token);
+      await sendPasswordResetEmail({
+        to: user.email,
+        userName: user.name,
+        resetLink,
+      });
+    },
   },
 
   // -------------------------------------------------------------------------
@@ -192,9 +197,24 @@ export const auth = betterAuth({
   // -------------------------------------------------------------------------
   // Email Verification
   // -------------------------------------------------------------------------
-  // Note: Email verification will be configured using Better Auth plugins
-  // in a future update. Currently handled by requireEmailVerification in
-  // emailAndPassword configuration above.
+  emailVerification: {
+    // Send verification email with link
+    sendVerificationEmail: async ({ user, url, token }) => {
+      const verificationToken = token || url.split('?token=')[1] || url.split('/').pop() || '';
+      const verificationLink = createVerificationLink(verificationToken);
+      await sendEmailVerificationEmail({
+        to: user.email,
+        userName: user.name,
+        verificationLink,
+      });
+    },
+    // Send verification email automatically on signup
+    sendOnSignUp: true,
+    // Auto sign in user after they verify their email
+    autoSignInAfterVerification: true,
+    // Verification token expires in 24 hours
+    expiresIn: securityConstants.EMAIL_VERIFICATION_EXPIRATION_HOURS * 60 * 60, // 24 hours in seconds
+  },
 
   // -------------------------------------------------------------------------
   // Rate Limiting
