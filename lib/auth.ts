@@ -1,8 +1,8 @@
 /**
  * Better Auth Configuration for Korella CRM
  *
- * This module configures Better Auth with:
- * - PostgreSQL database adapter (Supabase)
+ * Simplified architecture using direct PostgreSQL connection:
+ * - PostgreSQL connection via pg Pool (no Prisma)
  * - Email and password authentication
  * - OAuth provider (Google)
  * - Email verification
@@ -14,7 +14,7 @@
  * Database ID Type:
  * - All tables use PostgreSQL native UUID type (not VARCHAR)
  * - IDs are auto-generated using gen_random_uuid()
- * - Better Auth handles UUID ↔ string conversion automatically
+ * - Better Auth handles UUID generation automatically with PostgreSQL
  * - Application code treats IDs as strings (TypeScript: string type)
  *
  * Environment Variables Required:
@@ -28,9 +28,6 @@
  */
 
 import { betterAuth } from 'better-auth';
-import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { PrismaClient } from '../generated/prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { googleOAuthConfig } from '../config/oauth.config';
 import {
@@ -52,7 +49,7 @@ import {
 
 /**
  * Get database URL from environment
- * Prisma 7 requires explicit driver adapter configuration
+ * Better Auth connects directly to PostgreSQL via pg Pool
  */
 const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
@@ -61,38 +58,33 @@ if (!databaseUrl) {
 }
 
 /**
- * PostgreSQL connection pool
- * Used by Prisma adapter for Prisma 7
- * Supabase requires SSL connections
+ * PostgreSQL connection pool for Better Auth
+ * Connects directly to Supabase PostgreSQL database
+ * Better Auth uses this Pool for all database operations
  */
 const pool = new Pool({
   connectionString: databaseUrl,
   ssl: {
-    rejectUnauthorized: false
-  }
+    rejectUnauthorized: false,
+  },
 });
-const adapter = new PrismaPg(pool);
-
-/**
- * Prisma Client instance for Better Auth
- * Prisma 7 requires driver adapter for PostgreSQL
- */
-const prisma = new PrismaClient({ adapter });
 
 // =============================================================================
 // Better Auth Configuration
 // =============================================================================
 
 /**
- * Core Better Auth configuration
+ * Core Better Auth configuration with direct PostgreSQL connection
+ * No Prisma adapter needed - Better Auth uses the Pool directly
  */
 export const auth = betterAuth({
   // -------------------------------------------------------------------------
-  // Database Configuration
+  // Database Configuration - Direct PostgreSQL Connection
   // -------------------------------------------------------------------------
-  database: prismaAdapter(prisma, {
-    provider: "postgresql",
-  }),
+  database: pool,
+
+  // Better Auth automatically uses gen_random_uuid() for PostgreSQL
+  // No explicit generateId configuration needed - defaults to database UUID generation
 
   // -------------------------------------------------------------------------
   // Base Configuration
@@ -311,7 +303,9 @@ export const auth = betterAuth({
         await sendAccountLockoutAlertEmail({
           to: user.email,
           userName: user.name,
-          lockedUntil: new Date(Date.now() + securityConstants.LOCKOUT_DURATION_MINUTES * 60 * 1000),
+          lockedUntil: new Date(
+            Date.now() + securityConstants.LOCKOUT_DURATION_MINUTES * 60 * 1000
+          ),
         });
       },
     },
@@ -330,198 +324,6 @@ export const auth = betterAuth({
       updatedAt: 'updated_at',
     },
   },
-
-  // -------------------------------------------------------------------------
-  // Advanced Configuration
-  // -------------------------------------------------------------------------
-  // Advanced Configuration - Re-enabled for proper field mapping
-  advanced: {
-  // advanced: {
-  //   // Configure Better Auth to use our custom table names from Task 001
-  //   // This maps Better Auth's default table names to our custom schema
-  //   user: {
-  //     modelName: 'users',
-  //     fields: {
-  //       id: 'id',
-  //       email: 'email',
-  //       name: 'full_name',
-  //       emailVerified: 'email_verified',
-  //       image: null, // We don't store profile image in users table
-  //       createdAt: 'created_at',
-  //       updatedAt: 'updated_at',
-  //     },
-  //     // Additional fields from our custom schema
-  //     additionalFields: {
-  //       password_hash: {
-  //         type: 'string',
-  //         required: false,
-  //       },
-  //       account_status: {
-  //         type: 'string' as const,
-  //         required: false,
-  //         defaultValue: 'pending',
-  //       },
-  //       subscription_tier: {
-  //         type: 'string' as const,
-  //         required: false,
-  //         defaultValue: 'trial',
-  //       },
-  //       trial_expires_at: {
-  //         type: 'date' as const,
-  //         required: false,
-  //       },
-  //       failed_login_count: {
-  //         type: 'number' as const,
-  //         required: false,
-  //         defaultValue: 0,
-  //       },
-  //       locked_until: {
-  //         type: 'date' as const,
-  //         required: false,
-  //       },
-  //       last_login_at: {
-  //         type: 'date' as const,
-  //         required: false,
-  //       },
-  //       last_login_ip: {
-  //         type: 'string' as const,
-  //         required: false,
-  //       },
-  //       is_deleted: {
-  //         type: 'boolean' as const,
-  //         required: false,
-  //         defaultValue: false,
-  //       },
-  //     },
-  //   },
-  //   session: {
-  //     modelName: 'sessions',
-  //     fields: {
-  //       id: 'id',
-  //       userId: 'user_id',
-  //       token: 'token',
-  //       expiresAt: 'expires_at',
-  //       ipAddress: 'ip_address',
-  //       userAgent: 'user_agent',
-  //       createdAt: 'created_at',
-  //       updatedAt: 'updated_at',
-  //     },
-  //   },
-  //   account: {
-  //     modelName: 'oauth_providers',
-  //     fields: {
-  //       id: 'id',
-  //       userId: 'user_id',
-  //       accountId: 'provider_id',
-  //       providerId: 'provider',
-  //       accessToken: 'access_token',
-  //       refreshToken: 'refresh_token',
-  //       accessTokenExpiresAt: 'access_token_expires_at',
-  //       refreshTokenExpiresAt: null,
-  //       scope: null,
-  //       idToken: null,
-  //       password: null,
-  //       createdAt: 'created_at',
-  //       updatedAt: 'updated_at',
-  //     },
-  //     additionalFields: {
-  //       provider_email: {
-  //         type: 'string' as const,
-  //         required: false,
-  //       },
-  //       provider_name: {
-  //         type: 'string' as const,
-  //         required: false,
-  //       },
-  //       provider_avatar_url: {
-  //         type: 'string' as const,
-  //         required: false,
-  //       },
-  //     },
-  //   },
-    // Better Auth verification - uses default 'verification' table
-    // No custom mapping needed as we use the default table name
-  },
-
-  // -------------------------------------------------------------------------
-  // Hooks - Temporarily disabled for debugging
-  // -------------------------------------------------------------------------
-  // hooks: {
-  //   after: [
-  //     // After user creation
-  //     {
-  //       matcher(context) {
-  //         return context.path === '/sign-up/email';
-  //       },
-  //       handler: async (ctx) => {
-  //         // Set trial expiration date
-  //         const trialExpiresAt = new Date();
-  //         trialExpiresAt.setDate(trialExpiresAt.getDate() + securityConstants.TRIAL_PERIOD_DAYS);
-
-  //         // Update user with trial information
-  //         await prisma.users.update({
-  //           where: { id: ctx.user?.id },
-  //           data: {
-  //             trial_expires_at: trialExpiresAt,
-  //             account_status: 'pending',
-  //           },
-  //         });
-  //       },
-  //     },
-  //     // After successful login
-  //     {
-  //       matcher(context) {
-  //         return context.path === '/sign-in/email';
-  //       },
-  //       handler: async (ctx) => {
-  //         // Update last login information
-  //         await prisma.users.update({
-  //           where: { id: ctx.user?.id },
-  //           data: {
-  //             last_login_at: new Date(),
-  //             last_login_ip: ctx.request?.headers.get('x-forwarded-for') || ctx.request?.headers.get('x-real-ip') || null,
-  //             failed_login_count: 0,
-  //           },
-  //         });
-  //       },
-  //     },
-  //     // After failed login
-  //     {
-  //       matcher(context) {
-  //         return context.path === '/sign-in/email' && context.returned?.error;
-  //       },
-  //       handler: async (ctx) => {
-  //         // Increment failed login count
-  //         if (ctx.body?.email) {
-  //           await prisma.users.updateMany({
-  //             where: { email: ctx.body.email },
-  //             data: {
-  //               failed_login_count: {
-  //                 increment: 1,
-  //               },
-  //             },
-  //           });
-  //         },
-  //       },
-  //     },
-  //     // After password change
-  //     {
-  //       matcher(context) {
-  //         return context.path === '/change-password';
-  //       },
-  //       handler: async (ctx) => {
-  //         // Send password change confirmation email
-  //         if (ctx.user) {
-  //           await sendPasswordChangedEmail({
-  //             to: ctx.user.email,
-  //             userName: ctx.user.name,
-  //             changedAt: new Date(),
-  //           });
-  //         },
-  //       },
-  //     },
-  //   ],
-  // },
 });
 
 // -------------------------------------------------------------------------
@@ -546,10 +348,7 @@ export type User = typeof auth.$Infer.User;
  * Validates that all required Better Auth environment variables are set
  */
 export function validateBetterAuthEnv(): void {
-  const required = [
-    'BETTER_AUTH_SECRET',
-    'SUPABASE_DATABASE_URL',
-  ];
+  const required = ['BETTER_AUTH_SECRET', 'SUPABASE_DATABASE_URL'];
 
   const missing = required.filter((key) => !process.env[key]);
 
