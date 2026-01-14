@@ -11,6 +11,12 @@
  * - Rate limiting
  * - Account security features
  *
+ * Database ID Type:
+ * - All tables use PostgreSQL native UUID type (not VARCHAR)
+ * - IDs are auto-generated using gen_random_uuid()
+ * - Better Auth handles UUID ↔ string conversion automatically
+ * - Application code treats IDs as strings (TypeScript: string type)
+ *
  * Environment Variables Required:
  * - BETTER_AUTH_SECRET: Secret key for encryption (min 32 chars)
  * - BETTER_AUTH_URL: Base URL of the application
