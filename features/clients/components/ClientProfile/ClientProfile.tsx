@@ -279,12 +279,18 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
     <div className={cn('w-full', className)}>
       {/* Header */}
       <div className="mb-6">
-        {/* Back button row */}
+        {/* Back button row - touch-friendly */}
         {onBack && (
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-4"
+            className={cn(
+              'inline-flex items-center gap-1',
+              'min-h-[44px] px-2 -ml-2',
+              'text-sm text-gray-500 hover:text-gray-700',
+              'transition-colors mb-2',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:rounded-md'
+            )}
             aria-label="Go back"
           >
             <ArrowLeftIcon className="h-4 w-4" />
@@ -293,31 +299,41 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
         )}
 
         {/* Client name and edit button */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{client.name}</h1>
-            <p className="text-sm text-gray-500 mt-1">{client.email}</p>
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
+              {client.name}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1 truncate">{client.email}</p>
           </div>
 
           {onEdit && (
             <button
               type="button"
               onClick={handleEdit}
-              className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-md',
+                'bg-blue-600 px-3 py-2 sm:py-1.5',
+                'text-sm font-medium text-white',
+                'hover:bg-blue-700 active:bg-blue-800',
+                'transition-colors',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                'flex-shrink-0'
+              )}
               aria-label="Edit client"
             >
               <PencilIcon className="h-4 w-4" />
-              Edit
+              <span className="hidden sm:inline">Edit</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Tab Navigation */}
+      {/* Tab Navigation - Mobile optimized with larger touch targets */}
       <div
         role="tablist"
         aria-label="Client profile tabs"
-        className="flex border-b border-gray-200 mb-6 overflow-x-auto"
+        className="flex border-b border-gray-200 mb-6 overflow-x-auto scrollbar-hide"
       >
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -333,15 +349,20 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
               tabIndex={isActive ? 0 : -1}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
+                // Base styles with touch-friendly sizing
+                'flex items-center justify-center gap-2',
+                'min-h-[48px] px-3 sm:px-4 py-3',
+                'text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
+                // Focus states for accessibility
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                // Active state
                 isActive
                   ? 'border-blue-600 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               )}
             >
-              <Icon className="h-5 w-5" />
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.label}</span>
+              <Icon className="h-5 w-5 flex-shrink-0" />
+              <span className="truncate">{tab.label}</span>
             </button>
           );
         })}
