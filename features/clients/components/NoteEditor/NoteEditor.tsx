@@ -169,18 +169,22 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             rows={4}
             aria-label="Note content"
             className={cn(
-              'w-full rounded-lg border bg-white px-3 py-2 text-sm',
+              // Base styles
+              'w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm',
               'placeholder:text-gray-400',
-              'focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500',
+              // Focus styles
+              'focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20',
+              // Disabled state
               'disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500',
-              'resize-none'
+              // Mobile-first: Larger touch target on mobile
+              'min-h-[100px] resize-y sm:min-h-[80px]'
             )}
           />
         </div>
 
-        {/* Actions row */}
-        <div className="flex items-center justify-between gap-2">
-          {/* Importance toggle */}
+        {/* Actions row - stack on very small screens */}
+        <div className="flex flex-col gap-2 xs:flex-row xs:items-center xs:justify-between sm:flex-row sm:items-center sm:justify-between">
+          {/* Importance toggle - min touch target 44px */}
           <button
             type="button"
             onClick={handleToggleImportance}
@@ -188,15 +192,19 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             aria-pressed={isImportant}
             aria-label={isImportant ? 'Remove importance' : 'Mark as important'}
             className={cn(
-              'flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm transition-colors',
+              // Base styles with accessible touch target
+              'flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm',
+              'min-h-[44px] transition-colors',
+              // Active/inactive states
               isImportant
-                ? 'bg-amber-50 text-amber-600 hover:bg-amber-100'
-                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700',
+                ? 'bg-amber-50 text-amber-600 hover:bg-amber-100 active:bg-amber-200'
+                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 active:bg-gray-200',
+              // Disabled state
               isSubmitting && 'cursor-not-allowed opacity-50'
             )}
           >
-            <StarIcon filled={isImportant} className="h-4 w-4" />
-            <span className="hidden sm:inline">
+            <StarIcon filled={isImportant} className="h-5 w-5" />
+            <span className="sm:inline">
               {isImportant ? 'Important' : 'Mark important'}
             </span>
           </button>
@@ -209,8 +217,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                 onClick={onCancel}
                 disabled={isSubmitting}
                 className={cn(
-                  'rounded-md px-3 py-1.5 text-sm font-medium',
-                  'text-gray-600 hover:bg-gray-100',
+                  // Base styles with accessible touch target
+                  'rounded-lg px-4 py-2 text-sm font-medium min-h-[44px]',
+                  'text-gray-600 hover:bg-gray-100 active:bg-gray-200',
                   'transition-colors',
                   'disabled:cursor-not-allowed disabled:opacity-50'
                 )}
@@ -222,10 +231,12 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               type="submit"
               disabled={!isValid || isSubmitting}
               className={cn(
-                'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium',
-                'bg-blue-600 text-white hover:bg-blue-700',
-                'transition-colors',
-                'disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500'
+                // Base styles with accessible touch target
+                'flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium min-h-[44px]',
+                'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800',
+                'transition-colors shadow-sm',
+                // Disabled state
+                'disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none'
               )}
             >
               {isSubmitting && <SpinnerIcon className="text-white" />}
