@@ -56,6 +56,17 @@ const CheckIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const SpinnerIcon = ({ className }: { className?: string }) => (
+  <div
+    className={cn(
+      'h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent',
+      className
+    )}
+    role="status"
+    aria-label="Loading"
+  />
+);
+
 const EditIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -274,11 +285,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 isCompleted
                   ? 'bg-green-500 border-green-500 text-white'
                   : 'border-gray-300 hover:border-gray-400',
-                isUpdating && 'cursor-not-allowed opacity-50',
+                isUpdating && 'cursor-not-allowed',
                 !isUpdating && !isCompleted && 'hover:bg-gray-50'
               )}
             >
-              {isCompleted && <CheckIcon className="w-3.5 h-3.5" />}
+              {isUpdating ? (
+                <SpinnerIcon className="text-gray-400" />
+              ) : isCompleted ? (
+                <CheckIcon className="w-3.5 h-3.5" />
+              ) : null}
             </div>
           </label>
         </div>
