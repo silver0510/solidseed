@@ -67,8 +67,8 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onClick }) => {
   return (
     <article
       className={`
-        min-h-[44px] p-4 bg-white border border-gray-200 rounded-lg
-        ${isClickable ? 'cursor-pointer hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2' : ''}
+        min-h-[44px] p-4 bg-white border border-gray-200 rounded-lg shadow-sm
+        ${isClickable ? 'cursor-pointer hover:bg-gray-50 hover:border-gray-300 hover:shadow-md active:bg-gray-100 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2' : ''}
       `.trim()}
       onClick={isClickable ? handleClick : undefined}
       onKeyDown={isClickable ? handleKeyDown : undefined}
@@ -99,7 +99,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onClick }) => {
           </svg>
           <a
             href={`mailto:${client.email}`}
-            className="hover:text-blue-600 hover:underline"
+            className="truncate hover:text-blue-600 hover:underline focus:text-blue-600 focus:underline focus:outline-none py-1"
             onClick={handleLinkClick}
             aria-label={`Email ${client.name} at ${client.email}`}
           >
@@ -126,7 +126,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onClick }) => {
             </svg>
             <a
               href={`tel:${client.phone}`}
-              className="hover:text-blue-600 hover:underline"
+              className="hover:text-blue-600 hover:underline focus:text-blue-600 focus:underline focus:outline-none py-1"
               onClick={handleLinkClick}
               aria-label={`Call ${client.name} at ${client.phone}`}
             >
@@ -138,11 +138,11 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onClick }) => {
 
       {/* Tags */}
       {client.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2" role="list" aria-label="Client tags">
+        <div className="flex flex-wrap gap-1.5 mt-3 pt-2 border-t border-gray-100" role="list" aria-label="Client tags">
           {client.tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+              className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
               role="listitem"
             >
               {tag}
