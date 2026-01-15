@@ -99,3 +99,167 @@ export interface PaginatedClients {
   /** Total count of clients matching the query */
   total_count: number;
 }
+
+// =============================================================================
+// CLIENT TAGS
+// =============================================================================
+
+/**
+ * Client tag record from the database
+ */
+export interface ClientTag {
+  /** Unique identifier (CUID) */
+  id: string;
+  /** ID of the client this tag belongs to */
+  client_id: string;
+  /** Tag label/name */
+  tag_name: string;
+  /** User ID who created this tag */
+  created_by: string;
+  /** Record creation timestamp (ISO 8601) */
+  created_at: string;
+}
+
+/**
+ * Input data for adding a tag to a client
+ */
+export interface CreateTagInput {
+  /** Tag label/name */
+  tag_name: string;
+}
+
+// =============================================================================
+// CLIENT NOTES
+// =============================================================================
+
+/**
+ * Client note record from the database
+ */
+export interface ClientNote {
+  /** Unique identifier (CUID) */
+  id: string;
+  /** ID of the client this note belongs to */
+  client_id: string;
+  /** Note content text */
+  content: string;
+  /** Flag indicating if this note is important */
+  is_important: boolean;
+  /** User ID who created this note */
+  created_by: string;
+  /** Record creation timestamp (ISO 8601) */
+  created_at: string;
+  /** Record last update timestamp (ISO 8601) */
+  updated_at: string;
+}
+
+/**
+ * Input data for creating a new note
+ */
+export interface CreateNoteInput {
+  /** Note content text */
+  content: string;
+  /** Flag indicating if this note is important (default: false) */
+  is_important?: boolean;
+}
+
+/**
+ * Input data for updating an existing note
+ */
+export interface UpdateNoteInput {
+  /** Note content text */
+  content?: string;
+  /** Flag indicating if this note is important */
+  is_important?: boolean;
+}
+
+// =============================================================================
+// CLIENT TASKS
+// =============================================================================
+
+/** Valid task priority values */
+export type TaskPriority = 'low' | 'medium' | 'high';
+
+/** Valid task status values */
+export type TaskStatus = 'pending' | 'completed';
+
+/**
+ * Client task record from the database
+ */
+export interface ClientTask {
+  /** Unique identifier (CUID) */
+  id: string;
+  /** ID of the client this task belongs to */
+  client_id: string;
+  /** Task title */
+  title: string;
+  /** Task description (optional) */
+  description?: string;
+  /** Task due date (ISO 8601 date format) */
+  due_date: string;
+  /** Task priority: low, medium, high */
+  priority: TaskPriority;
+  /** Task status: pending, completed */
+  status: TaskStatus;
+  /** Timestamp when task was completed (ISO 8601, null if not completed) */
+  completed_at?: string | null;
+  /** User ID who created this task */
+  created_by: string;
+  /** User ID who this task is assigned to */
+  assigned_to: string;
+  /** Record creation timestamp (ISO 8601) */
+  created_at: string;
+  /** Record last update timestamp (ISO 8601) */
+  updated_at: string;
+}
+
+/**
+ * Task with client info for dashboard display
+ */
+export interface TaskWithClient extends ClientTask {
+  /** Client name for display */
+  client_name: string;
+}
+
+/**
+ * Input data for creating a new task
+ */
+export interface CreateTaskInput {
+  /** Task title */
+  title: string;
+  /** Task description (optional) */
+  description?: string;
+  /** Task due date (ISO 8601 date format) */
+  due_date: string;
+  /** Task priority: low, medium, high (default: medium) */
+  priority?: TaskPriority;
+}
+
+/**
+ * Input data for updating an existing task
+ */
+export interface UpdateTaskInput {
+  /** Task title */
+  title?: string;
+  /** Task description */
+  description?: string;
+  /** Task due date (ISO 8601 date format) */
+  due_date?: string;
+  /** Task priority: low, medium, high */
+  priority?: TaskPriority;
+  /** Task status: pending, completed */
+  status?: TaskStatus;
+}
+
+/**
+ * Parameters for filtering tasks in dashboard
+ */
+export interface TaskFilters {
+  /** Filter by status: pending, completed */
+  status?: TaskStatus;
+  /** Filter by priority: low, medium, high */
+  priority?: TaskPriority;
+  /** Filter tasks due before this date (ISO 8601) */
+  due_before?: string;
+  /** Filter tasks due after this date (ISO 8601) */
+  due_after?: string;
+}
