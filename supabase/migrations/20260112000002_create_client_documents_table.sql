@@ -8,8 +8,8 @@
 
 -- Client documents
 CREATE TABLE client_documents (
-  id VARCHAR(255) PRIMARY KEY,
-  client_id VARCHAR(255) NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
 
   -- File metadata
   file_name VARCHAR(255) NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE client_documents (
   description TEXT,
 
   -- Audit
-  uploaded_by VARCHAR(255) NOT NULL REFERENCES users(id),
+  uploaded_by UUID NOT NULL REFERENCES users(id),
   uploaded_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   -- Constraints

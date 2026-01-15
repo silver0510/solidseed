@@ -1,94 +1,68 @@
 /**
- * POST /api/auth/resend-verification
+ * Resend Verification Email API Route Wrapper
  *
- * Resend verification email endpoint.
- *
- * Request Body:
- * {
- *   "email": "user@example.com"
- * }
- *
- * Response (200 OK):
- * {
- *   "success": true,
- *   "message": "Verification email sent. Please check your inbox."
- * }
- *
- * Response (400 Bad Request): Invalid email or already verified
- * Response (429 Too Many Requests): Rate limit exceeded
- * Response (500 Internal Server Error): Server error
+ * Wraps Better Auth's native send-verification-email endpoint
+ * Allows users to request a new verification email
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { resendVerificationSchema } from '@/lib/validators';
-import { validateRequestBody } from '@/lib/validators';
-import { resendVerificationEmail } from '@/services/auth.service';
+import { auth } from '@/lib/auth';
 
-/**
- * POST handler for resending verification email
- */
 export async function POST(request: NextRequest) {
   try {
-    // Extract client information for logging and rate limiting
-    const ipAddress = request.headers.get('x-forwarded-for') ||
-                      request.headers.get('x-real-ip') ||
-                      null;
-    const userAgent = request.headers.get('user-agent') || null;
+    const body = await request.json();
 
-    // Validate request body
-    const { data, error } = await validateRequestBody(request, resendVerificationSchema);
-
-    if (error) {
-      return NextResponse.json(error, { status: 400 });
-    }
-
-    // Resend verification email
-    const result = await resendVerificationEmail(
-      data.email,
-      ipAddress,
-      userAgent
-    );
-
-    if (!result.success) {
+    // Validate required fields
+    if (!body.email) {
       return NextResponse.json(
-        {
-          error: 'Bad Request',
-          message: result.message,
-        },
+        { success: false, error: 'Email is required' },
         { status: 400 }
       );
     }
 
-    // Return success response
-    return NextResponse.json(
-      {
+    // Call Better Auth's sendVerificationEmail endpoint
+    const result = await auth.api.sendVerificationEmail({
+      body: {
+        email: body.email,
+        callbackURL: body.callbackURL || '/dashboard',
+      },
+    });
+
+    // Check if email was sent successfully
+    if (result) {
+      return NextResponse.json({
         success: true,
-        message: result.message,
-      },
-      { status: 200 }
-    );
-
-  } catch (error) {
-    console.error('Resend verification endpoint error:', error);
+        message: 'Verification email sent successfully. Please check your inbox.',
+      });
+    }
 
     return NextResponse.json(
-      {
-        error: 'Internal Server Error',
-        message: 'An unexpected error occurred. Please try again.',
-      },
+      { success: false, error: 'Failed to send verification email' },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error('Resend verification error:', error);
+
+    const errorMessage = error instanceof Error ? error.message : 'Failed to send verification email';
+
+    // Handle specific error cases
+    if (errorMessage.includes('UNVERIFIED_EMAIL')) {
+      return NextResponse.json(
+        { success: false, error: 'Email is already verified' },
+        { status: 400 }
+      );
+    }
+
+    if (errorMessage.includes('not found')) {
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: false, error: errorMessage },
       { status: 500 }
     );
   }
-}
-
-/**
- * OPTIONS handler for CORS preflight
- */
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Allow': 'POST, OPTIONS',
-    },
-  });
 }

@@ -129,7 +129,7 @@ export function validatePassword(
 
   // Check common passwords
   const lowerPassword = password.toLowerCase();
-  if (requirements.commonPasswords.includes(lowerPassword)) {
+  if ((requirements.commonPasswords as readonly string[]).includes(lowerPassword)) {
     errors.push('This is a commonly used password. Please choose a more secure password');
   }
 

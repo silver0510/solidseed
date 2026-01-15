@@ -8,10 +8,10 @@
 
 -- Client tags for organization
 CREATE TABLE client_tags (
-  id VARCHAR(255) PRIMARY KEY,
-  client_id VARCHAR(255) NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
   tag_name VARCHAR(100) NOT NULL,
-  created_by VARCHAR(255) NOT NULL REFERENCES users(id),
+  created_by UUID NOT NULL REFERENCES users(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   -- Unique tag per client

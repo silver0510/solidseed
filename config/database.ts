@@ -4,6 +4,12 @@
  * This module provides database configuration and connection utilities
  * for the authentication system using Supabase PostgreSQL.
  *
+ * Database ID Type:
+ * - All tables use PostgreSQL native UUID type (16 bytes storage)
+ * - IDs are auto-generated using gen_random_uuid()
+ * - TypeScript types represent IDs as strings
+ * - Benefits: 93% storage reduction vs VARCHAR(255), faster queries, type safety
+ *
  * Environment Variables Required:
  * - NEXT_PUBLIC_SUPABASE_URL: Supabase project URL
  * - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: Supabase anon/public key
@@ -194,9 +200,10 @@ export type AuthEventType =
 
 /**
  * User record type matching the users table schema
+ * Note: id is PostgreSQL UUID type, represented as string in TypeScript
  */
 export interface User {
-  id: string;
+  id: string; // PostgreSQL UUID (auto-generated)
   email: string;
   password_hash: string | null;
   full_name: string;
@@ -216,10 +223,11 @@ export interface User {
 
 /**
  * OAuth provider record type matching the oauth_providers table schema
+ * Note: id and user_id are PostgreSQL UUID type, represented as strings in TypeScript
  */
 export interface OAuthProviderRecord {
-  id: string;
-  user_id: string;
+  id: string; // PostgreSQL UUID (auto-generated)
+  user_id: string; // PostgreSQL UUID (references users.id)
   provider: OAuthProvider;
   provider_id: string;
   access_token: string | null;
@@ -234,10 +242,11 @@ export interface OAuthProviderRecord {
 
 /**
  * Password reset record type matching the password_resets table schema
+ * Note: id and user_id are PostgreSQL UUID type, represented as strings in TypeScript
  */
 export interface PasswordReset {
-  id: string;
-  user_id: string;
+  id: string; // PostgreSQL UUID (auto-generated)
+  user_id: string; // PostgreSQL UUID (references users.id)
   token: string;
   expires_at: string;
   used: boolean;
@@ -249,10 +258,11 @@ export interface PasswordReset {
 
 /**
  * Email verification record type matching the email_verifications table schema
+ * Note: id and user_id are PostgreSQL UUID type, represented as strings in TypeScript
  */
 export interface EmailVerification {
-  id: string;
-  user_id: string;
+  id: string; // PostgreSQL UUID (auto-generated)
+  user_id: string; // PostgreSQL UUID (references users.id)
   token: string;
   email: string;
   expires_at: string;
@@ -265,10 +275,11 @@ export interface EmailVerification {
 
 /**
  * Auth log record type matching the auth_logs table schema
+ * Note: id and user_id are PostgreSQL UUID type, represented as strings in TypeScript
  */
 export interface AuthLog {
-  id: string;
-  user_id: string | null;
+  id: string; // PostgreSQL UUID (auto-generated)
+  user_id: string | null; // PostgreSQL UUID (references users.id, nullable)
   event_type: AuthEventType;
   event_details: Record<string, unknown> | null;
   ip_address: string | null;

@@ -92,6 +92,7 @@ supabase db remote list
 In Supabase Dashboard → Table Editor, verify these tables exist:
 
 **Authentication Tables:**
+
 - `users`
 - `oauth_providers`
 - `password_resets`
@@ -101,6 +102,7 @@ In Supabase Dashboard → Table Editor, verify these tables exist:
 - `sessions`
 
 **Client Hub Tables:**
+
 - `clients`
 - `client_tags`
 - `client_documents`
@@ -116,6 +118,7 @@ RLS policies are automatically created by migrations, but verify they're enabled
 3. Check that policies exist for each table
 
 **Important**: For Better Auth compatibility, our policies use `auth.uid()::text` cast because:
+
 - Supabase `auth.uid()` returns UUID type
 - Our user IDs are VARCHAR(255) (Better Auth uses CUID format)
 - The `::text` cast ensures type compatibility
@@ -213,6 +216,7 @@ Expected output: 3 policies for `client-documents` bucket.
 Supabase Dashboard → Authentication → Settings:
 
 **General Settings:**
+
 - Site URL: `http://localhost:3000` (dev) or `https://korella.app` (prod)
 - Additional Redirect URLs:
   ```
@@ -221,10 +225,12 @@ Supabase Dashboard → Authentication → Settings:
   ```
 
 **Email Auth:**
+
 - Enable Email Signup: **OFF** (we handle this with Better Auth)
 - Confirm Email: **OFF** (handled by Better Auth)
 
 **Security:**
+
 - JWT Expiry: `3600` (1 hour)
 - Refresh Token Expiry: `2592000` (30 days)
 
@@ -287,6 +293,7 @@ NODE_ENV=production
 ### 1. Create Production Project
 
 Follow same steps as development, but:
+
 - Project name: `korella-crm-prod`
 - Choose Pro plan for better performance
 - Enable Point-in-Time Recovery (PITR)
@@ -340,6 +347,7 @@ supabase db remote list
 ### Migration Errors
 
 **Error: "relation already exists"**
+
 ```bash
 # Reset remote database (WARNING: deletes all data)
 supabase db reset --linked
@@ -348,6 +356,7 @@ supabase db reset --linked
 ```
 
 **Error: "permission denied"**
+
 - Check database user has correct permissions
 - Verify connection string is correct
 - Try using service role key
@@ -355,11 +364,13 @@ supabase db reset --linked
 ### Storage Issues
 
 **Error: "new row violates row-level security policy"**
+
 - Verify RLS policies are created correctly
 - Check `auth.uid()::text` cast is present
 - Test with authenticated user session
 
 **Files not uploading**
+
 - Check bucket exists and is private
 - Verify MIME types are allowed
 - Check file size is under 10MB
@@ -374,11 +385,13 @@ supabase db reset --linked
 ### Connection Issues
 
 **Error: "connection refused"**
+
 - Verify `SUPABASE_DATABASE_URL` is correct
 - Check database is not paused (free plan auto-pauses)
 - Try connection pooling URL instead of direct connection
 
 **Error: "too many connections"**
+
 - Use connection pooling (Transaction mode)
 - Reduce max connections in application
 - Upgrade to Pro plan for more connections
@@ -386,6 +399,7 @@ supabase db reset --linked
 ### RLS Policy Issues
 
 **Auth context not working**
+
 - Remember: We use Better Auth, not Supabase Auth
 - `auth.uid()` returns Supabase's auth user (we'll integrate later)
 - For now, policies reference `assigned_to` column directly
@@ -394,11 +408,13 @@ supabase db reset --linked
 ### Performance Issues
 
 **Slow queries**
+
 - Check indexes are created (auto-created by migrations)
 - Use `EXPLAIN ANALYZE` to debug queries
 - Enable pg_stat_statements in dashboard
 
 **Storage slow**
+
 - Enable CDN in Storage settings
 - Use signed URLs with longer expiry
 - Consider upgrading to Pro plan
@@ -414,9 +430,11 @@ supabase db reset --linked
 ## Support
 
 For Supabase-specific issues:
+
 - Supabase Discord: [discord.supabase.com](https://discord.supabase.com)
 - Supabase Support: support@supabase.io
 
 For project-specific issues:
+
 - Create issue in project repository
 - Check TROUBLESHOOTING.md

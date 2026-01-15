@@ -7,3 +7,4 @@
 export * from './test-data';
 export * from './setup';
 export * from './mocks';
+export * from './fixtures';

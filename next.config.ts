@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
   // Most applications work fine under Turbopack with no configuration
   turbopack: {},
   // Note: instrumentation is enabled by default in Next.js 15+
+  // Disable trailing slash to fix Better Auth 404 issues
+  trailingSlash: false,
 };
 
 // Chain PWA and Sentry configs

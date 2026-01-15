@@ -3,11 +3,11 @@
 -- Enables social login and account linking
 
 CREATE TABLE IF NOT EXISTS oauth_providers (
-    -- Primary key (VARCHAR to support CUID from Better Auth)
-    id VARCHAR(255) PRIMARY KEY,
+    -- Primary key (UUID with auto-generation)
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Foreign key to users table
-    user_id VARCHAR(255) NOT NULL,
+    user_id UUID NOT NULL,
 
     -- OAuth provider information
     provider VARCHAR(50) NOT NULL,
@@ -66,7 +66,7 @@ CREATE TRIGGER update_oauth_providers_updated_at
 
 -- Add comments for documentation
 COMMENT ON TABLE oauth_providers IS 'OAuth provider account mappings for social login';
-COMMENT ON COLUMN oauth_providers.id IS 'Unique identifier (CUID)';
+COMMENT ON COLUMN oauth_providers.id IS 'UUID primary key (PostgreSQL native, auto-generated)';
 COMMENT ON COLUMN oauth_providers.user_id IS 'Reference to users table';
 COMMENT ON COLUMN oauth_providers.provider IS 'OAuth provider name (google, microsoft)';
 COMMENT ON COLUMN oauth_providers.provider_id IS 'User ID from the OAuth provider';

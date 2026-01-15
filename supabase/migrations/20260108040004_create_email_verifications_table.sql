@@ -3,11 +3,11 @@
 -- Tokens expire after 24 hours for security
 
 CREATE TABLE IF NOT EXISTS email_verifications (
-    -- Primary key (VARCHAR to support CUID)
-    id VARCHAR(255) PRIMARY KEY,
+    -- Primary key (UUID with auto-generation)
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Foreign key to users table
-    user_id VARCHAR(255) NOT NULL,
+    user_id UUID NOT NULL,
 
     -- Verification token (secure random string)
     token VARCHAR(255) NOT NULL,
@@ -56,7 +56,7 @@ CREATE INDEX IF NOT EXISTS idx_email_verifications_valid
 
 -- Add comments for documentation
 COMMENT ON TABLE email_verifications IS 'Temporary email verification tokens (24-hour expiration)';
-COMMENT ON COLUMN email_verifications.id IS 'Unique identifier (CUID)';
+COMMENT ON COLUMN email_verifications.id IS 'UUID primary key (PostgreSQL native, auto-generated)';
 COMMENT ON COLUMN email_verifications.user_id IS 'Reference to users table';
 COMMENT ON COLUMN email_verifications.token IS 'Secure random token for email verification';
 COMMENT ON COLUMN email_verifications.email IS 'Email address being verified';

@@ -3,11 +3,11 @@
 -- Tokens expire after 1 hour for security
 
 CREATE TABLE IF NOT EXISTS password_resets (
-    -- Primary key (VARCHAR to support CUID)
-    id VARCHAR(255) PRIMARY KEY,
+    -- Primary key (UUID with auto-generation)
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Foreign key to users table
-    user_id VARCHAR(255) NOT NULL,
+    user_id UUID NOT NULL,
 
     -- Reset token (secure random string)
     token VARCHAR(255) NOT NULL,
@@ -53,7 +53,7 @@ CREATE INDEX IF NOT EXISTS idx_password_resets_valid
 
 -- Add comments for documentation
 COMMENT ON TABLE password_resets IS 'Temporary password reset tokens (1-hour expiration)';
-COMMENT ON COLUMN password_resets.id IS 'Unique identifier (CUID)';
+COMMENT ON COLUMN password_resets.id IS 'UUID primary key (PostgreSQL native, auto-generated)';
 COMMENT ON COLUMN password_resets.user_id IS 'Reference to users table';
 COMMENT ON COLUMN password_resets.token IS 'Secure random token for password reset';
 COMMENT ON COLUMN password_resets.expires_at IS 'Token expiration time (1 hour from creation)';

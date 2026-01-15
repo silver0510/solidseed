@@ -1,121 +1,91 @@
 /**
- * POST /api/auth/login
+ * Login API Route Wrapper
  *
- * User login endpoint with email and password.
- *
- * Request Body:
- * {
- *   "email": "user@example.com",
- *   "password": "SecurePass123!",
- *   "rememberMe": false
- * }
- *
- * Response (200 OK):
- * {
- *   "success": true,
- *   "message": "Login successful",
- *   "token": "jwt-token",
- *   "user": {
- *     "id": "uuid",
- *     "email": "user@example.com",
- *     "fullName": "John Doe",
- *     "subscriptionTier": "trial",
- *     "trialExpiresAt": "2024-01-22T00:00:00Z"
- *   }
- * }
- *
- * Response (400 Bad Request): Validation error
- * Response (401 Unauthorized): Invalid credentials
- * Response (403 Forbidden): Account locked, deactivated, or email not verified
- * Response (429 Too Many Requests): Rate limit exceeded
- * Response (500 Internal Server Error): Server error
+ * Wraps Better Auth's native /sign-in/email endpoint with custom logic
+ * and response formatting to maintain backward compatibility
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { loginSchema } from '@/lib/validators';
-import { validateRequestBody } from '@/lib/validators';
-import { loginUser } from '@/services/auth.service';
+import { auth } from '@/lib/auth';
 
-/**
- * POST handler for user login
- */
 export async function POST(request: NextRequest) {
   try {
-    // Extract client information for logging and security
-    const ipAddress = request.headers.get('x-forwarded-for') ||
-                      request.headers.get('x-real-ip') ||
-                      null;
-    const userAgent = request.headers.get('user-agent') || null;
+    // Clone the request so we can read the body twice if needed
+    const requestClone = request.clone();
+    const body = await requestClone.json();
 
-    // Validate request body
-    const { data, error } = await validateRequestBody(request, loginSchema);
-
-    if (error) {
-      return NextResponse.json(error, { status: 400 });
-    }
-
-    // Attempt to login the user
-    const result = await loginUser(
-      data.email,
-      data.password,
-      data.rememberMe,
-      ipAddress,
-      userAgent
-    );
-
-    if (!result.success) {
-      // Determine appropriate status code based on error message
-      let statusCode = 401; // Default to Unauthorized
-
-      const message = result.message.toLowerCase();
-
-      if (message.includes('verify your email')) {
-        statusCode = 403; // Forbidden - email not verified
-      } else if (message.includes('locked') || message.includes('deactivated')) {
-        statusCode = 403; // Forbidden - account issue
-      }
-
+    // Validate required fields
+    if (!body.email || !body.password) {
       return NextResponse.json(
-        {
-          error: statusCode === 403 ? 'Forbidden' : 'Unauthorized',
-          message: result.message,
-        },
-        { status: statusCode }
+        { success: false, error: 'Email and password are required' },
+        { status: 400 }
       );
     }
 
-    // Return success response with token and user data
-    return NextResponse.json(
-      {
+    // Call Better Auth's sign-in endpoint
+    const result = await auth.api.signInEmail({
+      body: {
+        email: body.email,
+        password: body.password,
+        rememberMe: body.rememberMe || false,
+        callbackURL: body.callbackURL || '/dashboard',
+      },
+    });
+
+    // Better Auth returns user and token data on successful login
+    if (result.user && result.token) {
+      return NextResponse.json({
         success: true,
-        message: result.message,
+        message: 'Login successful',
         token: result.token,
-        user: result.user,
-      },
-      { status: 200 }
-    );
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          full_name: result.user.name,
+          subscription_tier: result.user.subscription_tier || 'trial',
+          trial_expires_at: result.user.trial_expires_at,
+        },
+      });
+    }
 
+    // Handle error cases
+    return NextResponse.json(
+      { success: false, error: 'Invalid credentials' },
+      { status: 401 }
+    );
   } catch (error) {
-    console.error('Login endpoint error:', error);
+    console.error('Login error:', error);
+
+    // Handle specific error cases
+    const errorMessage = error instanceof Error ? error.message : 'Login failed';
+
+    // Account locked
+    if (errorMessage.includes('locked') || errorMessage.includes('too many attempts')) {
+      return NextResponse.json(
+        { success: false, error: 'Account locked due to too many failed login attempts. Please try again later.' },
+        { status: 423 }
+      );
+    }
+
+    // Invalid credentials
+    if (errorMessage.includes('invalid') || errorMessage.includes('not found') || errorMessage.includes('incorrect')) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Email not verified
+    if (errorMessage.includes('not verified') || errorMessage.includes('verification')) {
+      return NextResponse.json(
+        { success: false, error: 'Please verify your email before logging in' },
+        { status: 403 }
+      );
+    }
 
     return NextResponse.json(
-      {
-        error: 'Internal Server Error',
-        message: 'An unexpected error occurred. Please try again.',
-      },
+      { success: false, error: errorMessage },
       { status: 500 }
     );
   }
-}
-
-/**
- * OPTIONS handler for CORS preflight
- */
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Allow': 'POST, OPTIONS',
-    },
-  });
 }

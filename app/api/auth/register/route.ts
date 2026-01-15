@@ -1,120 +1,74 @@
 /**
- * POST /api/auth/register
+ * Registration API Route Wrapper
  *
- * User registration endpoint with email and password.
- *
- * Request Body:
- * {
- *   "email": "user@example.com",
- *   "password": "SecurePass123!",
- *   "fullName": "John Doe"
- * }
- *
- * Response (200 OK):
- * {
- *   "success": true,
- *   "message": "Check your email to verify your account",
- *   "userId": "uuid"
- * }
- *
- * Response (400 Bad Request):
- * {
- *   "error": "Validation Error",
- *   "message": "Invalid input data",
- *   "details": [...]
- * }
- *
- * Response (409 Conflict):
- * {
- *   "error": "Conflict",
- *   "message": "An account with this email already exists"
- * }
- *
- * Response (500 Internal Server Error):
- * {
- *   "error": "Internal Server Error",
- *   "message": "Failed to create account"
- * }
+ * Wraps Better Auth's native /sign-up/email endpoint with custom logic
+ * and response formatting to maintain backward compatibility
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { registerSchema } from '@/lib/validators';
-import { validateRequestBody } from '@/lib/validators';
-import { registerUser } from '@/services/auth.service';
+import { auth } from '@/lib/auth';
 
-/**
- * POST handler for user registration
- */
 export async function POST(request: NextRequest) {
   try {
-    // Extract client information for logging and security
-    const ipAddress = request.headers.get('x-forwarded-for') ||
-                      request.headers.get('x-real-ip') ||
-                      null;
-    const userAgent = request.headers.get('user-agent') || null;
+    // Clone the request so we can read the body twice
+    const requestClone = request.clone();
+    const body = await requestClone.json();
 
-    // Validate request body
-    const { data, error } = await validateRequestBody(request, registerSchema);
-
-    if (error) {
-      return NextResponse.json(error, { status: 400 });
-    }
-
-    // Attempt to register the user
-    const result = await registerUser(
-      data.email,
-      data.password,
-      data.fullName,
-      ipAddress,
-      userAgent
-    );
-
-    if (!result.success) {
-      // Determine appropriate status code
-      const statusCode = result.message.includes('already exists')
-        ? 409 // Conflict
-        : 400; // Bad Request
-
+    // Validate required fields
+    if (!body.email || !body.password) {
       return NextResponse.json(
-        {
-          error: statusCode === 409 ? 'Conflict' : 'Bad Request',
-          message: result.message,
-        },
-        { status: statusCode }
+        { success: false, error: 'Email and password are required' },
+        { status: 400 }
       );
     }
 
-    // Return success response
-    return NextResponse.json(
-      {
+    // Call Better Auth's sign-up endpoint with the original request
+    const result = await auth.api.signUpEmail({
+      body: {
+        email: body.email,
+        password: body.password,
+        name: body.fullName || body.name || body.full_name || '',
+        image: body.image,
+        callbackURL: body.callbackURL || '/dashboard',
+      },
+    });
+
+    // Better Auth returns user data on successful signup
+    if (result.user) {
+      return NextResponse.json({
         success: true,
-        message: result.message,
-        userId: result.userId,
-      },
-      { status: 200 }
-    );
+        message: 'Registration successful. Please check your email to verify your account.',
+        userId: result.user.id,
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          full_name: result.user.name,
+          subscription_tier: 'trial',
+        },
+      });
+    }
 
+    // Handle error cases
+    return NextResponse.json(
+      { success: false, error: 'Registration failed' },
+      { status: 400 }
+    );
   } catch (error) {
-    console.error('Registration endpoint error:', error);
+    console.error('Registration error:', error);
+
+    // Handle specific error cases
+    const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+
+    if (errorMessage.includes('already exists') || errorMessage.includes('duplicate')) {
+      return NextResponse.json(
+        { success: false, error: 'Email already registered' },
+        { status: 409 }
+      );
+    }
 
     return NextResponse.json(
-      {
-        error: 'Internal Server Error',
-        message: 'An unexpected error occurred. Please try again.',
-      },
+      { success: false, error: errorMessage },
       { status: 500 }
     );
   }
-}
-
-/**
- * OPTIONS handler for CORS preflight
- */
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Allow': 'POST, OPTIONS',
-    },
-  });
 }

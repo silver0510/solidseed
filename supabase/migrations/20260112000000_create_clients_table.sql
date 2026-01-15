@@ -8,7 +8,7 @@
 
 -- Core client profiles
 CREATE TABLE clients (
-  id VARCHAR(255) PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   -- Client identity
   name VARCHAR(255) NOT NULL,
@@ -21,8 +21,8 @@ CREATE TABLE clients (
   search_vector TSVECTOR,
 
   -- Ownership and access control
-  created_by VARCHAR(255) NOT NULL REFERENCES users(id),
-  assigned_to VARCHAR(255) NOT NULL REFERENCES users(id),
+  created_by UUID NOT NULL REFERENCES users(id),
+  assigned_to UUID NOT NULL REFERENCES users(id),
 
   -- Soft delete for GDPR compliance
   is_deleted BOOLEAN NOT NULL DEFAULT FALSE,

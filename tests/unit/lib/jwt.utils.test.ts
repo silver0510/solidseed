@@ -27,6 +27,7 @@ import {
   getTokenErrorCode,
 } from '../../../lib/utils/jwt.utils';
 import { securityConstants } from '../../../config/database';
+import { TEST_IDS } from '../../helpers/fixtures';
 
 describe('JWT Utils', () => {
   describe('extractTokenFromHeader', () => {
@@ -97,8 +98,8 @@ describe('JWT Utils', () => {
       const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
       const payload = btoa(
         JSON.stringify({
-          sub: 'user-123',
-          userId: 'user-123',
+          sub: TEST_IDS.USER_1,
+          userId: TEST_IDS.USER_1,
           email: 'test@example.com',
           name: 'Test User',
           subscriptionTier: 'pro',
@@ -113,7 +114,7 @@ describe('JWT Utils', () => {
       const parsed = parseJWTPayload(token);
 
       expect(parsed).toBeDefined();
-      expect(parsed?.userId).toBe('user-123');
+      expect(parsed?.userId).toBe(TEST_IDS.USER_1);
       expect(parsed?.email).toBe('test@example.com');
       expect(parsed?.name).toBe('Test User');
       expect(parsed?.subscriptionTier).toBe('pro');
@@ -129,7 +130,7 @@ describe('JWT Utils', () => {
       const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
       const payload = btoa(
         JSON.stringify({
-          sub: 'user-123',
+          sub: TEST_IDS.USER_1,
           email: 'test@example.com',
           name: 'Test User',
           iat: Math.floor(Date.now() / 1000),
@@ -153,7 +154,7 @@ describe('JWT Utils', () => {
         .replace(/=/g, '');
       const payload = btoa(
         JSON.stringify({
-          sub: 'user-123',
+          sub: TEST_IDS.USER_1,
           email: 'test@example.com',
           name: 'Test User',
           iat: Math.floor(Date.now() / 1000),
@@ -177,7 +178,7 @@ describe('JWT Utils', () => {
       const futureExp = now + 3600; // 1 hour from now
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -193,7 +194,7 @@ describe('JWT Utils', () => {
       const pastExp = now - 3600; // 1 hour ago
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -208,7 +209,7 @@ describe('JWT Utils', () => {
       const now = Math.floor(Date.now() / 1000);
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -227,7 +228,7 @@ describe('JWT Utils', () => {
       const exp = now + 3600;
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -247,7 +248,7 @@ describe('JWT Utils', () => {
       const iat = now - 3600;
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -267,7 +268,7 @@ describe('JWT Utils', () => {
       const exp = now + 3600; // 1 hour from now
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -289,7 +290,7 @@ describe('JWT Utils', () => {
       const exp = now - 3600; // 1 hour ago
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -353,7 +354,7 @@ describe('JWT Utils', () => {
       const defaultLifetime = securityConstants.DEFAULT_JWT_EXPIRATION_DAYS * 24 * 60 * 60;
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -372,7 +373,7 @@ describe('JWT Utils', () => {
       const extendedLifetime = securityConstants.EXTENDED_JWT_EXPIRATION_DAYS * 24 * 60 * 60;
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -391,7 +392,7 @@ describe('JWT Utils', () => {
       const customLifetime = 7 * 24 * 60 * 60; // 7 days
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -411,7 +412,7 @@ describe('JWT Utils', () => {
       const extendedLifetime = securityConstants.EXTENDED_JWT_EXPIRATION_DAYS * 24 * 60 * 60;
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -428,7 +429,7 @@ describe('JWT Utils', () => {
       const defaultLifetime = securityConstants.DEFAULT_JWT_EXPIRATION_DAYS * 24 * 60 * 60;
 
       const payload = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',
@@ -444,7 +445,7 @@ describe('JWT Utils', () => {
       const now = Math.floor(Date.now() / 1000);
 
       const payloadWithFlag = {
-        userId: 'user-123',
+        userId: TEST_IDS.USER_1,
         email: 'test@example.com',
         name: 'Test User',
         subscriptionTier: 'pro',

@@ -12,6 +12,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { generateTestEmail, oauthTestData } from '../../helpers/test-data';
 import { mockOAuthProviders } from '../../helpers/mocks';
+import { TEST_IDS } from '../../helpers/fixtures';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -25,7 +26,7 @@ vi.mock('@/lib/auth', () => ({
         if (provider === 'google') {
           return Promise.resolve({
             user: {
-              id: 'google-user-123',
+              id: TEST_IDS.OAUTH_GOOGLE,
               email: 'oauthuser@google.com',
               name: 'Google User',
               emailVerified: true,
