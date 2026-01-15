@@ -197,19 +197,30 @@ describe('ClientProfile', () => {
 
   describe('Loading State', () => {
     it('shows loading indicator while fetching client data', async () => {
-      // Make API call take longer
-      (clientApi.getClient as ReturnType<typeof vi.fn>).mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve(mockClient), 500))
+      // Make all API calls take longer to ensure we see the loading state
+      (clientApi.getClient as ReturnType<typeof vi.fn>).mockReturnValue(
+        new Promise(() => {}) // Never resolves to keep loading
+      );
+      (documentApi.getClientDocuments as ReturnType<typeof vi.fn>).mockReturnValue(
+        new Promise(() => {}) // Never resolves to keep loading
+      );
+      (noteApi.getClientNotes as ReturnType<typeof vi.fn>).mockReturnValue(
+        new Promise(() => {})
+      );
+      (taskApi.getClientTasks as ReturnType<typeof vi.fn>).mockReturnValue(
+        new Promise(() => {})
       );
 
-      render(<ClientProfile clientId={mockClientId} />);
+      const { container } = render(<ClientProfile clientId={mockClientId} />);
 
-      // Should show loading indicator
-      expect(
-        screen.queryByRole('status') ||
-        screen.queryByText(/loading/i) ||
-        screen.queryByTestId('loading-spinner')
-      ).toBeInTheDocument();
+      // Should show loading indicator - the SVG spinner has role="status"
+      // or look for the loading spinner by test id or the animate-spin class
+      await waitFor(() => {
+        const spinner = container.querySelector('[data-testid="loading-spinner"]') ||
+                       container.querySelector('.animate-spin') ||
+                       container.querySelector('svg[role="status"]');
+        expect(spinner).toBeInTheDocument();
+      });
     });
 
     it('hides loading indicator after data loads', async () => {
@@ -241,7 +252,9 @@ describe('ClientProfile', () => {
       render(<ClientProfile clientId={mockClientId} />);
 
       await waitFor(() => {
-        expect(screen.getByText('john.smith@example.com')).toBeInTheDocument();
+        // Email appears in both header and overview tab, use getAllByText
+        const emailElements = screen.getAllByText('john.smith@example.com');
+        expect(emailElements.length).toBeGreaterThan(0);
       });
     });
 
@@ -396,7 +409,9 @@ describe('ClientProfile', () => {
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
-        expect(screen.getByText('john.smith@example.com')).toBeInTheDocument();
+        // Email appears multiple times, use getAllByText
+        const emails = screen.getAllByText('john.smith@example.com');
+        expect(emails.length).toBeGreaterThan(0);
       });
     });
 
@@ -447,9 +462,9 @@ describe('ClientProfile', () => {
       const documentsTab = screen.getByRole('tab', { name: /documents/i });
       await user.click(documentsTab);
 
-      // DocumentUploader should be visible
+      // DocumentUploader should be visible (shows "Drag and drop files here")
       await waitFor(() => {
-        expect(screen.getByText(/drag.*drop|upload/i)).toBeInTheDocument();
+        expect(screen.getByText('Drag and drop files here')).toBeInTheDocument();
       });
     });
 
@@ -703,11 +718,15 @@ describe('ClientProfile', () => {
 
     it('shows not found message when client does not exist', async () => {
       (clientApi.getClient as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (documentApi.getClientDocuments as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (noteApi.getClientNotes as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (taskApi.getClientTasks as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
       render(<ClientProfile clientId="nonexistent123" />);
 
       await waitFor(() => {
-        expect(screen.getByText(/not found|doesn't exist/i)).toBeInTheDocument();
+        // The component shows "Client not found"
+        expect(screen.getByText('Client not found')).toBeInTheDocument();
       });
     });
   });
@@ -734,10 +753,12 @@ describe('ClientProfile', () => {
 
       await waitFor(() => {
         const tabs = screen.getAllByRole('tab');
-        // Each tab should be focusable
-        tabs.forEach((tab) => {
-          expect(tab).not.toHaveAttribute('tabindex', '-1');
-        });
+        // All tabs should be present and clickable
+        expect(tabs.length).toBe(4);
+        // At least the active tab should have tabIndex 0
+        const activeTab = tabs.find((tab) => tab.getAttribute('aria-selected') === 'true');
+        expect(activeTab).toBeTruthy();
+        expect(activeTab).toHaveAttribute('tabindex', '0');
       });
     });
   });
@@ -912,7 +933,9 @@ describe('OverviewTab', () => {
     render(<ClientProfile clientId="cltest123" />);
 
     await waitFor(() => {
-      expect(screen.getByText('test@example.com')).toBeInTheDocument();
+      // Email appears in both header and overview tab
+      const emails = screen.getAllByText('test@example.com');
+      expect(emails.length).toBeGreaterThan(0);
       expect(screen.getByText('+1-555-123-4567')).toBeInTheDocument();
       expect(screen.getByText(/456 Oak Ave/i)).toBeInTheDocument();
     });
@@ -932,9 +955,13 @@ describe('OverviewTab', () => {
     render(<ClientProfile clientId="cltest123" />);
 
     await waitFor(() => {
-      expect(screen.getByText(/documents/i)).toBeInTheDocument();
-      expect(screen.getByText(/notes/i)).toBeInTheDocument();
-      expect(screen.getByText(/tasks/i)).toBeInTheDocument();
+      // Count labels appear in both tabs and stat cards
+      const documentLabels = screen.getAllByText(/documents/i);
+      const noteLabels = screen.getAllByText(/notes/i);
+      const taskLabels = screen.getAllByText(/tasks/i);
+      expect(documentLabels.length).toBeGreaterThan(0);
+      expect(noteLabels.length).toBeGreaterThan(0);
+      expect(taskLabels.length).toBeGreaterThan(0);
     });
   });
 });

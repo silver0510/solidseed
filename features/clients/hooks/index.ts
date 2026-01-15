@@ -12,3 +12,15 @@ export {
   flattenClientPages,
   type UseClientsInfiniteOptions,
 } from './useClientsInfinite';
+
+export {
+  useDocumentUpload,
+  type UseDocumentUploadOptions,
+  type UseDocumentUploadReturn,
+} from './useDocumentUpload';
+
+export {
+  useClient,
+  type UseClientOptions,
+  type UseClientReturn,
+} from './useClient';
