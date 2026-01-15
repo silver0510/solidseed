@@ -117,12 +117,6 @@ RLS policies are automatically created by migrations, but verify they're enabled
 2. Verify each table has RLS enabled
 3. Check that policies exist for each table
 
-**Important**: For Better Auth compatibility, our policies use `auth.uid()::text` cast because:
-
-- Supabase `auth.uid()` returns UUID type
-- Our user IDs are VARCHAR(255) (Better Auth uses CUID format)
-- The `::text` cast ensures type compatibility
-
 ## Storage Configuration
 
 ### 1. Create Storage Bucket
@@ -164,8 +158,8 @@ WITH CHECK (
   bucket_id = 'client-documents' AND
   EXISTS (
     SELECT 1 FROM clients
-    WHERE clients.id = (storage.foldername(name))[1]
-    AND clients.assigned_to = auth.uid()::text
+    WHERE clients.id = (storage.foldername(name))[1]::uuid
+    AND clients.assigned_to = auth.uid()
     AND clients.is_deleted = FALSE
   )
 );
@@ -177,8 +171,8 @@ USING (
   bucket_id = 'client-documents' AND
   EXISTS (
     SELECT 1 FROM clients
-    WHERE clients.id = (storage.foldername(name))[1]
-    AND clients.assigned_to = auth.uid()::text
+    WHERE clients.id = (storage.foldername(name))[1]::uuid
+    AND clients.assigned_to = auth.uid()
     AND clients.is_deleted = FALSE
   )
 );
@@ -190,13 +184,13 @@ USING (
   bucket_id = 'client-documents' AND
   EXISTS (
     SELECT 1 FROM clients
-    WHERE clients.id = (storage.foldername(name))[1]
-    AND clients.assigned_to = auth.uid()::text
+    WHERE clients.id = (storage.foldername(name))[1]::uuid
+    AND clients.assigned_to = auth.uid()
   )
 );
 ```
 
-**Note**: The `auth.uid()::text` cast is required for Better Auth compatibility.
+**Note**: The folder name is cast to UUID (`::uuid`) to match the `clients.id` column type.
 
 ### 3. Verify Storage Policies
 
@@ -366,7 +360,7 @@ supabase db reset --linked
 **Error: "new row violates row-level security policy"**
 
 - Verify RLS policies are created correctly
-- Check `auth.uid()::text` cast is present
+- Check `auth.uid()` comparison uses UUID (no text cast needed)
 - Test with authenticated user session
 
 **Files not uploading**
@@ -401,9 +395,9 @@ supabase db reset --linked
 **Auth context not working**
 
 - Remember: We use Better Auth, not Supabase Auth
-- `auth.uid()` returns Supabase's auth user (we'll integrate later)
-- For now, policies reference `assigned_to` column directly
-- Always cast `auth.uid()` to text: `auth.uid()::text`
+- `auth.uid()` returns Supabase's auth user UUID
+- Policies compare directly with UUID columns (no casting needed)
+- User IDs are now UUID type (migrated from VARCHAR/CUID)
 
 ### Performance Issues
 
