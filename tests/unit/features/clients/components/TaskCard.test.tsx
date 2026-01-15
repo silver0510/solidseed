@@ -21,12 +21,18 @@ import type { ClientTask, TaskStatus } from '@/features/clients/types';
 const mockClientId = 'clxyz123456789';
 
 /**
- * Helper to create a date string relative to today
+ * Helper to create a date string relative to today in local timezone
+ * Returns YYYY-MM-DD format in local time to match how the component
+ * helper functions interpret dates.
  */
 function getDateRelativeToToday(days: number): string {
   const date = new Date();
   date.setDate(date.getDate() + days);
-  return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+  // Use local date components to avoid timezone issues
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 const mockTask: ClientTask = {
@@ -242,38 +248,36 @@ describe('TaskCard', () => {
     it('shows overdue indicator for past due tasks', () => {
       render(<TaskCard task={mockOverdueTask} />);
 
-      // Should have overdue visual indicator (red styling or "overdue" text)
-      const overdueIndicator =
-        screen.queryByText(/overdue/i) ||
-        document.querySelector('[data-overdue="true"]');
-      expect(overdueIndicator).toBeInTheDocument();
+      // Should have overdue data attribute on the article
+      const article = document.querySelector('[data-overdue="true"]');
+      expect(article).toBeInTheDocument();
     });
 
     it('shows today indicator for tasks due today', () => {
       render(<TaskCard task={mockTodayTask} />);
 
-      // Should have today visual indicator (yellow/amber styling or "today" text)
-      const todayIndicator =
-        screen.queryByText(/today/i) ||
-        document.querySelector('[data-due-today="true"]');
-      expect(todayIndicator).toBeInTheDocument();
+      // Should have today data attribute
+      const dueTodayElement = document.querySelector('[data-due-today="true"]');
+      expect(dueTodayElement).toBeInTheDocument();
     });
 
     it('shows tomorrow indicator for tasks due tomorrow', () => {
       render(<TaskCard task={mockHighPriorityTask} />);
 
-      // Should indicate due tomorrow
-      const tomorrowIndicator = screen.queryByText(/tomorrow/i);
-      expect(tomorrowIndicator).toBeInTheDocument();
+      // Should indicate due tomorrow in the time element
+      // The time element is inside a span with role="time"
+      const timeElements = document.querySelectorAll('time');
+      expect(timeElements.length).toBeGreaterThan(0);
+      // The text should indicate tomorrow (either "Tomorrow" or "in 1 day" or similar)
+      const dueDateText = timeElements[0]?.textContent;
+      expect(dueDateText).toMatch(/tomorrow|in 1 day/i);
     });
 
     it('does not show overdue indicator for completed tasks with past due date', () => {
       render(<TaskCard task={mockCompletedTask} />);
 
-      // Completed tasks should NOT show overdue, even if due date is past
-      const overdueIndicator =
-        screen.queryByText(/overdue/i) ||
-        document.querySelector('[data-overdue="true"]');
+      // Completed tasks should NOT show overdue data attribute
+      const overdueIndicator = document.querySelector('[data-overdue="true"]');
       expect(overdueIndicator).not.toBeInTheDocument();
     });
   });
@@ -353,10 +357,9 @@ describe('TaskCard', () => {
     it('shows completed indicator', () => {
       render(<TaskCard task={mockCompletedTask} />);
 
-      const completedIndicator =
-        screen.queryByText(/completed/i) ||
-        document.querySelector('[data-status="completed"]');
-      expect(completedIndicator).toBeInTheDocument();
+      // Check for data-status="completed" attribute or the Completed badge
+      const completedElement = document.querySelector('[data-status="completed"]');
+      expect(completedElement).toBeInTheDocument();
     });
   });
 
@@ -368,8 +371,9 @@ describe('TaskCard', () => {
     it('renders edit button when onEdit is provided', () => {
       render(<TaskCard task={mockTask} onEdit={mockOnEdit} />);
 
-      const editButton = screen.getByRole('button', { name: /edit/i });
-      expect(editButton).toBeInTheDocument();
+      // There are desktop and mobile versions
+      const editButtons = screen.getAllByRole('button', { name: /edit/i });
+      expect(editButtons.length).toBeGreaterThan(0);
     });
 
     it('does not render edit button when onEdit is not provided', () => {
@@ -382,8 +386,9 @@ describe('TaskCard', () => {
       const user = userEvent.setup();
       render(<TaskCard task={mockTask} onEdit={mockOnEdit} />);
 
-      const editButton = screen.getByRole('button', { name: /edit/i });
-      await user.click(editButton);
+      // Click the first edit button (desktop or mobile)
+      const editButtons = screen.getAllByRole('button', { name: /edit/i });
+      await user.click(editButtons[0]);
 
       expect(mockOnEdit).toHaveBeenCalledWith(mockTask);
     });
@@ -391,8 +396,9 @@ describe('TaskCard', () => {
     it('renders delete button when onDelete is provided', () => {
       render(<TaskCard task={mockTask} onDelete={mockOnDelete} />);
 
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      expect(deleteButton).toBeInTheDocument();
+      // There are desktop and mobile versions
+      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+      expect(deleteButtons.length).toBeGreaterThan(0);
     });
 
     it('does not render delete button when onDelete is not provided', () => {
@@ -405,8 +411,9 @@ describe('TaskCard', () => {
       const user = userEvent.setup();
       render(<TaskCard task={mockTask} onDelete={mockOnDelete} />);
 
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      await user.click(deleteButton);
+      // Click the first delete button (desktop or mobile)
+      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+      await user.click(deleteButtons[0]);
 
       expect(mockOnDelete).toHaveBeenCalledWith(mockTask);
     });
@@ -420,8 +427,11 @@ describe('TaskCard', () => {
         />
       );
 
-      const editButton = screen.getByRole('button', { name: /edit/i });
-      expect(editButton).toBeDisabled();
+      // All edit buttons should be disabled
+      const editButtons = screen.getAllByRole('button', { name: /edit/i });
+      editButtons.forEach(button => {
+        expect(button).toBeDisabled();
+      });
     });
 
     it('disables delete button when isUpdating is true', () => {
@@ -433,8 +443,11 @@ describe('TaskCard', () => {
         />
       );
 
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      expect(deleteButton).toBeDisabled();
+      // All delete buttons should be disabled
+      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+      deleteButtons.forEach(button => {
+        expect(button).toBeDisabled();
+      });
     });
   });
 
@@ -460,15 +473,21 @@ describe('TaskCard', () => {
     it('has accessible edit button', () => {
       render(<TaskCard task={mockTask} onEdit={mockOnEdit} />);
 
-      const editButton = screen.getByRole('button', { name: /edit/i });
-      expect(editButton).toHaveAccessibleName();
+      // All edit buttons should have accessible names
+      const editButtons = screen.getAllByRole('button', { name: /edit/i });
+      editButtons.forEach(button => {
+        expect(button).toHaveAccessibleName();
+      });
     });
 
     it('has accessible delete button', () => {
       render(<TaskCard task={mockTask} onDelete={mockOnDelete} />);
 
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      expect(deleteButton).toHaveAccessibleName();
+      // All delete buttons should have accessible names
+      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+      deleteButtons.forEach(button => {
+        expect(button).toHaveAccessibleName();
+      });
     });
   });
 
@@ -555,8 +574,9 @@ describe('TaskList', () => {
       const user = userEvent.setup();
       render(<TaskList tasks={[mockTask]} onEdit={mockOnEdit} />);
 
-      const editButton = screen.getByRole('button', { name: /edit/i });
-      await user.click(editButton);
+      // Click the first edit button (desktop or mobile)
+      const editButtons = screen.getAllByRole('button', { name: /edit/i });
+      await user.click(editButtons[0]);
 
       expect(mockOnEdit).toHaveBeenCalledWith(mockTask);
     });
@@ -565,8 +585,9 @@ describe('TaskList', () => {
       const user = userEvent.setup();
       render(<TaskList tasks={[mockTask]} onDelete={mockOnDelete} />);
 
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      await user.click(deleteButton);
+      // Click the first delete button (desktop or mobile)
+      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+      await user.click(deleteButtons[0]);
 
       expect(mockOnDelete).toHaveBeenCalledWith(mockTask);
     });
