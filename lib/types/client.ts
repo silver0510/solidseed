@@ -263,3 +263,61 @@ export interface TaskFilters {
   /** Filter tasks due after this date (ISO 8601) */
   due_after?: string;
 }
+
+// =============================================================================
+// CLIENT DOCUMENTS
+// =============================================================================
+
+/**
+ * Client document record from the database
+ */
+export interface ClientDocument {
+  /** Unique identifier (CUID) */
+  id: string;
+  /** ID of the client this document belongs to */
+  client_id: string;
+  /** Original filename */
+  file_name: string;
+  /** Storage path in Supabase Storage */
+  file_path: string;
+  /** File size in bytes */
+  file_size: number;
+  /** MIME type of the file */
+  file_type: string;
+  /** Optional document description */
+  description?: string;
+  /** User ID who uploaded this document */
+  uploaded_by: string;
+  /** Record upload timestamp (ISO 8601) */
+  uploaded_at: string;
+}
+
+/**
+ * Document with signed download URL
+ * Returned after upload or when requesting download
+ */
+export interface ClientDocumentWithUrl extends ClientDocument {
+  /** Signed URL for downloading the document */
+  download_url: string;
+  /** URL expiration time in seconds */
+  expires_in: number;
+}
+
+/**
+ * Input data for uploading a document
+ * Used for API request validation
+ */
+export interface CreateDocumentInput {
+  /** Optional document description */
+  description?: string;
+}
+
+/**
+ * Response for download URL generation
+ */
+export interface DocumentDownloadResponse {
+  /** Signed URL for downloading the document */
+  url: string;
+  /** URL expiration time in seconds */
+  expires_in: number;
+}
