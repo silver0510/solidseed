@@ -6,6 +6,12 @@
  * Form component for creating and editing client records.
  * Uses react-hook-form with Zod validation.
  *
+ * Mobile-first design:
+ * - Full-width inputs on mobile (375px+)
+ * - Larger touch targets (min 44px height)
+ * - Optimized for keyboard-aware scrolling
+ * - Sticky action buttons on mobile
+ *
  * @module features/clients/components/ClientForm/ClientForm
  */
 
@@ -35,6 +41,8 @@ export interface ClientFormProps {
   onCancel?: () => void;
   /** External loading state (overrides internal state) */
   isSubmitting?: boolean;
+  /** Custom className for the form container */
+  className?: string;
 }
 
 // =============================================================================
@@ -55,6 +63,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
   onSubmit,
   onCancel,
   isSubmitting: externalIsSubmitting,
+  className,
 }) => {
   // ---------------------------------------------------------------------------
   // Form Setup
@@ -136,93 +145,130 @@ export const ClientForm: React.FC<ClientFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
-      className="space-y-4"
+      className={cn(
+        // Base layout - mobile-first
+        'flex flex-col space-y-4',
+        // Min height to ensure proper layout on mobile
+        'min-h-0',
+        // Padding for mobile edge spacing
+        'px-1',
+        // Custom className override
+        className
+      )}
       noValidate
+      aria-label={isEditMode ? 'Edit client form' : 'Create client form'}
     >
-      {/* Name Field - Required */}
-      <FormInput
-        id="name"
-        label="Name"
-        type="text"
-        required
-        autoComplete="name"
-        disabled={isLoading}
-        error={errors.name?.message}
-        aria-invalid={errors.name ? 'true' : 'false'}
-        aria-describedby={errors.name ? 'name-error' : undefined}
-        {...register('name')}
-      />
-
-      {/* Email Field - Required */}
-      <FormInput
-        id="email"
-        label="Email"
-        type="email"
-        required
-        autoComplete="email"
-        disabled={isLoading}
-        error={errors.email?.message}
-        aria-invalid={errors.email ? 'true' : 'false'}
-        aria-describedby={errors.email ? 'email-error' : undefined}
-        {...register('email')}
-      />
-
-      {/* Phone Field - Required */}
-      <div className="space-y-1.5">
+      {/* Form Fields Container - scrollable on mobile with keyboard */}
+      <div
+        className="flex-1 space-y-5 overflow-y-auto pb-4"
+        role="group"
+        aria-label="Client information"
+      >
+        {/* Name Field - Required */}
         <FormInput
-          id="phone"
-          label="Phone"
-          type="tel"
+          id="name"
+          label="Name"
+          type="text"
           required
-          autoComplete="tel"
+          autoComplete="name"
           disabled={isLoading}
-          placeholder="+1-XXX-XXX-XXXX"
-          error={errors.phone?.message}
-          aria-invalid={errors.phone ? 'true' : 'false'}
-          aria-describedby={errors.phone ? 'phone-error' : 'phone-hint'}
-          {...register('phone')}
+          error={errors.name?.message}
+          aria-invalid={errors.name ? 'true' : 'false'}
+          aria-describedby={errors.name ? 'name-error' : undefined}
+          {...register('name')}
         />
-        {!errors.phone && (
-          <p id="phone-hint" className="text-xs text-gray-500">
-            Format: +1-XXX-XXX-XXXX
-          </p>
-        )}
+
+        {/* Email Field - Required */}
+        <FormInput
+          id="email"
+          label="Email"
+          type="email"
+          required
+          autoComplete="email"
+          inputMode="email"
+          disabled={isLoading}
+          error={errors.email?.message}
+          aria-invalid={errors.email ? 'true' : 'false'}
+          aria-describedby={errors.email ? 'email-error' : undefined}
+          {...register('email')}
+        />
+
+        {/* Phone Field - Required */}
+        <div className="space-y-1.5">
+          <FormInput
+            id="phone"
+            label="Phone"
+            type="tel"
+            required
+            autoComplete="tel"
+            inputMode="tel"
+            disabled={isLoading}
+            placeholder="+1-XXX-XXX-XXXX"
+            error={errors.phone?.message}
+            aria-invalid={errors.phone ? 'true' : 'false'}
+            aria-describedby={errors.phone ? 'phone-error' : 'phone-hint'}
+            {...register('phone')}
+          />
+          {!errors.phone && (
+            <p id="phone-hint" className="text-xs text-gray-500">
+              Format: +1-XXX-XXX-XXXX
+            </p>
+          )}
+        </div>
+
+        {/* Birthday Field - Optional */}
+        <FormInput
+          id="birthday"
+          label="Birthday"
+          type="date"
+          autoComplete="bday"
+          disabled={isLoading}
+          error={errors.birthday?.message}
+          aria-invalid={errors.birthday ? 'true' : 'false'}
+          aria-describedby={errors.birthday ? 'birthday-error' : undefined}
+          {...register('birthday')}
+        />
+
+        {/* Address Field - Optional */}
+        <FormInput
+          id="address"
+          label="Address"
+          type="text"
+          autoComplete="street-address"
+          disabled={isLoading}
+          error={errors.address?.message}
+          aria-invalid={errors.address ? 'true' : 'false'}
+          aria-describedby={errors.address ? 'address-error' : undefined}
+          {...register('address')}
+        />
       </div>
 
-      {/* Birthday Field - Optional */}
-      <FormInput
-        id="birthday"
-        label="Birthday"
-        type="date"
-        autoComplete="bday"
-        disabled={isLoading}
-        error={errors.birthday?.message}
-        aria-invalid={errors.birthday ? 'true' : 'false'}
-        aria-describedby={errors.birthday ? 'birthday-error' : undefined}
-        {...register('birthday')}
-      />
-
-      {/* Address Field - Optional */}
-      <FormInput
-        id="address"
-        label="Address"
-        type="text"
-        autoComplete="street-address"
-        disabled={isLoading}
-        error={errors.address?.message}
-        aria-invalid={errors.address ? 'true' : 'false'}
-        aria-describedby={errors.address ? 'address-error' : undefined}
-        {...register('address')}
-      />
-
-      {/* Form Actions */}
-      <div className={cn('flex gap-3 pt-4', onCancel ? 'justify-between' : 'justify-end')}>
+      {/* Form Actions - Sticky on mobile for keyboard-aware positioning */}
+      <div
+        className={cn(
+          // Flex layout for buttons
+          'flex gap-3 pt-4',
+          // Border top for visual separation
+          'border-t border-gray-200',
+          // Sticky positioning for mobile keyboard
+          'sticky bottom-0',
+          // Background to prevent content showing through
+          'bg-white',
+          // Safe area padding for iOS
+          'pb-safe',
+          // Button alignment
+          onCancel ? 'justify-between' : 'justify-end'
+        )}
+        role="group"
+        aria-label="Form actions"
+      >
         {onCancel && (
           <Button
             type="button"
             variant="outline"
             onClick={handleCancel}
             disabled={isLoading}
+            className="flex-1 sm:flex-initial"
           >
             Cancel
           </Button>
@@ -233,6 +279,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           variant="primary"
           isLoading={isLoading}
           disabled={isLoading}
+          className={cn('flex-1 sm:flex-initial', !onCancel && 'w-full sm:w-auto')}
         >
           {isLoading ? 'Saving...' : isEditMode ? 'Save Changes' : 'Create Client'}
         </Button>
