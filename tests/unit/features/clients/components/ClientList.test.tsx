@@ -7,11 +7,11 @@
  * @module tests/unit/features/clients/components/ClientList.test
  */
 
+import React, { Suspense } from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Suspense } from 'react';
 import { ClientList } from '@/features/clients/components/ClientList';
 import type { ClientWithTags, PaginatedClientsWithTags } from '@/features/clients/types';
 
@@ -95,10 +95,67 @@ vi.mock('@/features/clients/api/clientApi', () => ({
 }));
 
 // Mock IntersectionObserver for infinite scroll testing
-const mockIntersectionObserver = vi.fn();
+let intersectionObserverCallback: IntersectionObserverCallback | null = null;
 const mockObserve = vi.fn();
 const mockUnobserve = vi.fn();
 const mockDisconnect = vi.fn();
+
+class MockIntersectionObserver implements IntersectionObserver {
+  readonly root: Element | Document | null = null;
+  readonly rootMargin: string = '';
+  readonly thresholds: readonly number[] = [];
+
+  constructor(callback: IntersectionObserverCallback) {
+    intersectionObserverCallback = callback;
+  }
+
+  observe = mockObserve;
+  unobserve = mockUnobserve;
+  disconnect = mockDisconnect;
+  takeRecords = (): IntersectionObserverEntry[] => [];
+}
+
+// =============================================================================
+// ERROR BOUNDARY FOR TESTS
+// =============================================================================
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  onReset?: () => void;
+}
+
+class TestErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  handleRetry = () => {
+    this.setState({ hasError: false, error: null });
+    this.props.onReset?.();
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div role="alert">
+          <p>Something went wrong. Failed to load clients.</p>
+          <button onClick={this.handleRetry}>Try Again</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // =============================================================================
 // TEST UTILITIES
@@ -120,16 +177,26 @@ interface WrapperProps {
   children: React.ReactNode;
 }
 
-function createWrapper() {
+function createWrapper(options?: { withErrorBoundary?: boolean }) {
   const queryClient = createTestQueryClient();
   return function Wrapper({ children }: WrapperProps) {
-    return (
+    const content = (
       <QueryClientProvider client={queryClient}>
         <Suspense fallback={<div data-testid="loading">Loading...</div>}>
           {children}
         </Suspense>
       </QueryClientProvider>
     );
+
+    if (options?.withErrorBoundary) {
+      return (
+        <TestErrorBoundary onReset={() => queryClient.clear()}>
+          {content}
+        </TestErrorBoundary>
+      );
+    }
+
+    return content;
   };
 }
 
@@ -145,16 +212,8 @@ describe('ClientList', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
 
     // Setup IntersectionObserver mock
-    mockIntersectionObserver.mockImplementation((callback: IntersectionObserverCallback) => ({
-      observe: mockObserve,
-      unobserve: mockUnobserve,
-      disconnect: mockDisconnect,
-      root: null,
-      rootMargin: '',
-      thresholds: [],
-      takeRecords: () => [],
-    }));
-    global.IntersectionObserver = mockIntersectionObserver;
+    intersectionObserverCallback = null;
+    global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
     // Get the mocked function
     const { clientApi } = await import('@/features/clients/api/clientApi');
@@ -209,12 +268,11 @@ describe('ClientList', () => {
       render(<ClientList />, { wrapper: Wrapper });
 
       await waitFor(() => {
-        // Should have a sort selector
-        expect(
-          screen.getByRole('combobox', { name: /sort/i }) ||
-            screen.getByLabelText(/sort/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText('John Doe')).toBeInTheDocument();
       });
+
+      // Should have a sort selector (using id selector)
+      expect(screen.getByLabelText(/sort by/i)).toBeInTheDocument();
     });
 
     it('renders with initial search value', async () => {
@@ -232,8 +290,11 @@ describe('ClientList', () => {
       render(<ClientList />, { wrapper: Wrapper });
 
       await waitFor(() => {
-        expect(screen.getByText(/3/)).toBeInTheDocument();
+        expect(screen.getByText('John Doe')).toBeInTheDocument();
       });
+
+      // Check for the count in the results text
+      expect(screen.getByText(/3 clients/i)).toBeInTheDocument();
     });
   });
 
@@ -261,10 +322,11 @@ describe('ClientList', () => {
       render(<ClientList />, { wrapper: Wrapper });
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/add.*first client|no clients.*found/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/no clients found/i)).toBeInTheDocument();
       });
+
+      // Check for the helper message
+      expect(screen.getByText(/add your first client/i)).toBeInTheDocument();
     });
 
     it('shows different message when search has no results', async () => {
@@ -384,11 +446,10 @@ describe('ClientList', () => {
       render(<ClientList />, { wrapper: Wrapper });
 
       await waitFor(() => {
-        expect(
-          screen.getByLabelText(/tag|filter/i) ||
-            screen.getByRole('combobox', { name: /tag|filter/i })
-        ).toBeInTheDocument();
+        expect(screen.getByText('John Doe')).toBeInTheDocument();
       });
+
+      expect(screen.getByLabelText(/filter by tag/i)).toBeInTheDocument();
     });
 
     it('updates results when tag filter changes', async () => {
@@ -400,14 +461,9 @@ describe('ClientList', () => {
         expect(screen.getByText('John Doe')).toBeInTheDocument();
       });
 
-      // Find tag filter and change it
-      const tagFilter = screen.getByLabelText(/tag|filter/i) ||
-        screen.getByRole('combobox', { name: /tag|filter/i });
-      await user.click(tagFilter);
-
-      // Select VIP option
-      const vipOption = await screen.findByRole('option', { name: /VIP/i });
-      await user.click(vipOption);
+      // Find tag filter and change it using selectOptions
+      const tagFilter = screen.getByLabelText(/filter by tag/i);
+      await user.selectOptions(tagFilter, 'VIP');
 
       await waitFor(() => {
         expect(mockListClients).toHaveBeenCalledWith(
@@ -445,15 +501,9 @@ describe('ClientList', () => {
         expect(screen.getByText('John Doe')).toBeInTheDocument();
       });
 
-      // Find sort selector
-      const sortSelector =
-        screen.getByRole('combobox', { name: /sort/i }) ||
-        screen.getByLabelText(/sort/i);
-      await user.click(sortSelector);
-
-      // Select name option
-      const nameOption = await screen.findByRole('option', { name: /name/i });
-      await user.click(nameOption);
+      // Find sort selector using selectOptions
+      const sortSelector = screen.getByLabelText(/sort by/i);
+      await user.selectOptions(sortSelector, 'name');
 
       await waitFor(() => {
         expect(mockListClients).toHaveBeenCalledWith(
@@ -489,6 +539,9 @@ describe('ClientList', () => {
 
   describe('Infinite Scroll', () => {
     beforeEach(async () => {
+      // Reset intersection observer callback
+      intersectionObserverCallback = null;
+
       const { clientApi } = await import('@/features/clients/api/clientApi');
       vi.mocked(clientApi.listClients).mockResolvedValue(mockPaginatedResponseWithMore);
     });
@@ -501,12 +554,8 @@ describe('ClientList', () => {
         expect(screen.getByText('John Doe')).toBeInTheDocument();
       });
 
-      // Should show some indicator that more data is available
-      expect(
-        screen.getByRole('progressbar') ||
-          screen.getByText(/loading more|load more/i) ||
-          screen.getByTestId('infinite-scroll-trigger')
-      ).toBeInTheDocument();
+      // Should show the infinite scroll trigger when there's more data
+      expect(screen.getByTestId('infinite-scroll-trigger')).toBeInTheDocument();
     });
 
     it('fetches more data when scrolling to bottom', async () => {
@@ -520,10 +569,12 @@ describe('ClientList', () => {
       const initialCallCount = mockListClients.mock.calls.length;
 
       // Simulate intersection observer callback (scroll to bottom)
-      const observerCallback = mockIntersectionObserver.mock.calls[0]?.[0];
-      if (observerCallback) {
+      if (intersectionObserverCallback) {
         await act(async () => {
-          observerCallback([{ isIntersecting: true }], {} as IntersectionObserver);
+          intersectionObserverCallback!(
+            [{ isIntersecting: true } as IntersectionObserverEntry],
+            {} as IntersectionObserver
+          );
         });
       }
 
@@ -541,10 +592,12 @@ describe('ClientList', () => {
       });
 
       // Simulate intersection observer callback
-      const observerCallback = mockIntersectionObserver.mock.calls[0]?.[0];
-      if (observerCallback) {
+      if (intersectionObserverCallback) {
         await act(async () => {
-          observerCallback([{ isIntersecting: true }], {} as IntersectionObserver);
+          intersectionObserverCallback!(
+            [{ isIntersecting: true } as IntersectionObserverEntry],
+            {} as IntersectionObserver
+          );
         });
       }
 
@@ -734,10 +787,12 @@ describe('ClientList', () => {
       });
 
       // Trigger infinite scroll
-      const observerCallback = mockIntersectionObserver.mock.calls[0]?.[0];
-      if (observerCallback) {
+      if (intersectionObserverCallback) {
         await act(async () => {
-          observerCallback([{ isIntersecting: true }], {} as IntersectionObserver);
+          intersectionObserverCallback!(
+            [{ isIntersecting: true } as IntersectionObserverEntry],
+            {} as IntersectionObserver
+          );
         });
       }
 
@@ -760,14 +815,13 @@ describe('ClientList', () => {
       const { clientApi } = await import('@/features/clients/api/clientApi');
       vi.mocked(clientApi.listClients).mockRejectedValue(new Error('Failed to fetch'));
 
-      const Wrapper = createWrapper();
-
-      // Wrap in error boundary or expect error handling
+      // Use wrapper with error boundary
+      const Wrapper = createWrapper({ withErrorBoundary: true });
       render(<ClientList />, { wrapper: Wrapper });
 
       await waitFor(() => {
         expect(
-          screen.getByText(/error|failed|something went wrong/i)
+          screen.getByText(/something went wrong/i)
         ).toBeInTheDocument();
       });
     });
@@ -779,14 +833,15 @@ describe('ClientList', () => {
         .mockRejectedValueOnce(new Error('Failed'))
         .mockResolvedValueOnce(mockPaginatedResponse);
 
-      const Wrapper = createWrapper();
+      // Use wrapper with error boundary
+      const Wrapper = createWrapper({ withErrorBoundary: true });
       render(<ClientList />, { wrapper: Wrapper });
 
       await waitFor(() => {
-        expect(screen.getByText(/error|failed/i)).toBeInTheDocument();
+        expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
       });
 
-      const retryButton = screen.getByRole('button', { name: /retry|try again/i });
+      const retryButton = screen.getByRole('button', { name: /try again/i });
       await user.click(retryButton);
 
       await waitFor(() => {
