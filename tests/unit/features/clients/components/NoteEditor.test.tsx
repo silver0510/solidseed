@@ -249,8 +249,8 @@ describe('NoteEditor', () => {
         />
       );
 
-      const importanceToggle = screen.getByRole('button', { name: /important|star/i }) ||
-        screen.getByLabelText(/important|mark.*important/i);
+      // When importance is true, the aria-label changes to "Remove importance"
+      const importanceToggle = screen.getByRole('button', { name: /important|remove importance/i });
 
       expect(
         importanceToggle.getAttribute('aria-pressed') === 'true' ||
@@ -627,10 +627,11 @@ describe('NoteList', () => {
         />
       );
 
-      // The second note's delete button should still be enabled
-      const deleteButtons = screen.getAllByRole('button', { name: /delete|remove/i });
-      // The second button (index 1) should be enabled
-      expect(deleteButtons[1]).toBeEnabled();
+      // The delete button for the note that is NOT being deleted should still work
+      // When isDeleting="note_123", the second note (note_456) should have an enabled delete button
+      // The first button shows a spinner (not accessible as delete), so we only get one delete button
+      const deleteButton = screen.getByRole('button', { name: /delete note/i });
+      expect(deleteButton).toBeEnabled();
     });
   });
 
