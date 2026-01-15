@@ -24,3 +24,9 @@ export {
   type UseClientOptions,
   type UseClientReturn,
 } from './useClient';
+
+export {
+  useAllTasks,
+  type UseAllTasksOptions,
+  type UseAllTasksReturn,
+} from './useAllTasks';
