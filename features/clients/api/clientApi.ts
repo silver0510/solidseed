@@ -2,17 +2,10 @@
  * Client API Service Layer
  *
  * Provides a clean API interface for frontend components and React Query hooks.
- * Wraps the underlying service classes and provides typed methods for all
- * client-related operations.
+ * All client operations go through API routes (not direct Supabase access).
  *
  * @module features/clients/api
  */
-
-import { ClientService } from '@/services/ClientService';
-import { TagService } from '@/services/TagService';
-import { NoteService } from '@/services/NoteService';
-import { TaskService } from '@/services/TaskService';
-import { DocumentService } from '@/services/DocumentService';
 
 import type {
   Client,
@@ -36,72 +29,46 @@ import type {
 } from '../types';
 
 // =============================================================================
-// SERVICE INSTANCES
+// API HELPERS
 // =============================================================================
 
-/** Singleton instance of ClientService */
-let clientServiceInstance: ClientService | null = null;
-
-/** Singleton instance of TagService */
-let tagServiceInstance: TagService | null = null;
-
-/** Singleton instance of NoteService */
-let noteServiceInstance: NoteService | null = null;
-
-/** Singleton instance of TaskService */
-let taskServiceInstance: TaskService | null = null;
-
-/** Singleton instance of DocumentService */
-let documentServiceInstance: DocumentService | null = null;
-
 /**
- * Get or create ClientService instance
+ * Get the base URL for API requests
+ * Returns empty string for client-side (relative URLs work)
+ * Returns full URL for server-side (required for SSR)
  */
-function getClientService(): ClientService {
-  if (!clientServiceInstance) {
-    clientServiceInstance = new ClientService();
+function getBaseUrl(): string {
+  // In browser, use relative URLs
+  if (typeof window !== 'undefined') {
+    return '';
   }
-  return clientServiceInstance;
+  // On server, use environment variable or default
+  return process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
 }
 
 /**
- * Get or create TagService instance
+ * Handle API response and throw error if not ok
  */
-function getTagService(): TagService {
-  if (!tagServiceInstance) {
-    tagServiceInstance = new TagService();
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || `HTTP ${response.status}`);
   }
-  return tagServiceInstance;
+  return response.json();
 }
 
 /**
- * Get or create NoteService instance
+ * Build query string from params
  */
-function getNoteService(): NoteService {
-  if (!noteServiceInstance) {
-    noteServiceInstance = new NoteService();
-  }
-  return noteServiceInstance;
-}
-
-/**
- * Get or create TaskService instance
- */
-function getTaskService(): TaskService {
-  if (!taskServiceInstance) {
-    taskServiceInstance = new TaskService();
-  }
-  return taskServiceInstance;
-}
-
-/**
- * Get or create DocumentService instance
- */
-function getDocumentService(): DocumentService {
-  if (!documentServiceInstance) {
-    documentServiceInstance = new DocumentService();
-  }
-  return documentServiceInstance;
+function buildQueryString(params: Record<string, unknown>): string {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, String(value));
+    }
+  });
+  const query = searchParams.toString();
+  return query ? `?${query}` : '';
 }
 
 // =============================================================================
@@ -110,72 +77,90 @@ function getDocumentService(): DocumentService {
 
 /**
  * Client API methods for CRUD operations
+ * All requests go through API routes with Better Auth session validation
  */
 export const clientApi = {
   /**
    * Create a new client
-   *
-   * @param data - Client data to create
-   * @returns Promise<Client> The created client record
-   * @throws {Error} If user is not authenticated or validation fails
    */
   createClient: async (data: CreateClientInput): Promise<Client> => {
-    return getClientService().createClient(data);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include', // Include cookies for session
+    });
+    return handleResponse<Client>(response);
   },
 
   /**
    * List clients with pagination and filtering
-   *
-   * @param params - Query parameters for filtering and pagination
-   * @returns Promise<PaginatedClients> Paginated client list
    */
-  listClients: async (params: ListClientsParams = {}): Promise<PaginatedClients> => {
-    return getClientService().listClients(params);
+  listClients: async (params: ListClientsParams & { sortBy?: string; sortDirection?: string } = {}): Promise<PaginatedClients> => {
+    // Map frontend params (sortBy, sortDirection) to API params (sort)
+    const { sortBy, sortDirection, ...restParams } = params;
+    const apiParams = {
+      ...restParams,
+      // API uses 'sort' parameter, convert sortBy to sort
+      sort: sortBy,
+    };
+    const queryString = buildQueryString(apiParams);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients${queryString}`, {
+      credentials: 'include',
+    });
+    return handleResponse<PaginatedClients>(response);
   },
 
   /**
    * Get a single client by ID with related counts
-   *
-   * @param id - The client ID
-   * @returns Promise<ClientWithCounts | null> The client or null if not found
    */
   getClient: async (id: string): Promise<ClientWithCounts | null> => {
-    return getClientService().getClientById(id);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${id}`, {
+      credentials: 'include',
+    });
+    if (response.status === 404) {
+      return null;
+    }
+    return handleResponse<ClientWithCounts>(response);
   },
 
   /**
    * Update a client
-   *
-   * @param id - The client ID
-   * @param data - Partial client data to update
-   * @returns Promise<Client | null> The updated client or null if not found
    */
   updateClient: async (id: string, data: UpdateClientInput): Promise<Client | null> => {
-    return getClientService().updateClient(id, data);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+    if (response.status === 404) {
+      return null;
+    }
+    return handleResponse<Client>(response);
   },
 
   /**
    * Soft delete a client
-   *
-   * @param id - The client ID
-   * @returns Promise<boolean> True if deletion succeeded
    */
   deleteClient: async (id: string): Promise<boolean> => {
-    return getClientService().softDeleteClient(id);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    return response.ok;
   },
 
   /**
    * Search clients by name or email
-   *
-   * @param query - Search query string
-   * @param limit - Maximum results to return (default: 10)
-   * @returns Promise<Client[]> Array of matching clients
    */
   searchClients: async (query: string, limit: number = 10): Promise<Client[]> => {
-    const result = await getClientService().listClients({
-      search: query,
-      limit,
-    });
+    const result = await clientApi.listClients({ search: query, limit });
     return result.data;
   },
 };
@@ -190,34 +175,39 @@ export const clientApi = {
 export const tagApi = {
   /**
    * Add a tag to a client
-   *
-   * @param clientId - The client ID
-   * @param data - Tag data
-   * @returns Promise<ClientTag> The created tag
    */
   addTag: async (clientId: string, data: CreateTagInput): Promise<ClientTag> => {
-    return getTagService().addTag(clientId, data);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/tags`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+    return handleResponse<ClientTag>(response);
   },
 
   /**
    * Remove a tag from a client
-   *
-   * @param clientId - The client ID the tag belongs to
-   * @param tagId - The tag ID
-   * @returns Promise<boolean> True if deletion succeeded
    */
   removeTag: async (clientId: string, tagId: string): Promise<boolean> => {
-    return getTagService().removeTag(clientId, tagId);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/tags/${tagId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    return response.ok;
   },
 
   /**
    * Get tag suggestions for autocomplete
-   *
-   * @param query - Search query to filter tags
-   * @returns Promise<string[]> Array of unique tag names
    */
   getTagAutocomplete: async (query: string): Promise<string[]> => {
-    return getTagService().getTagAutocomplete(query);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/tags/autocomplete${buildQueryString({ q: query })}`, {
+      credentials: 'include',
+    });
+    return handleResponse<string[]>(response);
   },
 };
 
@@ -231,50 +221,57 @@ export const tagApi = {
 export const noteApi = {
   /**
    * Get all notes for a client
-   *
-   * @param clientId - The client ID
-   * @returns Promise<ClientNote[]> Array of notes (most recent first)
    */
   getClientNotes: async (clientId: string): Promise<ClientNote[]> => {
-    return getNoteService().getNotesByClient(clientId);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/notes`, {
+      credentials: 'include',
+    });
+    return handleResponse<ClientNote[]>(response);
   },
 
   /**
    * Create a new note for a client
-   *
-   * @param clientId - The client ID
-   * @param data - Note data
-   * @returns Promise<ClientNote> The created note
    */
   createNote: async (clientId: string, data: CreateNoteInput): Promise<ClientNote> => {
-    return getNoteService().addNote(clientId, data);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/notes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+    return handleResponse<ClientNote>(response);
   },
 
   /**
    * Update a note
-   *
-   * @param clientId - The client ID the note belongs to
-   * @param noteId - The note ID
-   * @param data - Partial note data to update
-   * @returns Promise<ClientNote> The updated note
    */
   updateNote: async (
     clientId: string,
     noteId: string,
     data: UpdateNoteInput
   ): Promise<ClientNote> => {
-    return getNoteService().updateNote(clientId, noteId, data);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/notes/${noteId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+    return handleResponse<ClientNote>(response);
   },
 
   /**
    * Delete a note
-   *
-   * @param clientId - The client ID the note belongs to
-   * @param noteId - The note ID
-   * @returns Promise<boolean> True if deletion succeeded
    */
   deleteNote: async (clientId: string, noteId: string): Promise<boolean> => {
-    return getNoteService().deleteNote(clientId, noteId);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/notes/${noteId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    return response.ok;
   },
 };
 
@@ -288,82 +285,82 @@ export const noteApi = {
 export const taskApi = {
   /**
    * Get all tasks for a client
-   *
-   * @param clientId - The client ID
-   * @returns Promise<ClientTask[]> Array of tasks
    */
   getClientTasks: async (clientId: string): Promise<ClientTask[]> => {
-    return getTaskService().getTasksByClient(clientId);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/tasks`, {
+      credentials: 'include',
+    });
+    return handleResponse<ClientTask[]>(response);
   },
 
   /**
    * Create a new task for a client
-   *
-   * @param clientId - The client ID
-   * @param data - Task data
-   * @returns Promise<ClientTask> The created task
    */
   createTask: async (clientId: string, data: CreateTaskInput): Promise<ClientTask> => {
-    return getTaskService().addTask(clientId, data);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+    return handleResponse<ClientTask>(response);
   },
 
   /**
    * Update a task
-   *
-   * @param clientId - The client ID the task belongs to
-   * @param taskId - The task ID
-   * @param data - Partial task data to update
-   * @returns Promise<ClientTask> The updated task
    */
   updateTask: async (
     clientId: string,
     taskId: string,
     data: UpdateTaskInput
   ): Promise<ClientTask> => {
-    return getTaskService().updateTask(clientId, taskId, data);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/tasks/${taskId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+    return handleResponse<ClientTask>(response);
   },
 
   /**
    * Delete a task
-   *
-   * @param clientId - The client ID the task belongs to
-   * @param taskId - The task ID
-   * @returns Promise<boolean> True if deletion succeeded
    */
   deleteTask: async (clientId: string, taskId: string): Promise<boolean> => {
-    return getTaskService().deleteTask(clientId, taskId);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/tasks/${taskId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    return response.ok;
   },
 
   /**
    * Mark a task as complete
-   *
-   * @param clientId - The client ID the task belongs to
-   * @param taskId - The task ID
-   * @returns Promise<ClientTask> The updated task
    */
   completeTask: async (clientId: string, taskId: string): Promise<ClientTask> => {
-    return getTaskService().updateTask(clientId, taskId, { status: 'completed' });
+    return taskApi.updateTask(clientId, taskId, { status: 'completed' });
   },
 
   /**
    * Mark a task as pending (uncomplete)
-   *
-   * @param clientId - The client ID the task belongs to
-   * @param taskId - The task ID
-   * @returns Promise<ClientTask> The updated task
    */
   uncompleteTask: async (clientId: string, taskId: string): Promise<ClientTask> => {
-    return getTaskService().updateTask(clientId, taskId, { status: 'pending' });
+    return taskApi.updateTask(clientId, taskId, { status: 'pending' });
   },
 
   /**
    * Get all tasks for the current user (task dashboard)
-   *
-   * @param filters - Optional filters for status, priority, due date
-   * @returns Promise<TaskWithClient[]> Array of tasks with client info
    */
   getUserTasks: async (filters?: TaskFilters): Promise<TaskWithClient[]> => {
-    return getTaskService().getTasksByAgent(filters);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/tasks${buildQueryString(filters || {})}`, {
+      credentials: 'include',
+    });
+    return handleResponse<TaskWithClient[]>(response);
   },
 };
 
@@ -377,71 +374,78 @@ export const taskApi = {
 export const documentApi = {
   /**
    * Get all documents for a client
-   *
-   * @param clientId - The client ID
-   * @returns Promise<ClientDocument[]> Array of documents (most recent first)
    */
   getClientDocuments: async (clientId: string): Promise<ClientDocument[]> => {
-    return getDocumentService().getDocumentsByClient(clientId);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/documents`, {
+      credentials: 'include',
+    });
+    return handleResponse<ClientDocument[]>(response);
   },
 
   /**
    * Get a single document by ID
-   *
-   * @param clientId - The client ID the document belongs to
-   * @param documentId - The document ID
-   * @returns Promise<ClientDocument | null> The document or null if not found
    */
   getDocument: async (
     clientId: string,
     documentId: string
   ): Promise<ClientDocument | null> => {
-    return getDocumentService().getDocumentById(clientId, documentId);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/documents/${documentId}`, {
+      credentials: 'include',
+    });
+    if (response.status === 404) {
+      return null;
+    }
+    return handleResponse<ClientDocument>(response);
   },
 
   /**
    * Upload a document for a client
-   *
-   * @param clientId - The client ID
-   * @param file - The file to upload
-   * @param description - Optional description
-   * @returns Promise<ClientDocument> The created document
    */
   uploadDocument: async (
     clientId: string,
     file: File,
     description?: string
   ): Promise<ClientDocument> => {
-    return getDocumentService().uploadDocument(clientId, file, description);
+    const formData = new FormData();
+    formData.append('file', file);
+    if (description) {
+      formData.append('description', description);
+    }
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/documents`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+    return handleResponse<ClientDocument>(response);
   },
 
   /**
    * Get a signed download URL for a document
-   *
-   * @param filePath - The storage path of the document
-   * @param expiresIn - Expiration time in seconds (default: 1 hour)
-   * @returns Promise<DocumentDownloadResponse> Object with URL and expiration
    */
   getDownloadUrl: async (
-    filePath: string,
-    expiresIn: number = 3600
+    clientId: string,
+    documentId: string
   ): Promise<DocumentDownloadResponse> => {
-    const url = await getDocumentService().getDownloadUrl(filePath, expiresIn);
-    return {
-      url,
-      expires_in: expiresIn,
-    };
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/documents/${documentId}/download`, {
+      credentials: 'include',
+    });
+    return handleResponse<DocumentDownloadResponse>(response);
   },
 
   /**
    * Delete a document
-   *
-   * @param documentId - The document ID
-   * @param filePath - The storage path of the document
-   * @returns Promise<void>
    */
-  deleteDocument: async (documentId: string, filePath: string): Promise<void> => {
-    return getDocumentService().deleteDocument(documentId, filePath);
+  deleteDocument: async (clientId: string, documentId: string): Promise<boolean> => {
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/${clientId}/documents/${documentId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    return response.ok;
   },
 };
 

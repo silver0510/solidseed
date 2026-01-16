@@ -2,12 +2,14 @@
  * API Route: /api/clients/:id/documents/:docId/download
  *
  * Generates a signed URL for downloading a document.
+ * All endpoints require Better Auth session authentication.
  *
  * GET - Get signed download URL (1-hour expiry)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DocumentService } from '@/services/DocumentService';
+import { getSessionUser } from '@/lib/auth/session';
 
 // Initialize DocumentService
 const documentService = new DocumentService();
@@ -19,29 +21,23 @@ const DEFAULT_URL_EXPIRY = 3600;
  * GET /api/clients/:id/documents/:docId/download
  *
  * Generate a signed URL for document download
- *
- * Response:
- * - 200: { url: string, expires_in: number }
- * - 400: Invalid request
- * - 404: Document not found
- * - 500: Internal server error
- *
- * @example
- * ```typescript
- * const response = await fetch('/api/clients/client_123/documents/doc_456/download');
- * const { url, expires_in } = await response.json();
- * // url: "https://storage.supabase.co/object/sign/..."
- * // expires_in: 3600
- * ```
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; docId: string }> }
 ) {
   try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { id: clientId, docId } = await params;
 
-    // Validate IDs are provided
     if (!clientId) {
       return NextResponse.json(
         { error: 'Client ID is required' },
@@ -56,10 +52,9 @@ export async function GET(
       );
     }
 
-    // Get document first to get the file path
-    const document = await documentService.getDocumentById(clientId, docId);
+    // Get document first to get the file path (this also verifies ownership)
+    const document = await documentService.getDocumentById(clientId, docId, user.id);
 
-    // Check if document exists
     if (!document) {
       return NextResponse.json(
         { error: 'Document not found' },
@@ -73,7 +68,6 @@ export async function GET(
       DEFAULT_URL_EXPIRY
     );
 
-    // Return signed URL with expiry info
     return NextResponse.json(
       {
         url,
@@ -82,17 +76,9 @@ export async function GET(
       { status: 200 }
     );
   } catch (error) {
-    // Handle specific error messages
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message || 'Internal server error' },
-        { status: 500 }
-      );
-    }
-
-    // Unknown error
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

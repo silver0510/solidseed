@@ -2,6 +2,7 @@
  * API Route: /api/clients/:id/notes
  *
  * Handles note operations for a specific client.
+ * All endpoints require Better Auth session authentication.
  *
  * GET - Get all notes for the client
  * POST - Add a new note to the client
@@ -10,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { NoteService } from '@/services/NoteService';
 import { createNoteSchema } from '@/lib/validation/note';
+import { getSessionUser } from '@/lib/auth/session';
 import { z } from 'zod';
 
 // Initialize NoteService
@@ -19,26 +21,23 @@ const noteService = new NoteService();
  * GET /api/clients/:id/notes
  *
  * Get all notes for a client
- *
- * Response:
- * - 200: Array of notes
- * - 400: Invalid request
- * - 500: Internal server error
- *
- * @example
- * ```typescript
- * const response = await fetch('/api/clients/client_123/notes');
- * const notes = await response.json();
- * ```
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { id: clientId } = await params;
 
-    // Validate client ID is provided
     if (!clientId) {
       return NextResponse.json(
         { error: 'Client ID is required' },
@@ -46,23 +45,13 @@ export async function GET(
       );
     }
 
-    // Get notes using NoteService
-    const notes = await noteService.getNotesByClient(clientId);
+    const notes = await noteService.getNotesByClient(clientId, user.id);
 
-    // Return notes
-    return NextResponse.json({ notes }, { status: 200 });
+    return NextResponse.json(notes, { status: 200 });
   } catch (error) {
-    // Handle specific error messages
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message || 'Internal server error' },
-        { status: 500 }
-      );
-    }
-
-    // Unknown error
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
@@ -72,37 +61,23 @@ export async function GET(
  * POST /api/clients/:id/notes
  *
  * Add a note to a client
- *
- * Request body:
- * - content: string (required) - Note content
- * - is_important: boolean (optional) - Mark as important
- *
- * Response:
- * - 201: Note created successfully
- * - 400: Validation error
- * - 401: Not authenticated
- * - 500: Internal server error
- *
- * @example
- * ```typescript
- * const response = await fetch('/api/clients/client_123/notes', {
- *   method: 'POST',
- *   headers: { 'Content-Type': 'application/json' },
- *   body: JSON.stringify({
- *     content: 'Called about property viewing',
- *     is_important: true
- *   })
- * });
- * ```
  */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { id: clientId } = await params;
 
-    // Validate client ID is provided
     if (!clientId) {
       return NextResponse.json(
         { error: 'Client ID is required' },
@@ -110,49 +85,23 @@ export async function POST(
       );
     }
 
-    // Parse request body
     const body = await request.json();
-
-    // Validate input using Zod schema
     const validatedData = createNoteSchema.parse(body);
 
-    // Create note using NoteService
-    const note = await noteService.addNote(clientId, validatedData);
+    const note = await noteService.addNote(clientId, validatedData, user.id);
 
-    // Return created note with 201 status
     return NextResponse.json(note, { status: 201 });
   } catch (error) {
-    // Handle validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        {
-          error: 'Validation failed',
-          details: error.issues,
-        },
+        { error: 'Validation failed', details: error.issues },
         { status: 400 }
       );
     }
 
-    // Handle specific error messages
-    if (error instanceof Error) {
-      // Authentication error
-      if (error.message.includes('Not authenticated')) {
-        return NextResponse.json(
-          { error: 'Authentication required' },
-          { status: 401 }
-        );
-      }
-
-      // Generic error
-      return NextResponse.json(
-        { error: error.message || 'Internal server error' },
-        { status: 500 }
-      );
-    }
-
-    // Unknown error
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

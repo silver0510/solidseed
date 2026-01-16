@@ -6,58 +6,40 @@
  * - PATCH /api/clients/:id - Update client
  * - DELETE /api/clients/:id - Soft delete client
  *
- * All endpoints respect Row Level Security (RLS) policies:
- * - Users can only access/modify their own clients
- * - Soft-deleted clients are excluded from results
- * - Authentication required (401 if not authenticated)
+ * All endpoints require Better Auth session authentication.
+ * Authorization is enforced by filtering on user ownership.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { ClientService } from '@/services/ClientService';
 import { updateClientSchema } from '@/lib/validation/client';
+import { getSessionUser } from '@/lib/auth/session';
 import { z } from 'zod';
 
-// Initialize ClientService (shared across all endpoints)
+// Initialize ClientService (uses service role key)
 const clientService = new ClientService();
 
 /**
  * GET /api/clients/:id
  *
- * Retrieve a single client by ID with related data counts:
- * - documents_count: Number of documents
- * - notes_count: Number of notes
- * - tasks_count: Number of tasks
- *
- * @param params.id - Client ID to retrieve
- * @returns 200 with client object, or 404 if not found
- *
- * @example
- * ```typescript
- * // Request
- * GET /api/clients/client_123
- *
- * // Response (200 OK)
- * {
- *   "id": "client_123",
- *   "name": "John Doe",
- *   "email": "john@example.com",
- *   "phone": "+1-555-123-4567",
- *   "documents_count": 5,
- *   "notes_count": 3,
- *   "tasks_count": 2,
- *   "created_at": "2026-01-13T10:00:00Z",
- *   "updated_at": "2026-01-13T10:00:00Z"
- * }
- * ```
+ * Retrieve a single client by ID with related data counts.
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
 
-    // Validate ID parameter is provided
     if (!id) {
       return NextResponse.json(
         { error: 'Client ID is required' },
@@ -65,7 +47,7 @@ export async function GET(
       );
     }
 
-    const client = await clientService.getClientById(id);
+    const client = await clientService.getClientById(id, user.id);
 
     if (!client) {
       return NextResponse.json(
@@ -88,42 +70,23 @@ export async function GET(
  * PATCH /api/clients/:id
  *
  * Update one or more fields of an existing client.
- * Only provided fields are updated; omitted fields remain unchanged.
- *
- * Request body is validated using updateClientSchema (partial validation).
- *
- * @param params.id - Client ID to update
- * @param body - Partial client data (name, email, phone, birthday, address)
- * @returns 200 with updated client, 404 if not found, 400 if validation fails
- *
- * @example
- * ```typescript
- * // Request
- * PATCH /api/clients/client_123
- * {
- *   "phone": "+1-555-999-8888",
- *   "address": "456 Oak Ave, New York, NY 10001"
- * }
- *
- * // Response (200 OK)
- * {
- *   "id": "client_123",
- *   "name": "John Doe",
- *   "email": "john@example.com",
- *   "phone": "+1-555-999-8888",
- *   "address": "456 Oak Ave, New York, NY 10001",
- *   "updated_at": "2026-01-13T12:00:00Z"
- * }
- * ```
  */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
 
-    // Validate ID parameter is provided
     if (!id) {
       return NextResponse.json(
         { error: 'Client ID is required' },
@@ -145,7 +108,7 @@ export async function PATCH(
     }
 
     // Update client
-    const client = await clientService.updateClient(id, validatedData);
+    const client = await clientService.updateClient(id, validatedData, user.id);
 
     if (!client) {
       return NextResponse.json(
@@ -176,32 +139,23 @@ export async function PATCH(
  * DELETE /api/clients/:id
  *
  * Soft delete a client by setting is_deleted = true.
- * This is NOT a hard delete - the record remains in the database
- * for audit purposes but will be filtered out from all queries.
- *
- * GDPR compliance: Soft-deleted clients can still be permanently
- * removed later through a separate data export/deletion process.
- *
- * @param params.id - Client ID to delete
- * @returns 204 No Content on success, 404 if not found
- *
- * @example
- * ```typescript
- * // Request
- * DELETE /api/clients/client_123
- *
- * // Response (204 No Content)
- * // Empty response body
- * ```
  */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
 
-    // Validate ID parameter is provided
     if (!id) {
       return NextResponse.json(
         { error: 'Client ID is required' },
@@ -209,7 +163,7 @@ export async function DELETE(
       );
     }
 
-    const success = await clientService.softDeleteClient(id);
+    const success = await clientService.softDeleteClient(id, user.id);
 
     if (!success) {
       return NextResponse.json(

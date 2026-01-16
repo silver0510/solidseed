@@ -69,20 +69,20 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
   // Handle document download
   const handleDownload = useCallback(async (document: ClientDocument) => {
     try {
-      const { url } = await documentApi.getDownloadUrl(document.file_path);
+      const { url } = await documentApi.getDownloadUrl(clientId, document.id);
       // Open download URL in new tab
       window.open(url, '_blank');
     } catch (error) {
       console.error('Failed to get download URL:', error);
     }
-  }, []);
+  }, [clientId]);
 
   // Handle document deletion
   const handleDelete = useCallback(
     async (document: ClientDocument) => {
       setDeletingDocumentId(document.id);
       try {
-        await documentApi.deleteDocument(document.id, document.file_path);
+        await documentApi.deleteDocument(clientId, document.id);
         onDocumentDeleted?.();
       } catch (error) {
         console.error('Failed to delete document:', error);
@@ -90,7 +90,7 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
         setDeletingDocumentId(null);
       }
     },
-    [onDocumentDeleted]
+    [clientId, onDocumentDeleted]
   );
 
   return (

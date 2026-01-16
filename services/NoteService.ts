@@ -7,31 +7,38 @@
  * - Delete notes from clients
  * - Get all notes for a client
  *
- * Uses Supabase for data persistence with Row Level Security (RLS) policies
- * ensuring users can only access notes for their own clients.
+ * Uses Supabase with service role key for server-side operations.
+ * Authorization is handled in API routes via Better Auth session validation.
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { ClientNote, CreateNoteInput, UpdateNoteInput } from '@/lib/types/client';
 
-// Initialize Supabase client at module level
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+/**
+ * Create Supabase admin client with service role key
+ * This bypasses RLS and should only be used in API routes
+ */
+function createSupabaseAdmin(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceRoleKey) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  }
+
+  return createClient(url, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
 
 export class NoteService {
-  private supabase = supabase;
+  private supabase: SupabaseClient;
 
-  /**
-   * Initialize NoteService
-   *
-   * @throws {Error} If Supabase credentials are not configured
-   */
   constructor() {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      throw new Error('Supabase credentials not configured. Please check your environment variables.');
-    }
+    this.supabase = createSupabaseAdmin();
   }
 
   /**
@@ -39,24 +46,21 @@ export class NoteService {
    *
    * @param clientId - The client ID to add the note to
    * @param data - Note data containing content and optional is_important flag
+   * @param userId - The authenticated user ID (from Better Auth session)
    * @returns Promise<ClientNote> The created note record
-   * @throws {Error} If user is not authenticated
-   * @throws {Error} If database operation fails
-   *
-   * @example
-   * ```typescript
-   * const note = await noteService.addNote('client_123', {
-   *   content: 'Called about property viewing',
-   *   is_important: false
-   * });
-   * ```
    */
-  async addNote(clientId: string, data: CreateNoteInput): Promise<ClientNote> {
-    // Get authenticated user from Supabase auth
-    const { data: userData, error: authError } = await this.supabase.auth.getUser();
+  async addNote(clientId: string, data: CreateNoteInput, userId: string): Promise<ClientNote> {
+    // Verify the client belongs to this user
+    const { data: client, error: clientError } = await this.supabase
+      .from('clients')
+      .select('id')
+      .eq('id', clientId)
+      .eq('assigned_to', userId)
+      .eq('is_deleted', false)
+      .single();
 
-    if (authError || !userData.user) {
-      throw new Error('Not authenticated');
+    if (clientError || !client) {
+      throw new Error('Client not found or access denied');
     }
 
     // Insert note into database
@@ -66,7 +70,7 @@ export class NoteService {
         client_id: clientId,
         content: data.content,
         is_important: data.is_important ?? false,
-        created_by: userData.user.id,
+        created_by: userId,
       })
       .select()
       .single();
@@ -84,19 +88,28 @@ export class NoteService {
    * @param clientId - The client ID the note belongs to
    * @param noteId - The note ID to update
    * @param data - Updated note data
+   * @param userId - The authenticated user ID (from Better Auth session)
    * @returns Promise<ClientNote> The updated note record
-   * @throws {Error} If note not found
-   * @throws {Error} If database operation fails
-   *
-   * @example
-   * ```typescript
-   * const note = await noteService.updateNote('client_123', 'note_456', {
-   *   content: 'Updated content',
-   *   is_important: true
-   * });
-   * ```
    */
-  async updateNote(clientId: string, noteId: string, data: UpdateNoteInput): Promise<ClientNote> {
+  async updateNote(
+    clientId: string,
+    noteId: string,
+    data: UpdateNoteInput,
+    userId: string
+  ): Promise<ClientNote> {
+    // Verify the client belongs to this user
+    const { data: client, error: clientError } = await this.supabase
+      .from('clients')
+      .select('id')
+      .eq('id', clientId)
+      .eq('assigned_to', userId)
+      .eq('is_deleted', false)
+      .single();
+
+    if (clientError || !client) {
+      throw new Error('Client not found or access denied');
+    }
+
     const updateData: Partial<ClientNote> = {};
 
     if (data.content !== undefined) {
@@ -126,15 +139,23 @@ export class NoteService {
    *
    * @param clientId - The client ID the note belongs to
    * @param noteId - The note ID to delete
+   * @param userId - The authenticated user ID (from Better Auth session)
    * @returns Promise<boolean> True if deletion succeeded
-   * @throws {Error} If database operation fails
-   *
-   * @example
-   * ```typescript
-   * await noteService.deleteNote('client_123', 'note_456');
-   * ```
    */
-  async deleteNote(clientId: string, noteId: string): Promise<boolean> {
+  async deleteNote(clientId: string, noteId: string, userId: string): Promise<boolean> {
+    // Verify the client belongs to this user
+    const { data: client, error: clientError } = await this.supabase
+      .from('clients')
+      .select('id')
+      .eq('id', clientId)
+      .eq('assigned_to', userId)
+      .eq('is_deleted', false)
+      .single();
+
+    if (clientError || !client) {
+      throw new Error('Client not found or access denied');
+    }
+
     const { error } = await this.supabase
       .from('client_notes')
       .delete()
@@ -151,18 +172,24 @@ export class NoteService {
   /**
    * Get all notes for a client
    *
-   * Returns notes ordered by created_at descending (newest first).
-   *
    * @param clientId - The client ID to get notes for
-   * @returns Promise<ClientNote[]> Array of notes
-   * @throws {Error} If database operation fails
-   *
-   * @example
-   * ```typescript
-   * const notes = await noteService.getNotesByClient('client_123');
-   * ```
+   * @param userId - The authenticated user ID (from Better Auth session)
+   * @returns Promise<ClientNote[]> Array of notes (newest first)
    */
-  async getNotesByClient(clientId: string): Promise<ClientNote[]> {
+  async getNotesByClient(clientId: string, userId: string): Promise<ClientNote[]> {
+    // Verify the client belongs to this user
+    const { data: client, error: clientError } = await this.supabase
+      .from('clients')
+      .select('id')
+      .eq('id', clientId)
+      .eq('assigned_to', userId)
+      .eq('is_deleted', false)
+      .single();
+
+    if (clientError || !client) {
+      throw new Error('Client not found or access denied');
+    }
+
     const { data, error } = await this.supabase
       .from('client_notes')
       .select('*')

@@ -9,19 +9,13 @@
  * - List documents for a client
  * - Rollback storage upload on database error
  *
- * Uses Supabase for storage and PostgreSQL with Row Level Security (RLS)
- * policies ensuring users can only access documents for their own clients.
+ * Uses Supabase with service role key for server-side operations.
+ * Authorization is handled in API routes via Better Auth session validation.
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import type { ClientDocument } from '@/lib/types/client';
-
-// Initialize Supabase client at module level
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 /** Storage bucket name for client documents */
 const STORAGE_BUCKET = 'client-documents';
@@ -29,59 +23,52 @@ const STORAGE_BUCKET = 'client-documents';
 /** Default signed URL expiration time in seconds (1 hour) */
 const DEFAULT_URL_EXPIRY = 3600;
 
-export class DocumentService {
-  private supabase = supabase;
+/**
+ * Create Supabase admin client with service role key
+ */
+function createSupabaseAdmin(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  /**
-   * Initialize DocumentService
-   *
-   * @throws {Error} If Supabase credentials are not configured
-   */
+  if (!url || !serviceRoleKey) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  }
+
+  return createClient(url, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
+
+export class DocumentService {
+  private supabase: SupabaseClient;
+
   constructor() {
-    if (
-      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
-      throw new Error(
-        'Supabase credentials not configured. Please check your environment variables.'
-      );
-    }
+    this.supabase = createSupabaseAdmin();
   }
 
   /**
    * Upload a document to Supabase Storage and create database record
-   *
-   * File path structure: {clientId}/{documentId}/{filename}
-   * This structure matches the RLS policies defined in the storage bucket.
-   *
-   * @param clientId - The client ID to attach the document to
-   * @param file - The file to upload
-   * @param description - Optional document description
-   * @returns Promise<ClientDocument> The created document record
-   * @throws {Error} If user is not authenticated
-   * @throws {Error} If storage upload fails
-   * @throws {Error} If database operation fails (with rollback)
-   *
-   * @example
-   * ```typescript
-   * const doc = await documentService.uploadDocument(
-   *   'client_123',
-   *   file,
-   *   'Contract for property viewing'
-   * );
-   * ```
    */
   async uploadDocument(
     clientId: string,
     file: File,
+    userId: string,
     description?: string
   ): Promise<ClientDocument> {
-    // Get authenticated user
-    const { data: userData, error: authError } =
-      await this.supabase.auth.getUser();
+    // Verify the client belongs to this user
+    const { data: client, error: clientError } = await this.supabase
+      .from('clients')
+      .select('id')
+      .eq('id', clientId)
+      .eq('assigned_to', userId)
+      .eq('is_deleted', false)
+      .single();
 
-    if (authError || !userData.user) {
-      throw new Error('Not authenticated');
+    if (clientError || !client) {
+      throw new Error('Client not found or access denied');
     }
 
     // Generate unique document ID (UUID)
@@ -90,10 +77,14 @@ export class DocumentService {
     // Construct storage path: {clientId}/{documentId}/{filename}
     const filePath = `${clientId}/${documentId}/${file.name}`;
 
+    // Convert File to ArrayBuffer for server-side upload
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
     // Upload file to storage
     const { error: uploadError } = await this.supabase.storage
       .from(STORAGE_BUCKET)
-      .upload(filePath, file, {
+      .upload(filePath, buffer, {
         contentType: file.type,
         upsert: false,
       });
@@ -113,7 +104,7 @@ export class DocumentService {
         file_size: file.size,
         file_type: file.type,
         description: description || null,
-        uploaded_by: userData.user.id,
+        uploaded_by: userId,
       })
       .select()
       .single();
@@ -129,19 +120,6 @@ export class DocumentService {
 
   /**
    * Generate a signed URL for document download
-   *
-   * @param filePath - The storage path of the document
-   * @param expiresIn - Expiration time in seconds (default: 1 hour)
-   * @returns Promise<string> The signed download URL
-   * @throws {Error} If URL generation fails
-   *
-   * @example
-   * ```typescript
-   * const url = await documentService.getDownloadUrl(
-   *   'client_123/doc_456/contract.pdf',
-   *   3600 // 1 hour
-   * );
-   * ```
    */
   async getDownloadUrl(
     filePath: string,
@@ -160,25 +138,41 @@ export class DocumentService {
 
   /**
    * Delete a document from storage and database
-   *
-   * @param documentId - The document ID to delete
-   * @param filePath - The storage path of the document
-   * @returns Promise<void>
-   * @throws {Error} If storage or database deletion fails
-   *
-   * @example
-   * ```typescript
-   * await documentService.deleteDocument(
-   *   'doc_456',
-   *   'client_123/doc_456/contract.pdf'
-   * );
-   * ```
    */
-  async deleteDocument(documentId: string, filePath: string): Promise<void> {
+  async deleteDocument(
+    clientId: string,
+    documentId: string,
+    userId: string
+  ): Promise<void> {
+    // Verify the client belongs to this user
+    const { data: client, error: clientError } = await this.supabase
+      .from('clients')
+      .select('id')
+      .eq('id', clientId)
+      .eq('assigned_to', userId)
+      .eq('is_deleted', false)
+      .single();
+
+    if (clientError || !client) {
+      throw new Error('Client not found or access denied');
+    }
+
+    // Get the document to find the file path
+    const { data: doc, error: docError } = await this.supabase
+      .from('client_documents')
+      .select('file_path')
+      .eq('id', documentId)
+      .eq('client_id', clientId)
+      .single();
+
+    if (docError || !doc) {
+      throw new Error('Document not found');
+    }
+
     // Delete from storage first
     const { error: storageError } = await this.supabase.storage
       .from(STORAGE_BUCKET)
-      .remove([filePath]);
+      .remove([doc.file_path]);
 
     if (storageError) {
       throw new Error(storageError.message);
@@ -197,19 +191,21 @@ export class DocumentService {
 
   /**
    * Get all documents for a client
-   *
-   * Returns documents ordered by uploaded_at descending (newest first).
-   *
-   * @param clientId - The client ID to get documents for
-   * @returns Promise<ClientDocument[]> Array of documents
-   * @throws {Error} If database operation fails
-   *
-   * @example
-   * ```typescript
-   * const documents = await documentService.getDocumentsByClient('client_123');
-   * ```
    */
-  async getDocumentsByClient(clientId: string): Promise<ClientDocument[]> {
+  async getDocumentsByClient(clientId: string, userId: string): Promise<ClientDocument[]> {
+    // Verify the client belongs to this user
+    const { data: client, error: clientError } = await this.supabase
+      .from('clients')
+      .select('id')
+      .eq('id', clientId)
+      .eq('assigned_to', userId)
+      .eq('is_deleted', false)
+      .single();
+
+    if (clientError || !client) {
+      throw new Error('Client not found or access denied');
+    }
+
     const { data, error } = await this.supabase
       .from('client_documents')
       .select('*')
@@ -225,21 +221,25 @@ export class DocumentService {
 
   /**
    * Get a single document by ID
-   *
-   * @param clientId - The client ID the document belongs to
-   * @param documentId - The document ID to retrieve
-   * @returns Promise<ClientDocument | null> The document or null if not found
-   * @throws {Error} If database operation fails (except not found)
-   *
-   * @example
-   * ```typescript
-   * const document = await documentService.getDocumentById('client_123', 'doc_456');
-   * ```
    */
   async getDocumentById(
     clientId: string,
-    documentId: string
+    documentId: string,
+    userId: string
   ): Promise<ClientDocument | null> {
+    // Verify the client belongs to this user
+    const { data: client, error: clientError } = await this.supabase
+      .from('clients')
+      .select('id')
+      .eq('id', clientId)
+      .eq('assigned_to', userId)
+      .eq('is_deleted', false)
+      .single();
+
+    if (clientError || !client) {
+      throw new Error('Client not found or access denied');
+    }
+
     const { data, error } = await this.supabase
       .from('client_documents')
       .select('*')
@@ -247,7 +247,6 @@ export class DocumentService {
       .eq('client_id', clientId)
       .single();
 
-    // Handle not found case
     if (error) {
       if (error.code === 'PGRST116') {
         return null;

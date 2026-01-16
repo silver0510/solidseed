@@ -7,24 +7,64 @@
  * Mobile-first design with bottom tab navigation.
  */
 
-import { Suspense } from 'react';
+import { Suspense, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ClientProfile } from '@/features/clients/components/ClientProfile';
+import { ClientForm } from '@/features/clients/components/ClientForm';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { clientApi, clientQueryKeys } from '@/features/clients/api/clientApi';
+import type { ClientFormData } from '@/features/clients';
 
 export default function ClientProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const clientId = params.id as string;
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [profileKey, setProfileKey] = useState(0);
+
+  // Fetch client data for the edit form
+  const { data: client } = useQuery({
+    queryKey: clientQueryKeys.detail(clientId),
+    queryFn: () => clientApi.getClient(clientId),
+    enabled: !!clientId,
+  });
+
+  // Update client mutation
+  const updateClientMutation = useMutation({
+    mutationFn: (data: ClientFormData) => clientApi.updateClient(clientId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: clientQueryKeys.detail(clientId) });
+      queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
+      setIsEditDialogOpen(false);
+      // Force ClientProfile to re-mount and refetch data
+      setProfileKey((prev) => prev + 1);
+    },
+  });
 
   const handleBack = () => {
     router.push('/clients');
   };
 
   const handleEdit = () => {
-    // TODO: Open edit modal or navigate to edit page
-    console.log('Edit client clicked');
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = async (data: ClientFormData) => {
+    await updateClientMutation.mutateAsync(data);
+  };
+
+  const handleEditCancel = () => {
+    setIsEditDialogOpen(false);
   };
 
   if (!clientId) {
@@ -86,8 +126,28 @@ export default function ClientProfilePage() {
 
       {/* Content */}
       <Suspense fallback={<SectionLoader message="Loading client profile..." />}>
-        <ClientProfile clientId={clientId} />
+        <ClientProfile key={profileKey} clientId={clientId} />
       </Suspense>
+
+      {/* Edit Client Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Client</DialogTitle>
+            <DialogDescription>
+              Update the client information below.
+            </DialogDescription>
+          </DialogHeader>
+          {client && (
+            <ClientForm
+              client={client}
+              onSubmit={handleEditSubmit}
+              onCancel={handleEditCancel}
+              isSubmitting={updateClientMutation.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

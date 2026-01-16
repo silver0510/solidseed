@@ -2,6 +2,7 @@
  * API Route: /api/clients/:id/documents/:docId
  *
  * Handles operations on a specific client document.
+ * All endpoints require Better Auth session authentication.
  *
  * GET - Get document details
  * DELETE - Remove a document from the client (storage + database)
@@ -9,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DocumentService } from '@/services/DocumentService';
+import { getSessionUser } from '@/lib/auth/session';
 
 // Initialize DocumentService
 const documentService = new DocumentService();
@@ -17,27 +19,23 @@ const documentService = new DocumentService();
  * GET /api/clients/:id/documents/:docId
  *
  * Get a single document by ID
- *
- * Response:
- * - 200: Document details
- * - 400: Invalid request
- * - 404: Document not found
- * - 500: Internal server error
- *
- * @example
- * ```typescript
- * const response = await fetch('/api/clients/client_123/documents/doc_456');
- * const document = await response.json();
- * ```
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; docId: string }> }
 ) {
   try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { id: clientId, docId } = await params;
 
-    // Validate IDs are provided
     if (!clientId) {
       return NextResponse.json(
         { error: 'Client ID is required' },
@@ -52,10 +50,8 @@ export async function GET(
       );
     }
 
-    // Get document using DocumentService
-    const document = await documentService.getDocumentById(clientId, docId);
+    const document = await documentService.getDocumentById(clientId, docId, user.id);
 
-    // Check if document exists
     if (!document) {
       return NextResponse.json(
         { error: 'Document not found' },
@@ -63,20 +59,11 @@ export async function GET(
       );
     }
 
-    // Return document
     return NextResponse.json(document, { status: 200 });
   } catch (error) {
-    // Handle specific error messages
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message || 'Internal server error' },
-        { status: 500 }
-      );
-    }
-
-    // Unknown error
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
@@ -86,29 +73,23 @@ export async function GET(
  * DELETE /api/clients/:id/documents/:docId
  *
  * Remove a document from a client (deletes from storage and database)
- *
- * Response:
- * - 204: Document deleted successfully (no content)
- * - 400: Invalid request
- * - 404: Document not found
- * - 500: Internal server error
- *
- * @example
- * ```typescript
- * const response = await fetch('/api/clients/client_123/documents/doc_456', {
- *   method: 'DELETE',
- * });
- * // Status: 204 No Content
- * ```
  */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; docId: string }> }
 ) {
   try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { id: clientId, docId } = await params;
 
-    // Validate IDs are provided
     if (!clientId) {
       return NextResponse.json(
         { error: 'Client ID is required' },
@@ -123,34 +104,13 @@ export async function DELETE(
       );
     }
 
-    // Get document first to get the file path
-    const document = await documentService.getDocumentById(clientId, docId);
+    await documentService.deleteDocument(clientId, docId, user.id);
 
-    // Check if document exists
-    if (!document) {
-      return NextResponse.json(
-        { error: 'Document not found' },
-        { status: 404 }
-      );
-    }
-
-    // Delete document using DocumentService (storage + database)
-    await documentService.deleteDocument(docId, document.file_path);
-
-    // Return 204 No Content on success
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    // Handle specific error messages
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message || 'Internal server error' },
-        { status: 500 }
-      );
-    }
-
-    // Unknown error
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

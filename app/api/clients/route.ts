@@ -2,6 +2,7 @@
  * API Route: /api/clients
  *
  * Handles client management operations.
+ * All routes require Better Auth session authentication.
  *
  * GET - List clients with pagination, search, and filtering
  * POST - Create a new client
@@ -10,10 +11,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ClientService } from '@/services/ClientService';
 import { createClientSchema } from '@/lib/validation/client';
+import { getSessionUser } from '@/lib/auth/session';
 import type { ListClientsParams } from '@/lib/types/client';
 import { z } from 'zod';
 
-// Initialize ClientService
+// Initialize ClientService (uses service role key)
 const clientService = new ClientService();
 
 /**
@@ -49,6 +51,15 @@ const clientService = new ClientService();
  */
 export async function GET(request: NextRequest) {
   try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const searchParams = request.nextUrl.searchParams;
 
     // Parse and validate query parameters
@@ -68,9 +79,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Validate sort parameter
-    if (sortParam && !['created_at', 'name'].includes(sortParam)) {
+    if (sortParam && !['created_at', 'name', 'updated_at'].includes(sortParam)) {
       return NextResponse.json(
-        { error: 'Invalid sort parameter. Must be "created_at" or "name".' },
+        { error: 'Invalid sort parameter. Must be "created_at", "name", or "updated_at".' },
         { status: 400 }
       );
     }
@@ -83,8 +94,8 @@ export async function GET(request: NextRequest) {
       sort: sortParam as 'created_at' | 'name' | undefined,
     };
 
-    // Get paginated clients
-    const result = await clientService.listClients(params);
+    // Get paginated clients for the authenticated user
+    const result = await clientService.listClients(params, user.id);
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
@@ -135,14 +146,23 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     // Parse request body
     const body = await request.json();
 
     // Validate input using Zod schema
     const validatedData = createClientSchema.parse(body);
 
-    // Create client using ClientService
-    const client = await clientService.createClient(validatedData);
+    // Create client for the authenticated user
+    const client = await clientService.createClient(validatedData, user.id);
 
     // Return created client with 201 status
     return NextResponse.json(client, { status: 201 });
@@ -160,14 +180,6 @@ export async function POST(request: NextRequest) {
 
     // Handle specific error messages
     if (error instanceof Error) {
-      // Authentication error
-      if (error.message.includes('Not authenticated')) {
-        return NextResponse.json(
-          { error: 'Authentication required' },
-          { status: 401 }
-        );
-      }
-
       // Duplicate email/phone error
       if (error.message.includes('already exists')) {
         return NextResponse.json(

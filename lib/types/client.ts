@@ -85,7 +85,7 @@ export interface ListClientsParams {
   /** Filter by tag name */
   tag?: string;
   /** Sort order */
-  sort?: 'created_at' | 'name';
+  sort?: 'created_at' | 'name' | 'updated_at';
 }
 
 /**
