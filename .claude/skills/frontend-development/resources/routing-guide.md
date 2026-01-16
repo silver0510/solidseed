@@ -268,7 +268,6 @@ const handleSearch = () => {
 
 ```typescript
 import { createRootRoute, Outlet } from '@tanstack/react-router';
-import { Box } from '@mui/material';
 import { CustomAppBar } from '~components/CustomAppBar';
 
 export const Route = createRootRoute({
@@ -277,12 +276,12 @@ export const Route = createRootRoute({
 
 function RootLayout() {
     return (
-        <Box>
+        <div>
             <CustomAppBar />
-            <Box sx={{ p: 2 }}>
+            <div className="p-4">
                 <Outlet />  {/* Child routes render here */}
-            </Box>
-        </Box>
+            </div>
+        </div>
     );
 }
 ```
@@ -297,12 +296,12 @@ export const Route = createFileRoute('/dashboard/')({
 
 function DashboardLayout() {
     return (
-        <Box>
+        <div className="flex">
             <DashboardSidebar />
-            <Box sx={{ flex: 1 }}>
+            <div className="flex-1">
                 <Outlet />  {/* Nested routes */}
-            </Box>
-        </Box>
+            </div>
+        </div>
     );
 }
 ```

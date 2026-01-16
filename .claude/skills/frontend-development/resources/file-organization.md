@@ -394,15 +394,17 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { lazy } from 'react';
 
 // 2. Third-party libraries (alphabetical)
-import { Box, Paper, Button, Grid } from '@mui/material';
-import type { SxProps, Theme } from '@mui/material';
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
-// 3. Alias imports (@ first, then ~)
+// 3. shadcn/ui components
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+
+// 4. Alias imports (@ first, then ~)
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 import { postApi } from '~features/posts/api/postApi';
 
@@ -487,7 +489,6 @@ src/
 │
 ├── hooks/                       # Shared hooks
 │   ├── useAuth.ts
-│   ├── useMuiSnackbar.ts
 │   └── useDebounce.ts
 │
 ├── lib/                         # Shared utilities

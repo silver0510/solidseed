@@ -205,22 +205,21 @@ export const MyComponent: React.FC = () => {
 
 ## Error Handling
 
-### useMuiSnackbar Hook (REQUIRED)
+### Toast Notifications with Sonner
 
-**NEVER use react-toastify** - Project standard is MUI Snackbar
+Use `toast` from sonner for user feedback:
 
 ```typescript
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 export const MyComponent: React.FC = () => {
-    const { showSuccess, showError, showInfo, showWarning } = useMuiSnackbar();
-
     const handleAction = async () => {
         try {
             await api.doSomething();
-            showSuccess('Operation completed successfully');
+            toast.success('Operation completed successfully');
         } catch (error) {
-            showError('Operation failed');
+            toast.error('Operation failed');
         }
     };
 
@@ -230,27 +229,27 @@ export const MyComponent: React.FC = () => {
 
 **Available Methods:**
 
-- `showSuccess(message)` - Green success message
-- `showError(message)` - Red error message
-- `showWarning(message)` - Orange warning message
-- `showInfo(message)` - Blue info message
+- `toast.success(message)` - Green success message
+- `toast.error(message)` - Red error message
+- `toast.warning(message)` - Orange warning message
+- `toast.info(message)` - Blue info message
+- `toast.loading(message)` - Loading spinner with message
+- `toast.promise(promise, { loading, success, error })` - Auto-updates based on promise state
 
 ### TanStack Query Error Callbacks
 
 ```typescript
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
+import { toast } from 'sonner';
 
 export const MyComponent: React.FC = () => {
-    const { showError } = useMuiSnackbar();
-
     const { data } = useSuspenseQuery({
         queryKey: ['data'],
         queryFn: () => api.getData(),
 
         // Handle errors
         onError: (error) => {
-            showError('Failed to load data');
+            toast.error('Failed to load data');
             console.error('Query error:', error);
         },
     });
@@ -263,16 +262,17 @@ export const MyComponent: React.FC = () => {
 
 ```typescript
 import { ErrorBoundary } from 'react-error-boundary';
+import { Button } from '@/components/ui/button';
 
 function ErrorFallback({ error, resetErrorBoundary }) {
     return (
-        <Box sx={{ p: 4, textAlign: 'center' }}>
-            <Typography variant='h5' color='error'>
+        <div className="p-8 text-center">
+            <h2 className="text-xl font-semibold text-destructive mb-2">
                 Something went wrong
-            </Typography>
-            <Typography>{error.message}</Typography>
+            </h2>
+            <p className="text-muted-foreground mb-4">{error.message}</p>
             <Button onClick={resetErrorBoundary}>Try Again</Button>
-        </Box>
+        </div>
     );
 }
 
@@ -298,8 +298,8 @@ export const MyPage: React.FC = () => {
 
 ```typescript
 import React from 'react';
-import { Box, Paper } from '@mui/material';
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { Card, CardContent } from '@/components/ui/card';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 import { myFeatureApi } from '../api/myFeatureApi';
 
@@ -312,21 +312,23 @@ const InnerComponent: React.FC<{ id: number }> = ({ id }) => {
 
     // data is always defined - no isLoading needed!
     return (
-        <Paper sx={{ p: 2 }}>
-            <h2>{data.title}</h2>
-            <p>{data.description}</p>
-        </Paper>
+        <Card>
+            <CardContent className="p-6">
+                <h2 className="text-xl font-semibold">{data.title}</h2>
+                <p className="text-muted-foreground mt-2">{data.description}</p>
+            </CardContent>
+        </Card>
     );
 };
 
 // Outer component provides Suspense boundary
 export const OuterComponent: React.FC<{ id: number }> = ({ id }) => {
     return (
-        <Box>
+        <div>
             <SuspenseLoader>
                 <InnerComponent id={id} />
             </SuspenseLoader>
-        </Box>
+        </div>
     );
 };
 
@@ -337,7 +339,6 @@ export default OuterComponent;
 
 ```typescript
 import React from 'react';
-import { Box } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { LoadingOverlay } from '~components/LoadingOverlay';
 import { myFeatureApi } from '../api/myFeatureApi';
@@ -350,33 +351,32 @@ export const LegacyComponent: React.FC<{ id: number }> = ({ id }) => {
 
     return (
         <LoadingOverlay loading={isLoading}>
-            <Box sx={{ p: 2 }}>
+            <div className="p-4">
                 {error && <ErrorDisplay error={error} />}
                 {data && <Content data={data} />}
-            </Box>
+            </div>
         </LoadingOverlay>
     );
 };
 ```
 
-### Example 3: Error Handling with Snackbar
+### Example 3: Error Handling with Toast
 
 ```typescript
 import React from 'react';
 import { useSuspenseQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@mui/material';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { myFeatureApi } from '../api/myFeatureApi';
 
 export const EntityEditor: React.FC<{ id: number }> = ({ id }) => {
     const queryClient = useQueryClient();
-    const { showSuccess, showError } = useMuiSnackbar();
 
     const { data } = useSuspenseQuery({
         queryKey: ['entity', id],
         queryFn: () => myFeatureApi.getEntity(id),
         onError: () => {
-            showError('Failed to load entity');
+            toast.error('Failed to load entity');
         },
     });
 
@@ -385,11 +385,11 @@ export const EntityEditor: React.FC<{ id: number }> = ({ id }) => {
 
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['entity', id] });
-            showSuccess('Entity updated successfully');
+            toast.success('Entity updated successfully');
         },
 
         onError: () => {
-            showError('Failed to update entity');
+            toast.error('Failed to update entity');
         },
     });
 
@@ -454,30 +454,30 @@ return (
 
 ## Skeleton Loading (Alternative)
 
-### MUI Skeleton Component
+### shadcn/ui Skeleton Component
 
 ```typescript
-import { Skeleton, Box } from '@mui/material';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const MyComponent: React.FC = () => {
     const { data, isLoading } = useQuery({ ... });
 
     return (
-        <Box sx={{ p: 2 }}>
+        <div className="p-4">
             {isLoading ? (
-                <>
-                    <Skeleton variant='text' width={200} height={40} />
-                    <Skeleton variant='rectangular' width='100%' height={200} />
-                    <Skeleton variant='text' width='100%' />
-                </>
+                <div className="space-y-4">
+                    <Skeleton className="h-10 w-48" />
+                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                </div>
             ) : (
                 <>
-                    <Typography variant='h5'>{data.title}</Typography>
-                    <img src={data.image} />
-                    <Typography>{data.description}</Typography>
+                    <h2 className="text-xl font-semibold">{data.title}</h2>
+                    <img src={data.image} className="w-full" />
+                    <p className="text-muted-foreground">{data.description}</p>
                 </>
             )}
-        </Box>
+        </div>
     );
 };
 ```
@@ -497,8 +497,7 @@ export const MyComponent: React.FC = () => {
 
 **Error Handling:**
 
-- ✅ **ALWAYS**: useMuiSnackbar for user feedback
-- ❌ **NEVER**: react-toastify
+- ✅ **ALWAYS**: `toast` from sonner for user feedback
 - ✅ Use onError callbacks in queries/mutations
 - ✅ Error boundaries for component-level errors
 

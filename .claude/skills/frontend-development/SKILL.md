@@ -1,13 +1,13 @@
 ---
 name: frontend-dev-guidelines
-description: Frontend development guidelines for React/TypeScript applications. Modern patterns including Suspense, lazy loading, useSuspenseQuery, file organization with features directory, MUI v7 styling, TanStack Router, performance optimization, and TypeScript best practices. Use when creating components, pages, features, fetching data, styling, routing, or working with frontend code.
+description: Frontend development guidelines for React/TypeScript applications. Modern patterns including Suspense, lazy loading, useSuspenseQuery, file organization with features directory, shadcn/ui components, Tailwind CSS styling, TanStack Router, performance optimization, and TypeScript best practices. Use when creating components, pages, features, fetching data, styling, routing, or working with frontend code.
 ---
 
 # Frontend Development Guidelines
 
 ## Purpose
 
-Comprehensive guide for modern React development, emphasizing Suspense-based data fetching, lazy loading, proper file organization, and performance optimization.
+Comprehensive guide for modern React development, emphasizing Suspense-based data fetching, lazy loading, proper file organization, shadcn/ui components, Tailwind CSS styling, and performance optimization.
 
 ## When to Use This Skill
 
@@ -15,7 +15,8 @@ Comprehensive guide for modern React development, emphasizing Suspense-based dat
 - Building new features
 - Fetching data with TanStack Query
 - Setting up routing with TanStack Router
-- Styling components with MUI v7
+- Styling components with shadcn/ui and Tailwind CSS
+- Implementing accessible UI patterns
 - Performance optimization
 - Organizing frontend code
 - TypeScript best practices
@@ -33,11 +34,12 @@ Creating a component? Follow this checklist:
 - [ ] Wrap in `<SuspenseLoader>` for loading states
 - [ ] Use `useSuspenseQuery` for data fetching
 - [ ] Import aliases: `@/`, `~types`, `~components`, `~features`
-- [ ] Styles: Inline if <100 lines, separate file if >100 lines
+- [ ] Use Tailwind CSS classes for styling with `cn()` helper
+- [ ] Use shadcn/ui components for common UI elements
 - [ ] Use `useCallback` for event handlers passed to children
 - [ ] Default export at bottom
 - [ ] No early returns with loading spinners
-- [ ] Use `useMuiSnackbar` for user notifications
+- [ ] Use `toast` from sonner for user notifications
 
 ### New Feature Checklist
 
@@ -74,9 +76,14 @@ Defined in: [vite.config.ts](../../vite.config.ts) lines 180-185
 import React, { useState, useCallback, useMemo } from 'react';
 const Heavy = React.lazy(() => import('./Heavy'));
 
-// MUI Components
-import { Box, Paper, Typography, Button, Grid } from '@mui/material';
-import type { SxProps, Theme } from '@mui/material';
+// shadcn/ui Components
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+
+// Utility for className merging
+import { cn } from '@/lib/utils';
 
 // TanStack Query (Suspense)
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
@@ -89,7 +96,9 @@ import { SuspenseLoader } from '~components/SuspenseLoader';
 
 // Hooks
 import { useAuth } from '@/hooks/useAuth';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
+
+// Toast notifications
+import { toast } from 'sonner';
 
 // Types
 import type { Post } from '~types/post';
@@ -164,22 +173,23 @@ features/
 
 ### 🎨 Styling
 
-**Inline vs Separate:**
+**Tailwind CSS Utility-First:**
 
-- <100 lines: Inline `const styles: Record<string, SxProps<Theme>>`
-- > 100 lines: Separate `.styles.ts` file
+- Use Tailwind utility classes directly in JSX
+- Combine classes with `cn()` helper for conditional styling
+- Mobile-first responsive design with breakpoint prefixes
 
-**Primary Method:**
+**shadcn/ui Components:**
 
-- Use `sx` prop for MUI components
-- Type-safe with `SxProps<Theme>`
-- Theme access: `(theme) => theme.palette.primary.main`
+- Pre-built accessible components via Radix UI primitives
+- Components live in `components/ui/` directory
+- Customize variants directly in component files
 
-**MUI v7 Grid:**
+**Grid Layout:**
 
 ```typescript
-<Grid size={{ xs: 12, md: 6 }}>  // ✅ v7 syntax
-<Grid xs={12} md={6}>             // ❌ Old syntax
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">  // ✅ Tailwind grid
+<div className="flex flex-col md:flex-row gap-4">  // ✅ Flexbox responsive
 ```
 
 **[📖 Complete Guide: resources/styling-guide.md](resources/styling-guide.md)**
@@ -233,9 +243,9 @@ if (isLoading) {
 
 **Error Handling:**
 
-- Use `useMuiSnackbar` for user feedback
-- NEVER `react-toastify`
+- Use `toast` from sonner for user feedback
 - TanStack Query `onError` callbacks
+- ErrorBoundary for component-level errors
 
 **[📖 Complete Guide: resources/loading-and-error-states.md](resources/loading-and-error-states.md)**
 
@@ -320,10 +330,11 @@ if (isLoading) {
 2. **Suspense for Loading**: Use SuspenseLoader, not early returns
 3. **useSuspenseQuery**: Primary data fetching pattern for new code
 4. **Features are Organized**: api/, components/, hooks/, helpers/ subdirs
-5. **Styles Based on Size**: <100 inline, >100 separate
-6. **Import Aliases**: Use @/, ~types, ~components, ~features
-7. **No Early Returns**: Prevents layout shift
-8. **useMuiSnackbar**: For all user notifications
+5. **Tailwind CSS**: Use utility classes, `cn()` for conditional styling
+6. **shadcn/ui Components**: Use for common UI patterns
+7. **Import Aliases**: Use @/, ~types, ~components, ~features
+8. **No Early Returns**: Prevents layout shift
+9. **Toast from sonner**: For all user notifications
 
 ---
 
@@ -366,8 +377,11 @@ src/
 
 ```typescript
 import React, { useState, useCallback } from 'react';
-import { Box, Paper } from '@mui/material';
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { featureApi } from '../api/featureApi';
 import type { FeatureData } from '~types/feature';
 
@@ -386,15 +400,19 @@ export const MyComponent: React.FC<MyComponentProps> = ({ id, onAction }) => {
 
     const handleAction = useCallback(() => {
         setState('updated');
+        toast.success('Action completed');
         onAction?.();
     }, [onAction]);
 
     return (
-        <Box sx={{ p: 2 }}>
-            <Paper sx={{ p: 3 }}>
-                {/* Content */}
-            </Paper>
-        </Box>
+        <div className="p-4">
+            <Card>
+                <CardContent className="p-6">
+                    <h2 className="text-xl font-semibold mb-4">{data.title}</h2>
+                    <Button onClick={handleAction}>Take Action</Button>
+                </CardContent>
+            </Card>
+        </div>
     );
 };
 

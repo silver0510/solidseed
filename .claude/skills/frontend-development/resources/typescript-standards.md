@@ -111,7 +111,7 @@ function useMyData(id: number): { data: Data; isLoading: boolean } {
 // ✅ CORRECT - Explicitly mark as type import
 import type { User } from '~types/user';
 import type { Post } from '~types/post';
-import type { SxProps, Theme } from '@mui/material';
+import type { ComponentProps } from 'react';
 
 // ❌ AVOID - Mixed value and type imports
 import { User } from '~types/user'; // Unclear if type or value
@@ -243,12 +243,12 @@ const userMap: Record<string, User> = {
   user2: { id: 2, name: 'Jane' },
 };
 
-// For styles
-import type { SxProps, Theme } from '@mui/material';
+// For component style variants
+type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 
-const styles: Record<string, SxProps<Theme>> = {
-  container: { p: 2 },
-  header: { mb: 1 },
+const buttonStyles: Record<string, ButtonVariant> = {
+  primary: 'default',
+  danger: 'destructive',
 };
 ```
 

@@ -1,12 +1,12 @@
 # Complete Examples
 
-Full working examples combining all modern patterns: React.FC, lazy loading, Suspense, useSuspenseQuery, styling, routing, and error handling.
+Full working examples combining all modern patterns: React.FC, lazy loading, Suspense, useSuspenseQuery, shadcn/ui components, Tailwind CSS, routing, and error handling.
 
 ---
 
 ## Example 1: Complete Modern Component
 
-Combines: React.FC, useSuspenseQuery, cache-first, useCallback, styling, error handling
+Combines: React.FC, useSuspenseQuery, cache-first, useCallback, shadcn/ui, Tailwind CSS, toast
 
 ```typescript
 /**
@@ -14,37 +14,13 @@ Combines: React.FC, useSuspenseQuery, cache-first, useCallback, styling, error h
  * Demonstrates modern patterns with Suspense and TanStack Query
  */
 import React, { useState, useCallback, useMemo } from 'react';
-import { Box, Paper, Typography, Button, Avatar } from '@mui/material';
-import type { SxProps, Theme } from '@mui/material';
 import { useSuspenseQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { toast } from 'sonner';
 import { userApi } from '../api/userApi';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 import type { User } from '~types/user';
-
-// Styles object
-const componentStyles: Record<string, SxProps<Theme>> = {
-    container: {
-        p: 3,
-        maxWidth: 600,
-        margin: '0 auto',
-    },
-    header: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-        mb: 3,
-    },
-    content: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-    },
-    actions: {
-        display: 'flex',
-        gap: 1,
-        mt: 2,
-    },
-};
 
 interface UserProfileProps {
     userId: string;
@@ -53,7 +29,6 @@ interface UserProfileProps {
 
 export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUpdate }) => {
     const queryClient = useQueryClient();
-    const { showSuccess, showError } = useMuiSnackbar();
     const [isEditing, setIsEditing] = useState(false);
 
     // Suspense query - no isLoading needed!
@@ -70,13 +45,13 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUpdate }) =>
 
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['user', userId] });
-            showSuccess('Profile updated');
+            toast.success('Profile updated');
             setIsEditing(false);
             onUpdate?.();
         },
 
         onError: () => {
-            showError('Failed to update profile');
+            toast.error('Failed to update profile');
         },
     });
 
@@ -102,43 +77,51 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUpdate }) =>
     }, []);
 
     return (
-        <Paper sx={componentStyles.container}>
-            <Box sx={componentStyles.header}>
-                <Avatar sx={{ width: 64, height: 64 }}>
-                    {user.firstName[0]}{user.lastName[0]}
-                </Avatar>
-                <Box>
-                    <Typography variant='h5'>{fullName}</Typography>
-                    <Typography color='text.secondary'>{user.email}</Typography>
-                </Box>
-            </Box>
+        <Card className="max-w-xl mx-auto">
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                    <Avatar className="h-16 w-16">
+                        <AvatarImage src={user.avatarUrl} />
+                        <AvatarFallback>
+                            {user.firstName[0]}{user.lastName[0]}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <CardTitle className="text-xl">{fullName}</CardTitle>
+                        <p className="text-muted-foreground">{user.email}</p>
+                    </div>
+                </div>
+            </CardHeader>
 
-            <Box sx={componentStyles.content}>
-                <Typography>Username: {user.username}</Typography>
-                <Typography>Roles: {user.roles.join(', ')}</Typography>
-            </Box>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Username</p>
+                    <p>{user.username}</p>
+                </div>
+                <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Roles</p>
+                    <p>{user.roles.join(', ')}</p>
+                </div>
 
-            <Box sx={componentStyles.actions}>
-                {!isEditing ? (
-                    <Button variant='contained' onClick={handleEdit}>
-                        Edit Profile
-                    </Button>
-                ) : (
-                    <>
-                        <Button
-                            variant='contained'
-                            onClick={handleSave}
-                            disabled={updateMutation.isPending}
-                        >
-                            {updateMutation.isPending ? 'Saving...' : 'Save'}
-                        </Button>
-                        <Button onClick={handleCancel}>
-                            Cancel
-                        </Button>
-                    </>
-                )}
-            </Box>
-        </Paper>
+                <div className="flex gap-2 pt-4">
+                    {!isEditing ? (
+                        <Button onClick={handleEdit}>Edit Profile</Button>
+                    ) : (
+                        <>
+                            <Button
+                                onClick={handleSave}
+                                disabled={updateMutation.isPending}
+                            >
+                                {updateMutation.isPending ? 'Saving...' : 'Save'}
+                            </Button>
+                            <Button variant="outline" onClick={handleCancel}>
+                                Cancel
+                            </Button>
+                        </>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
     );
 };
 
@@ -157,7 +140,7 @@ export default UserProfile;
 
 ## Example 2: Complete Feature Structure
 
-Real example based on `features/posts/`:
+Real example based on `features/users/`:
 
 ```
 features/
@@ -167,7 +150,7 @@ features/
     components/
       UserProfile.tsx           # Main component (from Example 1)
       UserList.tsx              # List component
-      UserBlog.tsx              # Blog component
+      UserForm.tsx              # Form component
       modals/
         DeleteUserModal.tsx     # Modal component
     hooks/
@@ -235,7 +218,7 @@ export function useSuspenseUsers() {
   return useSuspenseQuery<User[], Error>({
     queryKey: ['users'],
     queryFn: () => userApi.getUsers(),
-    staleTime: 1 * 60 * 1000, // Shorter for list
+    staleTime: 1 * 60 * 1000,
   });
 }
 ```
@@ -265,24 +248,6 @@ export interface CreateUserPayload {
 export type UpdateUserPayload = Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>;
 ```
 
-### Public Exports (index.ts)
-
-```typescript
-// Export components
-export { UserProfile } from './components/UserProfile';
-export { UserList } from './components/UserList';
-
-// Export hooks
-export { useSuspenseUser, useSuspenseUsers } from './hooks/useSuspenseUser';
-export { useUserMutations } from './hooks/useUserMutations';
-
-// Export API
-export { userApi } from './api/userApi';
-
-// Export types
-export type { User, CreateUserPayload, UpdateUserPayload } from './types';
-```
-
 ---
 
 ## Example 3: Complete Route with Lazy Loading
@@ -292,12 +257,10 @@ export type { User, CreateUserPayload, UpdateUserPayload } from './types';
  * User profile route
  * Path: /users/:userId
  */
-
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 
-// Lazy load the UserProfile component
 const UserProfile = lazy(() =>
     import('@/features/users/components/UserProfile').then(
         (module) => ({ default: module.UserProfile })
@@ -333,9 +296,10 @@ export default UserProfilePage;
 
 ```typescript
 import React, { useState, useMemo } from 'react';
-import { Box, TextField, List, ListItem } from '@mui/material';
 import { useDebounce } from 'use-debounce';
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { userApi } from '../api/userApi';
 
 export const UserList: React.FC = () => {
@@ -347,7 +311,6 @@ export const UserList: React.FC = () => {
         queryFn: () => userApi.getUsers(),
     });
 
-    // Memoized filtering
     const filteredUsers = useMemo(() => {
         if (!debouncedSearch) return users;
 
@@ -358,40 +321,54 @@ export const UserList: React.FC = () => {
     }, [users, debouncedSearch]);
 
     return (
-        <Box>
-            <TextField
+        <div className="space-y-4">
+            <Input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder='Search users...'
-                fullWidth
-                sx={{ mb: 2 }}
+                placeholder="Search users..."
+                className="max-w-md"
             />
 
-            <List>
+            <div className="space-y-2">
                 {filteredUsers.map(user => (
-                    <ListItem key={user.id}>
-                        {user.name} - {user.email}
-                    </ListItem>
+                    <Card key={user.id}>
+                        <CardContent className="flex items-center justify-between p-4">
+                            <div>
+                                <p className="font-medium">{user.name}</p>
+                                <p className="text-sm text-muted-foreground">{user.email}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
                 ))}
-            </List>
-        </Box>
+            </div>
+        </div>
     );
 };
 ```
 
 ---
 
-## Example 5: Blog with Validation
+## Example 5: Form with Validation
 
 ```typescript
 import React from 'react';
-import { Box, TextField, Button, Paper } from '@mui/material';
-import { useBlog } from 'react-hook-blog';
-import { zodResolver } from '@hookblog/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { userApi } from '../api/userApi';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
 const userSchema = z.object({
     username: z.string().min(3).max(50),
@@ -400,17 +377,16 @@ const userSchema = z.object({
     lastName: z.string().min(1),
 });
 
-type UserBlogData = z.infer<typeof userSchema>;
+type UserFormData = z.infer<typeof userSchema>;
 
-interface CreateUserBlogProps {
+interface CreateUserFormProps {
     onSuccess?: () => void;
 }
 
-export const CreateUserBlog: React.FC<CreateUserBlogProps> = ({ onSuccess }) => {
+export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess }) => {
     const queryClient = useQueryClient();
-    const { showSuccess, showError } = useMuiSnackbar();
 
-    const { register, handleSubmit, blogState: { errors }, reset } = useBlog<UserBlogData>({
+    const form = useForm<UserFormData>({
         resolver: zodResolver(userSchema),
         defaultValues: {
             username: '',
@@ -421,317 +397,258 @@ export const CreateUserBlog: React.FC<CreateUserBlogProps> = ({ onSuccess }) => 
     });
 
     const createMutation = useMutation({
-        mutationFn: (data: UserBlogData) => userApi.createUser(data),
+        mutationFn: (data: UserFormData) => userApi.createUser(data),
 
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
-            showSuccess('User created successfully');
-            reset();
+            toast.success('User created successfully');
+            form.reset();
             onSuccess?.();
         },
 
         onError: () => {
-            showError('Failed to create user');
+            toast.error('Failed to create user');
         },
     });
 
-    const onSubmit = (data: UserBlogData) => {
+    const onSubmit = (data: UserFormData) => {
         createMutation.mutate(data);
     };
 
     return (
-        <Paper sx={{ p: 3, maxWidth: 500 }}>
-            <blog onSubmit={handleSubmit(onSubmit)}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <TextField
-                        {...register('username')}
-                        label='Username'
-                        error={!!errors.username}
-                        helperText={errors.username?.message}
-                        fullWidth
-                    />
+        <Card className="max-w-md">
+            <CardHeader>
+                <CardTitle>Create User</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="username"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Username</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                    <TextField
-                        {...register('email')}
-                        label='Email'
-                        type='email'
-                        error={!!errors.email}
-                        helperText={errors.email?.message}
-                        fullWidth
-                    />
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input type="email" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                    <TextField
-                        {...register('firstName')}
-                        label='First Name'
-                        error={!!errors.firstName}
-                        helperText={errors.firstName?.message}
-                        fullWidth
-                    />
+                        <FormField
+                            control={form.control}
+                            name="firstName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>First Name</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                    <TextField
-                        {...register('lastName')}
-                        label='Last Name'
-                        error={!!errors.lastName}
-                        helperText={errors.lastName?.message}
-                        fullWidth
-                    />
+                        <FormField
+                            control={form.control}
+                            name="lastName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Last Name</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                    <Button
-                        type='submit'
-                        variant='contained'
-                        disabled={createMutation.isPending}
-                    >
-                        {createMutation.isPending ? 'Creating...' : 'Create User'}
-                    </Button>
-                </Box>
-            </blog>
-        </Paper>
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            disabled={createMutation.isPending}
+                        >
+                            {createMutation.isPending ? 'Creating...' : 'Create User'}
+                        </Button>
+                    </form>
+                </Form>
+            </CardContent>
+        </Card>
     );
 };
 
-export default CreateUserBlog;
+export default CreateUserForm;
 ```
 
 ---
 
-## Example 2: Parent Container with Lazy Loading
+## Example 6: Parent Container with Lazy Loading
 
 ```typescript
 import React from 'react';
-import { Box } from '@mui/material';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 
-// Lazy load heavy components
 const UserList = React.lazy(() => import('./UserList'));
 const UserStats = React.lazy(() => import('./UserStats'));
 const ActivityFeed = React.lazy(() => import('./ActivityFeed'));
 
 export const UserDashboard: React.FC = () => {
     return (
-        <Box sx={{ p: 2 }}>
+        <div className="p-4 space-y-4">
             <SuspenseLoader>
                 <UserStats />
             </SuspenseLoader>
 
-            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                <Box sx={{ flex: 2 }}>
+            <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex-[2]">
                     <SuspenseLoader>
                         <UserList />
                     </SuspenseLoader>
-                </Box>
+                </div>
 
-                <Box sx={{ flex: 1 }}>
+                <div className="flex-1">
                     <SuspenseLoader>
                         <ActivityFeed />
                     </SuspenseLoader>
-                </Box>
-            </Box>
-        </Box>
+                </div>
+            </div>
+        </div>
     );
 };
 
 export default UserDashboard;
 ```
 
-**Benefits:**
-
-- Each section loads independently
-- User sees partial content sooner
-- Better perceived perblogance
-
 ---
 
-## Example 3: Cache-First Strategy Implementation
-
-Complete example based on useSuspensePost.ts:
-
-```typescript
-import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
-import { postApi } from '../api/postApi';
-import type { Post } from '../types';
-
-/**
- * Smart post hook with cache-first strategy
- * Reuses data from grid cache when available
- */
-export function useSuspensePost(blogId: number, postId: number) {
-  const queryClient = useQueryClient();
-
-  return useSuspenseQuery<Post, Error>({
-    queryKey: ['post', blogId, postId],
-    queryFn: async () => {
-      // Strategy 1: Check grid cache first (avoids API call)
-      const gridCache =
-        queryClient.getQueryData<{ rows: Post[] }>(['posts-v2', blogId, 'summary']) ||
-        queryClient.getQueryData<{ rows: Post[] }>(['posts-v2', blogId, 'flat']);
-
-      if (gridCache?.rows) {
-        const cached = gridCache.rows.find((row) => row.S_ID === postId);
-
-        if (cached) {
-          return cached; // Return from cache - no API call!
-        }
-      }
-
-      // Strategy 2: Not in cache, fetch from API
-      return postApi.getPost(blogId, postId);
-    },
-    staleTime: 5 * 60 * 1000, // Fresh for 5 minutes
-    gcTime: 10 * 60 * 1000, // Cache for 10 minutes
-    refetchOnWindowFocus: false, // Don't refetch on focus
-  });
-}
-```
-
-**Why this pattern:**
-
-- Checks grid cache before API
-- Instant data if user came from grid
-- Falls back to API if not cached
-- Configurable cache times
-
----
-
-## Example 4: Complete Route File
-
-```typescript
-/**
- * Project catalog route
- * Path: /project-catalog
- */
-
-import { createFileRoute } from '@tanstack/react-router';
-import { lazy } from 'react';
-
-// Lazy load the PostTable component
-const PostTable = lazy(() =>
-    import('@/features/posts/components/PostTable').then(
-        (module) => ({ default: module.PostTable })
-    )
-);
-
-// Route constants
-const PROJECT_CATALOG_FORM_ID = 744;
-const PROJECT_CATALOG_PROJECT_ID = 225;
-
-export const Route = createFileRoute('/project-catalog/')({
-    component: ProjectCatalogPage,
-    loader: () => ({
-        crumb: 'Projects',  // Breadcrumb title
-    }),
-});
-
-function ProjectCatalogPage() {
-    return (
-        <PostTable
-            blogId={PROJECT_CATALOG_FORM_ID}
-            projectId={PROJECT_CATALOG_PROJECT_ID}
-            tableType='active_projects'
-            title='Blog Dashboard'
-        />
-    );
-}
-
-export default ProjectCatalogPage;
-```
-
----
-
-## Example 5: Dialog with Blog
+## Example 7: Dialog with Form
 
 ```typescript
 import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
     Dialog,
-    DialogTitle,
     DialogContent,
-    DialogActions,
-    Button,
-    TextField,
-    Box,
-    IconButton,
-} from '@mui/material';
-import { Close, PersonAdd } from '@mui/icons-material';
-import { useBlog } from 'react-hook-blog';
-import { zodResolver } from '@hookblog/resolvers/zod';
-import { z } from 'zod';
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { UserPlus } from 'lucide-react';
 
-const blogSchema = z.object({
-    name: z.string().min(1),
-    email: z.string().email(),
+const formSchema = z.object({
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().email('Invalid email'),
 });
 
-type BlogData = z.infer<typeof blogSchema>;
+type FormData = z.infer<typeof formSchema>;
 
 interface AddUserDialogProps {
     open: boolean;
-    onClose: () => void;
-    onSubmit: (data: BlogData) => Promise<void>;
+    onOpenChange: (open: boolean) => void;
+    onSubmit: (data: FormData) => Promise<void>;
 }
 
 export const AddUserDialog: React.FC<AddUserDialogProps> = ({
     open,
-    onClose,
+    onOpenChange,
     onSubmit,
 }) => {
-    const { register, handleSubmit, blogState: { errors }, reset } = useBlog<BlogData>({
-        resolver: zodResolver(blogSchema),
+    const form = useForm<FormData>({
+        resolver: zodResolver(formSchema),
+        defaultValues: { name: '', email: '' },
     });
 
     const handleClose = () => {
-        reset();
-        onClose();
+        form.reset();
+        onOpenChange(false);
     };
 
-    const handleBlogSubmit = async (data: BlogData) => {
+    const handleFormSubmit = async (data: FormData) => {
         await onSubmit(data);
         handleClose();
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth>
-            <DialogTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <PersonAdd color='primary' />
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        <UserPlus className="h-5 w-5" />
                         Add User
-                    </Box>
-                    <IconButton onClick={handleClose} size='small'>
-                        <Close />
-                    </IconButton>
-                </Box>
-            </DialogTitle>
+                    </DialogTitle>
+                    <DialogDescription>
+                        Enter the user's details below.
+                    </DialogDescription>
+                </DialogHeader>
 
-            <blog onSubmit={handleSubmit(handleBlogSubmit)}>
-                <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <TextField
-                            {...register('name')}
-                            label='Name'
-                            error={!!errors.name}
-                            helperText={errors.name?.message}
-                            fullWidth
-                            autoFocus
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Name</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} autoFocus />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
 
-                        <TextField
-                            {...register('email')}
-                            label='Email'
-                            type='email'
-                            error={!!errors.email}
-                            helperText={errors.email?.message}
-                            fullWidth
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input type="email" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                    </Box>
-                </DialogContent>
 
-                <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button type='submit' variant='contained'>
-                        Add User
-                    </Button>
-                </DialogActions>
-            </blog>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={handleClose}>
+                                Cancel
+                            </Button>
+                            <Button type="submit">Add User</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
         </Dialog>
     );
 };
@@ -739,18 +656,17 @@ export const AddUserDialog: React.FC<AddUserDialogProps> = ({
 
 ---
 
-## Example 6: Parallel Data Fetching
+## Example 8: Parallel Data Fetching
 
 ```typescript
 import React from 'react';
-import { Box, Grid, Paper } from '@mui/material';
 import { useSuspenseQueries } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { userApi } from '../api/userApi';
 import { statsApi } from '../api/statsApi';
 import { activityApi } from '../api/activityApi';
 
 export const Dashboard: React.FC = () => {
-    // Fetch all data in parallel with Suspense
     const [statsQuery, usersQuery, activityQuery] = useSuspenseQueries({
         queries: [
             {
@@ -769,45 +685,47 @@ export const Dashboard: React.FC = () => {
     });
 
     return (
-        <Box sx={{ p: 2 }}>
-            <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <Paper sx={{ p: 2 }}>
-                        <h3>Stats</h3>
-                        <p>Total: {statsQuery.data.total}</p>
-                    </Paper>
-                </Grid>
+        <div className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Stats</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-2xl font-bold">{statsQuery.data.total}</p>
+                    </CardContent>
+                </Card>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <Paper sx={{ p: 2 }}>
-                        <h3>Active Users</h3>
-                        <p>Count: {usersQuery.data.length}</p>
-                    </Paper>
-                </Grid>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Active Users</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-2xl font-bold">{usersQuery.data.length}</p>
+                    </CardContent>
+                </Card>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <Paper sx={{ p: 2 }}>
-                        <h3>Recent Activity</h3>
-                        <p>Events: {activityQuery.data.length}</p>
-                    </Paper>
-                </Grid>
-            </Grid>
-        </Box>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Recent Activity</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-2xl font-bold">{activityQuery.data.length}</p>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
     );
 };
-
-// Usage with Suspense
-<SuspenseLoader>
-    <Dashboard />
-</SuspenseLoader>
 ```
 
 ---
 
-## Example 7: Optimistic Update
+## Example 9: Optimistic Update
 
 ```typescript
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import type { User } from '../types';
 
 export const useToggleUserStatus = () => {
@@ -816,30 +734,26 @@ export const useToggleUserStatus = () => {
   return useMutation({
     mutationFn: (userId: string) => userApi.toggleStatus(userId),
 
-    // Optimistic update
     onMutate: async (userId) => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['users'] });
 
-      // Snapshot previous value
       const previousUsers = queryClient.getQueryData<User[]>(['users']);
 
-      // Optimistically update UI
       queryClient.setQueryData<User[]>(['users'], (old) => {
         return (
           old?.map((user) => (user.id === userId ? { ...user, active: !user.active } : user)) || []
         );
       });
 
+      toast.success('Status updated');
       return { previousUsers };
     },
 
-    // Rollback on error
     onError: (err, userId, context) => {
       queryClient.setQueryData(['users'], context?.previousUsers);
+      toast.error('Failed to update status');
     },
 
-    // Refetch after mutation
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
     },
@@ -857,9 +771,9 @@ export const useToggleUserStatus = () => {
 2. **Feature Structure**: Organized subdirectories (api/, components/, hooks/, etc.)
 3. **Routing**: Folder-based with lazy loading
 4. **Data Fetching**: useSuspenseQuery with cache-first strategy
-5. **Blogs**: React Hook Blog + Zod validation
-6. **Error Handling**: useMuiSnackbar + onError callbacks
-7. **Perblogance**: useMemo, useCallback, React.memo, debouncing
-8. **Styling**: Inline <100 lines, sx prop, MUI v7 syntax
+5. **Forms**: React Hook Form + Zod validation + shadcn Form components
+6. **Error Handling**: toast from sonner + onError callbacks
+7. **Performance**: useMemo, useCallback, React.memo, debouncing
+8. **Styling**: Tailwind CSS utilities + shadcn/ui components
 
 **See other resources for detailed explanations of each pattern.**

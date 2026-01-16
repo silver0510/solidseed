@@ -81,7 +81,7 @@ const MyComponent = React.lazy(() =>
  * Main post table container component
  */
 import React, { useState, useCallback } from 'react';
-import { Box, Paper } from '@mui/material';
+import { Card } from '@/components/ui/card';
 
 // Lazy load PostDataGrid to optimize bundle size
 const PostDataGrid = React.lazy(() => import('./grids/PostDataGrid'));
@@ -90,11 +90,11 @@ import { SuspenseLoader } from '~components/SuspenseLoader';
 
 export const PostTable: React.FC<PostTableProps> = ({ formId }) => {
     return (
-        <Box>
+        <div>
             <SuspenseLoader>
                 <PostDataGrid formId={formId} />
             </SuspenseLoader>
-        </Box>
+        </div>
     );
 };
 
@@ -152,12 +152,12 @@ function Route() {
 ```typescript
 function ParentComponent() {
     return (
-        <Box>
+        <div>
             <Header />
             <SuspenseLoader>
                 <HeavyDataGrid />
             </SuspenseLoader>
-        </Box>
+        </div>
     );
 }
 ```
@@ -167,7 +167,7 @@ function ParentComponent() {
 ```typescript
 function Page() {
     return (
-        <Box>
+        <div className="space-y-6">
             <SuspenseLoader>
                 <HeaderSection />
             </SuspenseLoader>
@@ -179,7 +179,7 @@ function Page() {
             <SuspenseLoader>
                 <Sidebar />
             </SuspenseLoader>
-        </Box>
+        </div>
     );
 }
 ```
@@ -198,9 +198,11 @@ Each section loads independently, better UX.
  * What it does, when to use it
  */
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Box, Paper, Button } from '@mui/material';
-import type { SxProps, Theme } from '@mui/material';
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 // Feature imports
 import { myFeatureApi } from '../api/myFeatureApi';
@@ -211,7 +213,6 @@ import { SuspenseLoader } from '~components/SuspenseLoader';
 
 // Hooks
 import { useAuth } from '@/hooks/useAuth';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
 // 1. PROPS INTERFACE (with JSDoc)
 interface MyComponentProps {
@@ -223,30 +224,15 @@ interface MyComponentProps {
     mode?: 'view' | 'edit';
 }
 
-// 2. STYLES (if inline and <100 lines)
-const componentStyles: Record<string, SxProps<Theme>> = {
-    container: {
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    header: {
-        mb: 2,
-        display: 'flex',
-        justifyContent: 'space-between',
-    },
-};
-
-// 3. COMPONENT DEFINITION
+// 2. COMPONENT DEFINITION
 export const MyComponent: React.FC<MyComponentProps> = ({
     entityId,
     onComplete,
     mode = 'view',
 }) => {
-    // 4. HOOKS (in this order)
+    // 3. HOOKS (in this order)
     // - Context hooks first
     const { user } = useAuth();
-    const { showSuccess, showError } = useMuiSnackbar();
 
     // - Data fetching
     const { data } = useSuspenseQuery({
@@ -271,7 +257,7 @@ export const MyComponent: React.FC<MyComponentProps> = ({
         };
     }, []);
 
-    // 5. EVENT HANDLERS (with useCallback)
+    // 4. EVENT HANDLERS (with useCallback)
     const handleItemSelect = useCallback((itemId: string) => {
         setSelectedItem(itemId);
     }, []);
@@ -279,31 +265,33 @@ export const MyComponent: React.FC<MyComponentProps> = ({
     const handleSave = useCallback(async () => {
         try {
             await myFeatureApi.updateEntity(entityId, { /* data */ });
-            showSuccess('Entity updated successfully');
+            toast.success('Entity updated successfully');
             onComplete?.();
         } catch (error) {
-            showError('Failed to update entity');
+            toast.error('Failed to update entity');
         }
-    }, [entityId, onComplete, showSuccess, showError]);
+    }, [entityId, onComplete]);
 
-    // 6. RENDER
+    // 5. RENDER
     return (
-        <Box sx={componentStyles.container}>
-            <Box sx={componentStyles.header}>
-                <h2>My Component</h2>
+        <div className="p-4 flex flex-col gap-4">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">My Component</h2>
                 <Button onClick={handleSave}>Save</Button>
-            </Box>
+            </div>
 
-            <Paper sx={{ p: 2 }}>
-                {filteredData.map(item => (
-                    <div key={item.id}>{item.name}</div>
-                ))}
-            </Paper>
-        </Box>
+            <Card>
+                <CardContent className="p-4">
+                    {filteredData.map(item => (
+                        <div key={item.id}>{item.name}</div>
+                    ))}
+                </CardContent>
+            </Card>
+        </div>
     );
 };
 
-// 7. EXPORT (default export at bottom)
+// 6. EXPORT (default export at bottom)
 export default MyComponent;
 ```
 
@@ -335,11 +323,11 @@ function MassiveComponent() {
 // ✅ PREFERRED - Modular
 function ParentContainer() {
     return (
-        <Box>
+        <div className="space-y-4">
             <SearchAndFilter onFilter={handleFilter} />
             <DataGrid data={filteredData} />
             <ActionPanel onAction={handleAction} />
-        </Box>
+        </div>
     );
 }
 ```
@@ -454,25 +442,25 @@ function DeepChild() {
 ### Compound Components
 
 ```typescript
-// Card.tsx
-export const Card: React.FC<CardProps> & {
+// CustomCard.tsx
+export const CustomCard: React.FC<CardProps> & {
     Header: typeof CardHeader;
     Body: typeof CardBody;
     Footer: typeof CardFooter;
-} = ({ children }) => {
-    return <Paper>{children}</Paper>;
+} = ({ children, className }) => {
+    return <div className={cn('rounded-lg border bg-card shadow-sm', className)}>{children}</div>;
 };
 
-Card.Header = CardHeader;
-Card.Body = CardBody;
-Card.Footer = CardFooter;
+CustomCard.Header = CardHeader;
+CustomCard.Body = CardBody;
+CustomCard.Footer = CardFooter;
 
 // Usage
-<Card>
-    <Card.Header>Title</Card.Header>
-    <Card.Body>Content</Card.Body>
-    <Card.Footer>Actions</Card.Footer>
-</Card>
+<CustomCard>
+    <CustomCard.Header>Title</CustomCard.Header>
+    <CustomCard.Body>Content</CustomCard.Body>
+    <CustomCard.Footer>Actions</CustomCard.Footer>
+</CustomCard>
 ```
 
 ### Render Props (Rare, but useful)

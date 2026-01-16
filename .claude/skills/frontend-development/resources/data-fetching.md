@@ -297,12 +297,12 @@ await apiClient.post('/api/projects/create', data); // WRONG!
 
 ```typescript
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { myFeatureApi } from '../api/myFeatureApi';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
 export const MyComponent: React.FC = () => {
     const queryClient = useQueryClient();
-    const { showSuccess, showError } = useMuiSnackbar();
 
     const updateMutation = useMutation({
         mutationFn: (payload: UpdatePayload) =>
@@ -313,11 +313,11 @@ export const MyComponent: React.FC = () => {
             queryClient.invalidateQueries({
                 queryKey: ['entity', blogId, entityId]
             });
-            showSuccess('Entity updated successfully');
+            toast.success('Entity updated successfully');
         },
 
         onError: (error) => {
-            showError('Failed to update entity');
+            toast.error('Failed to update entity');
             console.error('Update error:', error);
         },
     });
@@ -364,7 +364,7 @@ const updateMutation = useMutation({
   // Rollback on error
   onError: (err, newData, context) => {
     queryClient.setQueryData(['entity', id], context.previousData);
-    showError('Update failed');
+    toast.error('Update failed');
   },
 
   // Refetch after success or error
@@ -459,9 +459,7 @@ import apiClient from '@/lib/apiClient';
 ### onError Callback
 
 ```typescript
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
-
-const { showError } = useMuiSnackbar();
+import { toast } from 'sonner';
 
 const { data } = useSuspenseQuery({
   queryKey: ['entity', id],
@@ -469,7 +467,7 @@ const { data } = useSuspenseQuery({
 
   // Handle errors
   onError: (error) => {
-    showError('Failed to load entity');
+    toast.error('Failed to load entity');
     console.error('Load error:', error);
   },
 });
@@ -501,7 +499,6 @@ import { ErrorBoundary } from 'react-error-boundary';
 ```typescript
 import React from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { Box, Typography } from '@mui/material';
 import { userApi } from '../api/userApi';
 
 interface UserProfileProps {
@@ -516,10 +513,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId }) => {
     });
 
     return (
-        <Box>
-            <Typography variant='h5'>{user.name}</Typography>
-            <Typography>{user.email}</Typography>
-        </Box>
+        <div>
+            <h2 className="text-xl font-semibold">{user.name}</h2>
+            <p className="text-muted-foreground">{user.email}</p>
+        </div>
     );
 };
 
@@ -598,11 +595,11 @@ export const Dashboard: React.FC = () => {
     });
 
     return (
-        <Box>
+        <div className="space-y-6">
             <StatsCard data={statsQuery.data} />
             <ProjectsList projects={projectsQuery.data} />
             <Notifications items={notificationsQuery.data} />
-        </Box>
+        </div>
     );
 };
 ```
@@ -615,12 +612,11 @@ export const Dashboard: React.FC = () => {
 
 ```typescript
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { postApi } from '../api/postApi';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
 export const useUpdatePost = () => {
   const queryClient = useQueryClient();
-  const { showSuccess, showError } = useMuiSnackbar();
 
   return useMutation({
     mutationFn: ({ blogId, postId, data }: UpdateParams) =>
@@ -637,11 +633,11 @@ export const useUpdatePost = () => {
         queryKey: ['posts-v2', variables.blogId],
       });
 
-      showSuccess('Post updated');
+      toast.success('Post updated');
     },
 
     onError: (error) => {
-      showError('Failed to update post');
+      toast.error('Failed to update post');
       console.error('Update error:', error);
     },
   });
@@ -662,9 +658,10 @@ const handleSave = () => {
 ### Delete Mutation
 
 ```typescript
+import { toast } from 'sonner';
+
 export const useDeletePost = () => {
   const queryClient = useQueryClient();
-  const { showSuccess, showError } = useMuiSnackbar();
 
   return useMutation({
     mutationFn: ({ blogId, postId }: DeleteParams) => postApi.deletePost(blogId, postId),
@@ -676,7 +673,7 @@ export const useDeletePost = () => {
         rows: old?.rows.filter((row) => row.S_ID !== variables.postId) || [],
       }));
 
-      showSuccess('Post deleted');
+      toast.success('Post deleted');
     },
 
     onError: (error, variables) => {
@@ -684,7 +681,7 @@ export const useDeletePost = () => {
       queryClient.invalidateQueries({
         queryKey: ['posts-v2', variables.blogId],
       });
-      showError('Failed to delete post');
+      toast.error('Failed to delete post');
     },
   });
 };
@@ -741,7 +738,7 @@ useSuspenseQuery({
 4. **Query Keys**: Consistent naming ['entity', id]
 5. **Route Format**: `/blog/route` NOT `/api/blog/route`
 6. **Mutations**: invalidateQueries after success
-7. **Error Handling**: onError + useMuiSnackbar
+7. **Error Handling**: onError + toast
 8. **Type Safety**: Type all parameters and returns
 
 **See Also:**

@@ -36,28 +36,35 @@ export const MyComponent: React.FC = () => {
 
 ## Forms with React Hook Form
 
-### Basic Form
+### Basic Form with shadcn/ui
 
 ```typescript
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TextField, Button } from '@mui/material';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
+import { toast } from 'sonner';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 // Zod schema for validation
 const formSchema = z.object({
     username: z.string().min(3, 'Username must be at least 3 characters'),
     email: z.string().email('Invalid email address'),
-    age: z.number().min(18, 'Must be 18 or older'),
+    age: z.coerce.number().min(18, 'Must be 18 or older'),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 export const MyForm: React.FC = () => {
-    const { showSuccess, showError } = useMuiSnackbar();
-
-    const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             username: '',
@@ -69,41 +76,60 @@ export const MyForm: React.FC = () => {
     const onSubmit = async (data: FormData) => {
         try {
             await api.submitForm(data);
-            showSuccess('Form submitted successfully');
+            toast.success('Form submitted successfully');
         } catch (error) {
-            showError('Failed to submit form');
+            toast.error('Failed to submit form');
         }
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <TextField
-                {...register('username')}
-                label='Username'
-                error={!!errors.username}
-                helperText={errors.username?.message}
-            />
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Username</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Enter username" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
-            <TextField
-                {...register('email')}
-                label='Email'
-                error={!!errors.email}
-                helperText={errors.email?.message}
-                type='email'
-            />
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                                <Input type="email" placeholder="you@example.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
-            <TextField
-                {...register('age', { valueAsNumber: true })}
-                label='Age'
-                error={!!errors.age}
-                helperText={errors.age?.message}
-                type='number'
-            />
+                <FormField
+                    control={form.control}
+                    name="age"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Age</FormLabel>
+                            <FormControl>
+                                <Input type="number" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
-            <Button type='submit' variant='contained'>
-                Submit
-            </Button>
-        </form>
+                <Button type="submit">Submit</Button>
+            </form>
+        </Form>
     );
 };
 ```
@@ -112,109 +138,240 @@ export const MyForm: React.FC = () => {
 
 ## Dialog Component Pattern
 
-### Standard Dialog Structure
+### Standard Dialog Structure with shadcn/ui
 
-From BEST_PRACTICES.md - All dialogs should have:
+All dialogs should have:
 
-- Icon in title
-- Close button (X)
+- Clear title with optional icon
+- Close button (X) or DialogClose
 - Action buttons at bottom
 
 ```typescript
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton } from '@mui/material';
-import { Close, Info } from '@mui/icons-material';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogClose,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Info, X } from 'lucide-react';
 
 interface MyDialogProps {
     open: boolean;
-    onClose: () => void;
+    onOpenChange: (open: boolean) => void;
     onConfirm: () => void;
 }
 
-export const MyDialog: React.FC<MyDialogProps> = ({ open, onClose, onConfirm }) => {
+export const MyDialog: React.FC<MyDialogProps> = ({ open, onOpenChange, onConfirm }) => {
     return (
-        <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
-            <DialogTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Info color='primary' />
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        <Info className="h-5 w-5 text-primary" />
                         Dialog Title
-                    </Box>
-                    <IconButton onClick={onClose} size='small'>
-                        <Close />
-                    </IconButton>
-                </Box>
-            </DialogTitle>
+                    </DialogTitle>
+                    <DialogDescription>
+                        Description of what this dialog does.
+                    </DialogDescription>
+                </DialogHeader>
 
-            <DialogContent>
-                {/* Content here */}
+                <div className="py-4">
+                    {/* Content here */}
+                </div>
+
+                <DialogFooter className="gap-2">
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button onClick={onConfirm}>Confirm</Button>
+                </DialogFooter>
             </DialogContent>
-
-            <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={onConfirm} variant='contained'>
-                    Confirm
-                </Button>
-            </DialogActions>
         </Dialog>
+    );
+};
+```
+
+### Alert Dialog (Confirmation)
+
+```typescript
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+
+export const DeleteConfirmDialog: React.FC<{
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onConfirm: () => void;
+}> = ({ open, onOpenChange, onConfirm }) => {
+    return (
+        <AlertDialog open={open} onOpenChange={onOpenChange}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete
+                        the item and remove it from our servers.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={onConfirm}>
+                        Delete
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 };
 ```
 
 ---
 
-## DataGrid Wrapper Pattern
+## Table Pattern with shadcn/ui
 
-### Wrapper Component Contract
-
-From BEST_PRACTICES.md - DataGrid wrappers should accept:
-
-**Required Props:**
-
-- `rows`: Data array
-- `columns`: Column definitions
-- Loading/error states
-
-**Optional Props:**
-
-- Toolbar components
-- Custom actions
-- Initial state
+### Basic Table
 
 ```typescript
-import { DataGridPro } from '@mui/x-data-grid-pro';
-import type { GridColDef } from '@mui/x-data-grid-pro';
+import {
+    Table,
+    TableBody,
+    TableCaption,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 
-interface DataGridWrapperProps {
-    rows: any[];
-    columns: GridColDef[];
-    loading?: boolean;
-    toolbar?: React.ReactNode;
-    onRowClick?: (row: any) => void;
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    status: string;
 }
 
-export const DataGridWrapper: React.FC<DataGridWrapperProps> = ({
-    rows,
-    columns,
-    loading = false,
-    toolbar,
-    onRowClick,
-}) => {
+interface UserTableProps {
+    users: User[];
+    onRowClick?: (user: User) => void;
+}
+
+export const UserTable: React.FC<UserTableProps> = ({ users, onRowClick }) => {
     return (
-        <DataGridPro
-            rows={rows}
-            columns={columns}
-            loading={loading}
-            slots={{ toolbar: toolbar ? () => toolbar : undefined }}
-            onRowClick={(params) => onRowClick?.(params.row)}
-            // Standard configuration
-            pagination
-            pageSizeOptions={[25, 50, 100]}
-            initialState={{
-                pagination: { paginationModel: { pageSize: 25 } },
-            }}
-        />
+        <Table>
+            <TableCaption>A list of users</TableCaption>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {users.map((user) => (
+                    <TableRow
+                        key={user.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => onRowClick?.(user)}
+                    >
+                        <TableCell className="font-medium">{user.name}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>{user.status}</TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
     );
 };
+```
+
+### Data Table with TanStack Table
+
+For advanced features (sorting, filtering, pagination), use `@tanstack/react-table` with shadcn/ui:
+
+```typescript
+import {
+    useReactTable,
+    getCoreRowModel,
+    getSortedRowModel,
+    flexRender,
+    type ColumnDef,
+    type SortingState,
+} from '@tanstack/react-table';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { useState } from 'react';
+
+interface DataTableProps<T> {
+    columns: ColumnDef<T>[];
+    data: T[];
+}
+
+export function DataTable<T>({ columns, data }: DataTableProps<T>) {
+    const [sorting, setSorting] = useState<SortingState>([]);
+
+    const table = useReactTable({
+        data,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        onSortingChange: setSorting,
+        state: { sorting },
+    });
+
+    return (
+        <div className="rounded-md border">
+            <Table>
+                <TableHeader>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key={headerGroup.id}>
+                            {headerGroup.headers.map((header) => (
+                                <TableHead key={header.id}>
+                                    {flexRender(
+                                        header.column.columnDef.header,
+                                        header.getContext()
+                                    )}
+                                </TableHead>
+                            ))}
+                        </TableRow>
+                    ))}
+                </TableHeader>
+                <TableBody>
+                    {table.getRowModel().rows.map((row) => (
+                        <TableRow key={row.id}>
+                            {row.getVisibleCells().map((cell) => (
+                                <TableCell key={cell.id}>
+                                    {flexRender(
+                                        cell.column.columnDef.cell,
+                                        cell.getContext()
+                                    )}
+                                </TableCell>
+                            ))}
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+    );
+}
 ```
 
 ---
@@ -225,11 +382,10 @@ export const DataGridWrapper: React.FC<DataGridWrapperProps> = ({
 
 ```typescript
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
+import { toast } from 'sonner';
 
 export const useUpdateEntity = () => {
   const queryClient = useQueryClient();
-  const { showSuccess, showError } = useMuiSnackbar();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => api.updateEntity(id, data),
@@ -239,11 +395,11 @@ export const useUpdateEntity = () => {
       queryClient.invalidateQueries({ queryKey: ['entity', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['entities'] });
 
-      showSuccess('Entity updated');
+      toast.success('Entity updated');
     },
 
     onError: () => {
-      showError('Failed to update entity');
+      toast.error('Failed to update entity');
     },
   });
 };
@@ -253,6 +409,35 @@ const updateEntity = useUpdateEntity();
 
 const handleSave = () => {
   updateEntity.mutate({ id: 123, data: { name: 'New Name' } });
+};
+```
+
+### With Loading Toast
+
+```typescript
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+export const useDeleteEntity = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => api.deleteEntity(id),
+
+    onMutate: () => {
+      // Show loading toast
+      return { toastId: toast.loading('Deleting...') };
+    },
+
+    onSuccess: (_, __, context) => {
+      queryClient.invalidateQueries({ queryKey: ['entities'] });
+      toast.success('Entity deleted', { id: context?.toastId });
+    },
+
+    onError: (_, __, context) => {
+      toast.error('Failed to delete entity', { id: context?.toastId });
+    },
+  });
 };
 ```
 
