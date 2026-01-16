@@ -27,11 +27,10 @@ export async function GET(request: NextRequest) {
     });
 
     // Check if verification was successful
-    if (result) {
+    if (result && result.status) {
       return NextResponse.json({
         success: true,
         message: 'Email verified successfully',
-        user: result.user,
       });
     }
 

@@ -52,18 +52,20 @@ const clientService = new ClientService();
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     // Validate ID parameter is provided
-    if (!params.id) {
+    if (!id) {
       return NextResponse.json(
         { error: 'Client ID is required' },
         { status: 400 }
       );
     }
 
-    const client = await clientService.getClientById(params.id);
+    const client = await clientService.getClientById(id);
 
     if (!client) {
       return NextResponse.json(
@@ -116,11 +118,13 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     // Validate ID parameter is provided
-    if (!params.id) {
+    if (!id) {
       return NextResponse.json(
         { error: 'Client ID is required' },
         { status: 400 }
@@ -141,7 +145,7 @@ export async function PATCH(
     }
 
     // Update client
-    const client = await clientService.updateClient(params.id, validatedData);
+    const client = await clientService.updateClient(id, validatedData);
 
     if (!client) {
       return NextResponse.json(
@@ -155,7 +159,7 @@ export async function PATCH(
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
+        { error: 'Validation failed', details: error.issues },
         { status: 400 }
       );
     }
@@ -192,18 +196,20 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     // Validate ID parameter is provided
-    if (!params.id) {
+    if (!id) {
       return NextResponse.json(
         { error: 'Client ID is required' },
         { status: 400 }
       );
     }
 
-    const success = await clientService.softDeleteClient(params.id);
+    const success = await clientService.softDeleteClient(id);
 
     if (!success) {
       return NextResponse.json(

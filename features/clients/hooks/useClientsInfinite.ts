@@ -107,7 +107,7 @@ export function getTotalCount(
   data: { pages: Array<{ total_count: number }> } | undefined
 ): number {
   if (!data?.pages?.length) return 0;
-  return data.pages[0].total_count;
+  return data.pages[0]?.total_count ?? 0;
 }
 
 /**

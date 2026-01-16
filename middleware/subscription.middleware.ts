@@ -11,8 +11,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionFromRequest, type Session } from './auth.middleware';
-import { hasRequiredTier, type SubscriptionTier } from '../services/subscription.service';
+import { getSessionFromRequest, hasRequiredTier, type Session } from './auth.middleware';
+
+/**
+ * Subscription tier levels
+ */
+export type SubscriptionTier = 'trial' | 'free' | 'pro' | 'enterprise';
 
 // =============================================================================
 // Type Definitions
@@ -66,7 +70,7 @@ export function requireSubscription<T extends Response = Response>(
             message: 'Authentication required',
           },
           { status: 401 }
-        ) as T;
+        ) as unknown as T;
       }
 
       // Check account status
@@ -77,7 +81,7 @@ export function requireSubscription<T extends Response = Response>(
             message: 'Account is not active',
           },
           { status: 403 }
-        ) as T;
+        ) as unknown as T;
       }
 
       // Check subscription tier
@@ -95,7 +99,7 @@ export function requireSubscription<T extends Response = Response>(
             requiredTier: allowedTiers,
           },
           { status: 403 }
-        ) as T;
+        ) as unknown as T;
       }
 
       // Call the actual handler
@@ -162,7 +166,7 @@ export function requireActiveTrial<T extends Response = Response>(handler: Prote
           message: 'Authentication required',
         },
         { status: 401 }
-      ) as T;
+      ) as unknown as T;
     }
 
     const userTier = (session.user.subscription_tier || 'free') as SubscriptionTier;
@@ -176,7 +180,7 @@ export function requireActiveTrial<T extends Response = Response>(handler: Prote
           message: 'This feature requires an active trial period',
         },
         { status: 403 }
-      ) as T;
+      ) as unknown as T;
     }
 
     if (!trialExpiresAt || new Date(trialExpiresAt) < new Date()) {
@@ -186,7 +190,7 @@ export function requireActiveTrial<T extends Response = Response>(handler: Prote
           message: 'Your trial period has expired',
         },
         { status: 403 }
-      ) as T;
+      ) as unknown as T;
     }
 
     return handler(request, session);
@@ -238,15 +242,19 @@ function isAccountActive(session: Session): boolean {
  * @returns Formatted string
  */
 function formatTierRequirement(tiers: SubscriptionTier[]): string {
+  if (tiers.length === 0) {
+    return '';
+  }
+
   if (tiers.length === 1) {
-    return tiers[0];
+    return tiers[0] ?? '';
   }
 
   if (tiers.length === 2) {
-    return `${tiers[0]} or ${tiers[1]}`;
+    return `${tiers[0] ?? ''} or ${tiers[1] ?? ''}`;
   }
 
-  const last = tiers[tiers.length - 1];
+  const last = tiers[tiers.length - 1] ?? '';
   const rest = tiers.slice(0, -1).join(', ');
   return `${rest}, or ${last}`;
 }
@@ -291,7 +299,7 @@ export function withSubscriptionAccess<T extends Response = Response>(
             message: 'Authentication required',
           },
           { status: 401 }
-        ) as T;
+        ) as unknown as T;
       }
 
       // Check account status if required
@@ -302,7 +310,7 @@ export function withSubscriptionAccess<T extends Response = Response>(
             message: 'Account is not active',
           },
           { status: 403 }
-        ) as T;
+        ) as unknown as T;
       }
 
       // Check subscription tier if specified
@@ -325,7 +333,7 @@ export function withSubscriptionAccess<T extends Response = Response>(
                   requiredTier: allowedTiers,
                 },
                 { status: 403 }
-              ) as T;
+              ) as unknown as T;
             }
           }
 
@@ -337,7 +345,7 @@ export function withSubscriptionAccess<T extends Response = Response>(
               requiredTier: allowedTiers,
             },
             { status: 403 }
-          ) as T;
+          ) as unknown as T;
         }
       }
 

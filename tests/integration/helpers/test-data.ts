@@ -44,7 +44,7 @@ export const extractTokenFromEmail = (emailContent: string): string => {
   // This is a placeholder - in real scenario would parse email content
   // and extract the verification/reset token
   const match = emailContent.match(/token=([a-zA-Z0-9-]+)/);
-  return match ? match[1] : '';
+  return match?.[1] ?? '';
 };
 
 /**

@@ -127,6 +127,9 @@ export function parseJWTPayload(token: string): JWTPayload | null {
 
     // Extract payload (second part)
     const payloadBase64 = token.split('.')[1];
+    if (!payloadBase64) {
+      return null;
+    }
 
     // Add padding if needed
     const paddedBase64 = payloadBase64 + '='.repeat((4 - payloadBase64.length % 4) % 4);

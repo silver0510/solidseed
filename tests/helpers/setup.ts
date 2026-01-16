@@ -9,6 +9,7 @@
  */
 
 import { randomInt } from 'crypto';
+import { generateTestEmail } from './test-data';
 
 // =============================================================================
 // Configuration
@@ -29,14 +30,7 @@ export const TEST_DB_URL = process.env.SUPABASE_DATABASE_URL || 'postgresql://po
 // Test User Management
 // =============================================================================
 
-/**
- * Generate a unique test email address
- */
-export function generateTestEmail(): string {
-  const timestamp = Date.now();
-  const random = randomInt(1000, 9999);
-  return `test-${timestamp}-${random}@example.com`;
-}
+// generateTestEmail is exported from test-data.ts
 
 /**
  * Generate test user data

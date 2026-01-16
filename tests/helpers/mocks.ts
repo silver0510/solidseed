@@ -33,13 +33,13 @@ export const mockEmailService = {
   /** Extract verification token from email body */
   extractVerificationToken(emailBody: string): string | null {
     const match = emailBody.match(/token=([^&\s]+)/);
-    return match ? match[1] : null;
+    return match?.[1] ?? null;
   },
 
   /** Extract reset token from email body */
   extractResetToken(emailBody: string): string | null {
     const match = emailBody.match(/token=([^&\s]+)/);
-    return match ? match[1] : null;
+    return match?.[1] ?? null;
   },
 
   /** Mock email template for verification */

@@ -287,7 +287,8 @@ export function extractIpAddress(headers: Headers): string | null {
 
   if (forwardedFor) {
     // x-forwarded-for can contain multiple IPs, take the first one
-    return forwardedFor.split(',')[0].trim();
+    const firstIp = forwardedFor.split(',')[0];
+    return firstIp ? firstIp.trim() : null;
   }
 
   if (realIp) {

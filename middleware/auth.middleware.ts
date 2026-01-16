@@ -224,7 +224,7 @@ export function withAuth<T extends Response = Response>(
       return NextResponse.json(
         { error: 'Unauthorized', message: 'Invalid or missing token' },
         { status: 401 }
-      ) as T;
+      ) as unknown as T;
     }
 
     // Check subscription tier if required
@@ -238,7 +238,7 @@ export function withAuth<T extends Response = Response>(
             message: `This feature requires ${options.requiredTier} tier or higher`,
           },
           { status: 403 }
-        ) as T;
+        ) as unknown as T;
       }
     }
 

@@ -198,8 +198,8 @@ export function formatValidationError(error: z.ZodError): {
   message: string;
   details: Array<{ field: string; message: string }>;
 } {
-  // Use .issues (primary) or .errors (alias) with defensive fallback
-  const issues = error.issues || error.errors || [];
+  // Use .issues for error details
+  const issues = error.issues ?? [];
   const details = issues.map((err) => ({
     field: err.path.join('.'),
     message: err.message,

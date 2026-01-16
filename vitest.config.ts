@@ -37,7 +37,7 @@ export default defineConfig({
     },
 
     // Reporter configuration
-    reporter: ['default'],
+    reporters: ['default'],
 
     // Sequence configuration - run tests in a predictable order
     sequence: {
