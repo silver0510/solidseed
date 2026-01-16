@@ -9,6 +9,9 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils/cn';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { getTaskDisplayInfo, formatRelativeTime, formatDate } from '../../helpers';
 import type { ClientTask, TaskStatus } from '../../types';
 
@@ -154,16 +157,16 @@ const AlertCircleIcon = ({ className }: { className?: string }) => (
 /**
  * Get CSS classes for priority badge
  */
-function getPriorityClasses(priority: ClientTask['priority']): string {
+function getPriorityVariant(priority: ClientTask['priority']): 'destructive' | 'default' | 'secondary' | 'outline' {
   switch (priority) {
     case 'high':
-      return 'bg-red-100 text-red-700 border-red-200';
+      return 'destructive';
     case 'medium':
-      return 'bg-blue-100 text-blue-700 border-blue-200';
+      return 'default';
     case 'low':
-      return 'bg-slate-100 text-slate-600 border-slate-200';
+      return 'secondary';
     default:
-      return 'bg-gray-100 text-gray-600 border-gray-200';
+      return 'outline';
   }
 }
 
@@ -241,8 +244,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   return (
-    <article
-      role="article"
+    <Card
       data-testid="task-item"
       data-completed={isCompleted || undefined}
       data-overdue={displayInfo.isOverdue || undefined}
@@ -251,206 +253,188 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       data-status={task.status}
       className={cn(
         // Base styles
-        'rounded-lg border bg-white p-4',
         'transition-all duration-200',
         // Status-based styling
-        isCompleted && 'bg-gray-50 border-gray-200',
+        isCompleted && 'bg-muted/50',
         // Urgency-based styling (only for pending tasks)
-        !isCompleted && displayInfo.isOverdue && 'border-red-300 bg-red-50/30',
-        !isCompleted && displayInfo.isDueToday && 'border-amber-300 bg-amber-50/30',
-        // Default border
-        !isCompleted && !displayInfo.isOverdue && !displayInfo.isDueToday && 'border-gray-200',
+        !isCompleted && displayInfo.isOverdue && 'border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-900/10',
+        !isCompleted && displayInfo.isDueToday && 'border-amber-300 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-900/10',
         // Updating state
         isUpdating && 'opacity-50',
         className
       )}
     >
-      <div className="flex items-start gap-3">
-        {/* Status Checkbox */}
-        <div className="flex-shrink-0 pt-0.5">
-          <label className="relative flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isCompleted}
-              onChange={handleStatusToggle}
-              disabled={isUpdating || !onStatusChange}
-              aria-label={`Mark task "${task.title}" as ${isCompleted ? 'pending' : 'completed'}`}
-              className="sr-only peer"
-            />
-            <div
-              className={cn(
-                'w-5 h-5 rounded border-2 flex items-center justify-center',
-                'transition-all duration-150',
-                'peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-blue-500',
-                isCompleted
-                  ? 'bg-green-500 border-green-500 text-white'
-                  : 'border-gray-300 hover:border-gray-400',
-                isUpdating && 'cursor-not-allowed',
-                !isUpdating && !isCompleted && 'hover:bg-gray-50'
-              )}
-            >
-              {isUpdating ? (
-                <SpinnerIcon className="text-gray-400" />
-              ) : isCompleted ? (
-                <CheckIcon className="w-3.5 h-3.5" />
-              ) : null}
-            </div>
-          </label>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          {/* Header row with title and badges */}
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <div className="flex-1 min-w-0">
-              {/* Title */}
-              <h3
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          {/* Status Checkbox */}
+          <div className="flex-shrink-0 pt-0.5">
+            <label className="relative flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isCompleted}
+                onChange={handleStatusToggle}
+                disabled={isUpdating || !onStatusChange}
+                aria-label={`Mark task "${task.title}" as ${isCompleted ? 'pending' : 'completed'}`}
+                className="sr-only peer"
+              />
+              <div
                 className={cn(
-                  'text-sm font-medium text-gray-900 break-words',
-                  isCompleted && 'line-through text-gray-500'
+                  'w-5 h-5 rounded border-2 flex items-center justify-center',
+                  'transition-all duration-150',
+                  'peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-ring',
+                  isCompleted
+                    ? 'bg-green-500 border-green-500 text-white dark:bg-green-600 dark:border-green-600'
+                    : 'border-input hover:border-muted-foreground',
+                  isUpdating && 'cursor-not-allowed',
+                  !isUpdating && !isCompleted && 'hover:bg-muted'
                 )}
               >
-                {task.title}
-              </h3>
-            </div>
-
-            {/* Action buttons - desktop */}
-            <div className="hidden sm:flex items-center gap-0.5 flex-shrink-0">
-              {onEdit && (
-                <button
-                  type="button"
-                  onClick={() => onEdit(task)}
-                  disabled={isUpdating}
-                  aria-label="Edit task"
-                  className={cn(
-                    'p-2 rounded-lg transition-colors',
-                    'text-gray-400 hover:text-gray-600 hover:bg-gray-100',
-                    isUpdating && 'cursor-not-allowed opacity-50'
-                  )}
-                >
-                  <EditIcon />
-                </button>
-              )}
-              {onDelete && (
-                <button
-                  type="button"
-                  onClick={() => onDelete(task)}
-                  disabled={isUpdating}
-                  aria-label="Delete task"
-                  className={cn(
-                    'p-2 rounded-lg transition-colors',
-                    'text-red-400 hover:text-red-600 hover:bg-red-50',
-                    isUpdating && 'cursor-not-allowed opacity-50'
-                  )}
-                >
-                  <TrashIcon />
-                </button>
-              )}
-            </div>
+                {isUpdating ? (
+                  <SpinnerIcon className="text-muted-foreground" />
+                ) : isCompleted ? (
+                  <CheckIcon className="w-3.5 h-3.5" />
+                ) : null}
+              </div>
+            </label>
           </div>
 
-          {/* Description */}
-          {task.description && (
-            <p
-              className={cn(
-                'text-sm text-gray-600 mb-2 break-words',
-                isCompleted && 'text-gray-400'
-              )}
-            >
-              {task.description}
-            </p>
-          )}
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            {/* Header row with title and badges */}
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <div className="flex-1 min-w-0">
+                {/* Title */}
+                <h3
+                  className={cn(
+                    'text-sm font-medium text-foreground break-words',
+                    isCompleted && 'line-through text-muted-foreground'
+                  )}
+                >
+                  {task.title}
+                </h3>
+              </div>
 
-          {/* Footer row with badges and due date */}
-          <div className="flex items-center flex-wrap gap-2">
-            {/* Priority badge */}
-            <span
-              data-priority={task.priority}
-              className={cn(
-                'inline-flex items-center px-2 py-0.5 text-xs font-medium rounded border',
-                getPriorityClasses(task.priority)
-              )}
-            >
-              {getPriorityLabel(task.priority)}
-            </span>
+              {/* Action buttons - desktop */}
+              <div className="hidden sm:flex items-center gap-0.5 flex-shrink-0">
+                {onEdit && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEdit(task)}
+                    disabled={isUpdating}
+                    aria-label="Edit task"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  >
+                    <EditIcon />
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDelete(task)}
+                    disabled={isUpdating}
+                    aria-label="Delete task"
+                    className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <TrashIcon />
+                  </Button>
+                )}
+              </div>
+            </div>
 
-            {/* Completed badge */}
-            {isCompleted && (
-              <span
-                data-status="completed"
-                className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded border bg-green-100 text-green-700 border-green-200"
+            {/* Description */}
+            {task.description && (
+              <p
+                className={cn(
+                  'text-sm text-muted-foreground mb-2 break-words',
+                  isCompleted && 'text-muted-foreground/60'
+                )}
               >
-                Completed
-              </span>
+                {task.description}
+              </p>
             )}
 
-            {/* Due date */}
-            <span
-              role="time"
-              className={cn(
-                'inline-flex items-center gap-1 text-xs',
-                isCompleted
-                  ? 'text-gray-400'
-                  : displayInfo.isOverdue
-                    ? 'text-red-600 font-medium'
-                    : displayInfo.isDueToday
-                      ? 'text-amber-600 font-medium'
-                      : 'text-gray-500'
-              )}
-            >
-              {!isCompleted && displayInfo.isOverdue ? (
-                <AlertCircleIcon className="w-3.5 h-3.5" />
-              ) : (
-                <CalendarIcon className="w-3.5 h-3.5" />
-              )}
-              <time dateTime={task.due_date}>
-                {formatDueDate(task.due_date, displayInfo)}
-              </time>
-            </span>
-          </div>
+            {/* Footer row with badges and due date */}
+            <div className="flex items-center flex-wrap gap-2">
+              {/* Priority badge */}
+              <Badge
+                variant={getPriorityVariant(task.priority)}
+                data-priority={task.priority}
+                className="text-xs"
+              >
+                {getPriorityLabel(task.priority)}
+              </Badge>
 
-          {/* Mobile action buttons */}
-          {(onEdit || onDelete) && (
-            <div className="flex sm:hidden items-center gap-1 mt-3 pt-3 border-t border-gray-100">
-              {onEdit && (
-                <button
-                  type="button"
-                  onClick={() => onEdit(task)}
-                  disabled={isUpdating}
-                  aria-label="Edit task"
-                  className={cn(
-                    'flex-1 flex items-center justify-center gap-1.5 p-2.5 rounded-lg',
-                    'text-sm text-gray-600 hover:bg-gray-100 active:bg-gray-200',
-                    'min-h-[44px]',
-                    isUpdating && 'cursor-not-allowed opacity-50'
-                  )}
+              {/* Completed badge */}
+              {isCompleted && (
+                <Badge
+                  variant="outline"
+                  data-status="completed"
+                  className="text-xs bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
                 >
-                  <EditIcon />
-                  <span>Edit</span>
-                </button>
+                  Completed
+                </Badge>
               )}
-              {onDelete && (
-                <button
-                  type="button"
-                  onClick={() => onDelete(task)}
-                  disabled={isUpdating}
-                  aria-label="Delete task"
-                  className={cn(
-                    'flex-1 flex items-center justify-center gap-1.5 p-2.5 rounded-lg',
-                    'text-sm text-red-600 hover:bg-red-50 active:bg-red-100',
-                    'min-h-[44px]',
-                    isUpdating && 'cursor-not-allowed opacity-50'
-                  )}
-                >
-                  <TrashIcon />
-                  <span>Delete</span>
-                </button>
-              )}
+
+              {/* Due date */}
+              <span
+                role="time"
+                className={cn(
+                  'inline-flex items-center gap-1 text-xs',
+                  isCompleted
+                    ? 'text-muted-foreground/60'
+                    : displayInfo.isOverdue
+                      ? 'text-red-600 dark:text-red-400 font-medium'
+                      : displayInfo.isDueToday
+                        ? 'text-amber-600 dark:text-amber-400 font-medium'
+                        : 'text-muted-foreground'
+                )}
+              >
+                {!isCompleted && displayInfo.isOverdue ? (
+                  <AlertCircleIcon className="w-3.5 h-3.5" />
+                ) : (
+                  <CalendarIcon className="w-3.5 h-3.5" />
+                )}
+                <time dateTime={task.due_date}>
+                  {formatDueDate(task.due_date, displayInfo)}
+                </time>
+              </span>
             </div>
-          )}
+
+            {/* Mobile action buttons */}
+            {(onEdit || onDelete) && (
+              <div className="flex sm:hidden items-center gap-1 mt-3 pt-3 border-t border-border">
+                {onEdit && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => onEdit(task)}
+                    disabled={isUpdating}
+                    aria-label="Edit task"
+                    className="flex-1 h-11 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    <EditIcon className="mr-1.5" />
+                    Edit
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => onDelete(task)}
+                    disabled={isUpdating}
+                    aria-label="Delete task"
+                    className="flex-1 h-11 text-sm text-destructive hover:bg-destructive/10"
+                  >
+                    <TrashIcon className="mr-1.5" />
+                    Delete
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </article>
+      </CardContent>
+    </Card>
   );
 };
 

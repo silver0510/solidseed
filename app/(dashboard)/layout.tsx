@@ -1,17 +1,35 @@
+'use client';
+
+import { useState } from 'react';
 import { QueryProvider } from '@/lib/query/QueryProvider';
+import { Sidebar, Header, BottomNav } from '@/components/layout';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <QueryProvider>
-      <div className="min-h-screen bg-white">
-        {/* TODO: Add sidebar and header in User Authentication epic */}
-        <main className="p-4">
-          {children}
-        </main>
+      <div className="min-h-screen bg-background">
+        {/* Sidebar */}
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+        {/* Main content area */}
+        <div className="lg:pl-64">
+          {/* Header */}
+          <Header onMenuClick={() => setSidebarOpen(true)} />
+
+          {/* Page content */}
+          <main className="pb-20 lg:pb-6">
+            {children}
+          </main>
+        </div>
+
+        {/* Mobile bottom navigation */}
+        <BottomNav />
       </div>
     </QueryProvider>
   );

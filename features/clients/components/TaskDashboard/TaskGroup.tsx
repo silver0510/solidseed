@@ -9,6 +9,8 @@
 
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { TaskCard } from '../TaskCard';
 import type { TaskWithClient, TaskStatus } from '../../types';
 
@@ -164,15 +166,32 @@ function getGroupIcon(title: string) {
 function getGroupHeaderClasses(title: string): string {
   const lowerTitle = title.toLowerCase();
   if (lowerTitle.includes('overdue')) {
-    return 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100';
+    return 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/30';
   }
   if (lowerTitle.includes('today')) {
-    return 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100';
+    return 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-900/30';
   }
   if (lowerTitle.includes('completed')) {
-    return 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100';
+    return 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/30';
   }
-  return 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100';
+  return 'bg-muted text-muted-foreground border-border hover:bg-muted/80';
+}
+
+/**
+ * Get CSS classes for badge based on title
+ */
+function getBadgeClasses(title: string): string {
+  const lowerTitle = title.toLowerCase();
+  if (lowerTitle.includes('overdue')) {
+    return 'bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200';
+  }
+  if (lowerTitle.includes('today')) {
+    return 'bg-amber-200 text-amber-800 dark:bg-amber-800 dark:text-amber-200';
+  }
+  if (lowerTitle.includes('completed')) {
+    return 'bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200';
+  }
+  return 'bg-secondary text-secondary-foreground';
 }
 
 // =============================================================================
@@ -217,9 +236,8 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
   };
 
   return (
-    <section
-      aria-label={`${title} tasks`}
-      className={cn('rounded-lg border overflow-hidden', className)}
+    <Card
+      className={cn('overflow-hidden', className)}
     >
       {/* Group Header */}
       <button
@@ -230,7 +248,7 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
         className={cn(
           'w-full flex items-center justify-between p-3 border-b',
           'transition-colors duration-150',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
           getGroupHeaderClasses(title)
         )}
       >
@@ -240,13 +258,7 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
           <span
             className={cn(
               'inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded-full',
-              title.toLowerCase().includes('overdue')
-                ? 'bg-red-200 text-red-800'
-                : title.toLowerCase().includes('today')
-                  ? 'bg-amber-200 text-amber-800'
-                  : title.toLowerCase().includes('completed')
-                    ? 'bg-green-200 text-green-800'
-                    : 'bg-gray-200 text-gray-800'
+              getBadgeClasses(title)
             )}
           >
             {taskCount}
@@ -271,7 +283,7 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
         )}
       >
         {taskCount > 0 ? (
-          <ul role="list" className="divide-y divide-gray-100 bg-white">
+          <ul role="list" className="divide-y divide-border bg-card">
             {tasks.map((task) => (
               <li key={task.id} className="p-3">
                 <div
@@ -288,9 +300,9 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
                 >
                   {/* Client Name Badge */}
                   <div className="mb-2">
-                    <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-700">
+                    <Badge variant="secondary" className="text-xs">
                       {task.client_name}
-                    </span>
+                    </Badge>
                   </div>
                   {/* Task Card */}
                   <TaskCard
@@ -306,12 +318,12 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
             ))}
           </ul>
         ) : (
-          <div className="p-4 text-center text-sm text-gray-500 bg-white">
+          <CardContent className="p-4 text-center text-sm text-muted-foreground">
             No tasks in this group
-          </div>
+          </CardContent>
         )}
       </div>
-    </section>
+    </Card>
   );
 };
 

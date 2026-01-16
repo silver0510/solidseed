@@ -9,6 +9,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils/cn';
+import { Badge } from '@/components/ui/badge';
 import { TaskGroup } from './TaskGroup';
 import { useAllTasks } from '../../hooks/useAllTasks';
 import { isPast, isToday } from '../../helpers';
@@ -35,7 +36,7 @@ export interface TaskDashboardProps {
 const SpinnerIcon = ({ className }: { className?: string }) => (
   <div
     className={cn(
-      'h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600',
+      'h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary',
       className
     )}
     role="status"
@@ -213,11 +214,11 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
     <div className={cn('space-y-4', className)}>
       {/* Header with Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold text-gray-900">Task Dashboard</h2>
+        <h2 className="text-lg font-semibold text-foreground">Task Dashboard</h2>
 
         {/* Filter Controls */}
         <div className="flex items-center gap-3">
-          <FilterIcon className="text-gray-400 hidden sm:block" />
+          <FilterIcon className="text-muted-foreground hidden sm:block" />
 
           {/* Status Filter */}
           <div className="flex flex-col">
@@ -231,9 +232,9 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
               onChange={(e) => setStatusFilter(e.target.value as TaskStatus | 'all')}
               className={cn(
                 'block w-full sm:w-auto px-3 py-2 text-sm',
-                'border border-gray-300 rounded-lg',
-                'bg-white text-gray-900',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'border border-input rounded-lg',
+                'bg-background text-foreground',
+                'focus:outline-none focus:ring-2 focus:ring-ring focus:border-input',
                 'min-h-[44px]' // Mobile touch target
               )}
             >
@@ -257,9 +258,9 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
               onChange={(e) => setPriorityFilter(e.target.value as TaskPriority | 'all')}
               className={cn(
                 'block w-full sm:w-auto px-3 py-2 text-sm',
-                'border border-gray-300 rounded-lg',
-                'bg-white text-gray-900',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'border border-input rounded-lg',
+                'bg-background text-foreground',
+                'focus:outline-none focus:ring-2 focus:ring-ring focus:border-input',
                 'min-h-[44px]' // Mobile touch target
               )}
             >
@@ -275,31 +276,31 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
 
       {/* Task Count Summary */}
       <div className="flex flex-wrap gap-2 text-sm">
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-red-100 text-red-700 font-medium">
+        <Badge variant="destructive" className="font-medium">
           {overdueTasksCount} overdue
-        </span>
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 font-medium">
+        </Badge>
+        <Badge variant="outline" className="font-medium bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
           {todayTasksCount} due today
-        </span>
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 font-medium">
+        </Badge>
+        <Badge variant="secondary" className="font-medium">
           {upcomingTasksCount} upcoming
-        </span>
+        </Badge>
       </div>
 
       {/* Loading State */}
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-12">
           <SpinnerIcon />
-          <p className="mt-4 text-sm text-gray-500">Loading tasks...</p>
+          <p className="mt-4 text-sm text-muted-foreground">Loading tasks...</p>
         </div>
       )}
 
       {/* Empty State */}
       {!isLoading && !hasAnyTasks && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <ClipboardListIcon className="text-gray-300" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No tasks</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <ClipboardListIcon className="text-muted-foreground/50" />
+          <h3 className="mt-4 text-lg font-medium text-foreground">No tasks</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             {statusFilter === 'pending'
               ? 'You have no pending tasks. Great job!'
               : statusFilter === 'completed'

@@ -22,20 +22,21 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-gray-900">My Tasks</h1>
-        </div>
-      </header>
+    <div className="p-4 lg:p-6">
+      {/* Page header */}
+      <div className="mb-4">
+        <h1 className="text-2xl font-semibold text-foreground">
+          My Tasks
+        </h1>
+        <p className="mt-1 text-muted-foreground">
+          Track and manage your tasks across all clients
+        </p>
+      </div>
 
       {/* Content */}
-      <main className="p-4 pb-20">
-        <Suspense fallback={<SectionLoader message="Loading tasks..." />}>
-          <TaskDashboard onTaskClick={handleTaskClick} />
-        </Suspense>
-      </main>
+      <Suspense fallback={<SectionLoader message="Loading tasks..." />}>
+        <TaskDashboard onTaskClick={handleTaskClick} />
+      </Suspense>
     </div>
   );
 }

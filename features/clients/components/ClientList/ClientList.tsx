@@ -12,6 +12,8 @@ import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query';
 import { useClientsInfinite, getTotalCount, flattenClientPages } from '../../hooks/useClientsInfinite';
 import { ClientCard } from './ClientCard';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils/cn';
 import type { ClientWithTags, ClientSortField, SortDirection } from '../../types';
 
 /**
@@ -179,15 +181,12 @@ export const ClientList: React.FC<ClientListProps> = ({
     return (
       <main className="p-4" role="main">
         <div className="text-center py-8">
-          <p className="text-red-600 mb-4">
+          <p className="text-destructive mb-4">
             Something went wrong. Failed to load clients.
           </p>
-          <button
-            onClick={handleRetry}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px]"
-          >
+          <Button onClick={handleRetry} size="lg">
             Try Again
-          </button>
+          </Button>
         </div>
       </main>
     );
@@ -208,7 +207,7 @@ export const ClientList: React.FC<ClientListProps> = ({
           </label>
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg
-              className="h-5 w-5 text-gray-400"
+              className="h-5 w-5 text-muted-foreground"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -228,7 +227,12 @@ export const ClientList: React.FC<ClientListProps> = ({
             placeholder="Search clients..."
             value={searchInput}
             onChange={handleSearchChange}
-            className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm min-h-[44px]"
+            className={cn(
+              'block w-full pl-10 pr-10 py-2 border border-input rounded-md leading-5',
+              'bg-background text-foreground placeholder:text-muted-foreground',
+              'focus:outline-none focus:ring-2 focus:ring-ring focus:border-input',
+              'sm:text-sm min-h-[44px]'
+            )}
             aria-label="Search clients"
           />
           {searchInput && (
@@ -238,7 +242,7 @@ export const ClientList: React.FC<ClientListProps> = ({
               aria-label="Clear search"
             >
               <svg
-                className="h-5 w-5 text-gray-400 hover:text-gray-600"
+                className="h-5 w-5 text-muted-foreground hover:text-foreground"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -265,7 +269,12 @@ export const ClientList: React.FC<ClientListProps> = ({
               id="tag-filter"
               value={tagFilter}
               onChange={handleTagChange}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm min-h-[44px]"
+              className={cn(
+                'block w-full py-2 px-3 border border-input rounded-md shadow-sm',
+                'bg-background text-foreground',
+                'focus:outline-none focus:ring-2 focus:ring-ring focus:border-input',
+                'sm:text-sm min-h-[44px]'
+              )}
               aria-label="Filter by tag"
             >
               <option value="">All Tags</option>
@@ -286,7 +295,12 @@ export const ClientList: React.FC<ClientListProps> = ({
               id="sort-by"
               value={sortBy}
               onChange={handleSortChange}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm min-h-[44px]"
+              className={cn(
+                'block w-full py-2 px-3 border border-input rounded-md shadow-sm',
+                'bg-background text-foreground',
+                'focus:outline-none focus:ring-2 focus:ring-ring focus:border-input',
+                'sm:text-sm min-h-[44px]'
+              )}
               aria-label="Sort by"
             >
               {SORT_OPTIONS.map((option) => (
@@ -298,15 +312,17 @@ export const ClientList: React.FC<ClientListProps> = ({
           </div>
 
           {/* Sort Direction Toggle */}
-          <button
+          <Button
+            variant="outline"
+            size="icon"
             onClick={handleToggleSortDirection}
-            className="px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] min-w-[44px]"
             aria-label={`Sort direction: ${sortDirection === 'asc' ? 'ascending' : 'descending'}`}
             title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+            className="min-h-[44px] min-w-[44px]"
           >
             {sortDirection === 'asc' ? (
               <svg
-                className="h-5 w-5 text-gray-600"
+                className="h-5 w-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -320,7 +336,7 @@ export const ClientList: React.FC<ClientListProps> = ({
               </svg>
             ) : (
               <svg
-                className="h-5 w-5 text-gray-600"
+                className="h-5 w-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -333,11 +349,11 @@ export const ClientList: React.FC<ClientListProps> = ({
                 />
               </svg>
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Results Count */}
-        <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
             {totalCount} client{totalCount !== 1 ? 's' : ''}
             {hasActiveFilters && ' (filtered)'}
@@ -350,15 +366,15 @@ export const ClientList: React.FC<ClientListProps> = ({
         <div className="text-center py-12">
           {hasActiveFilters ? (
             <>
-              <p className="text-gray-600 mb-2">No clients match your search.</p>
-              <p className="text-sm text-gray-500">
+              <p className="text-muted-foreground mb-2">No clients match your search.</p>
+              <p className="text-sm text-muted-foreground">
                 Try adjusting your search or filters.
               </p>
             </>
           ) : (
             <>
-              <p className="text-gray-600 mb-2">No clients found.</p>
-              <p className="text-sm text-gray-500">
+              <p className="text-muted-foreground mb-2">No clients found.</p>
+              <p className="text-sm text-muted-foreground">
                 Add your first client to get started.
               </p>
             </>
@@ -386,7 +402,7 @@ export const ClientList: React.FC<ClientListProps> = ({
                   role="progressbar"
                   aria-label="Loading more clients"
                   data-testid="infinite-scroll-loading"
-                  className="flex items-center gap-2 text-gray-600"
+                  className="flex items-center gap-2 text-muted-foreground"
                 >
                   <svg
                     className="animate-spin h-5 w-5"
@@ -411,7 +427,7 @@ export const ClientList: React.FC<ClientListProps> = ({
                   <span>Loading more...</span>
                 </div>
               ) : (
-                <span className="text-gray-400 text-sm">Scroll for more</span>
+                <span className="text-muted-foreground text-sm">Scroll for more</span>
               )}
             </div>
           )}
