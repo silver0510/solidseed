@@ -12,7 +12,7 @@
  *
  * Environment Variables Required:
  * - NEXT_PUBLIC_SUPABASE_URL: Supabase project URL
- * - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: Supabase anon/public key
+ * - NEXT_PUBLIC_SUPABASE_ANON_KEY: Supabase anon/public key
  * - SUPABASE_DATABASE_URL: Direct PostgreSQL connection string (for server-side)
  */
 
@@ -29,7 +29,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 export function validateDatabaseEnv(): void {
   const required = [
     'NEXT_PUBLIC_SUPABASE_URL',
-    'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   ];
 
   const missing = required.filter((key) => !process.env[key]);
@@ -53,7 +53,7 @@ export const databaseConfig = {
   url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
 
   // Supabase anon/public key (safe for client-side)
-  anonKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '',
+  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
 
   // Direct PostgreSQL connection string (server-side only)
   connectionString: process.env.SUPABASE_DATABASE_URL || '',

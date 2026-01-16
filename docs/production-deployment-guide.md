@@ -129,7 +129,7 @@ BETTER_AUTH_URL=https://app.your-domain.com
 
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 SUPABASE_DATABASE_URL=postgresql://postgres:[password]@db.xxxxxxxxxxxxx.supabase.co:5432/postgres
 
 # JWT (generate with: openssl rand -base64 32)
@@ -580,6 +580,7 @@ RATE_LIMIT_REGISTER_WINDOW=3600
 ## Disaster Recovery Procedures
 
 ### Scenario 1: Database Failure
+
 1. Detect failure via monitoring
 2. Restore from latest backup
 3. Verify data integrity
@@ -588,13 +589,15 @@ RATE_LIMIT_REGISTER_WINDOW=3600
 6. Monitor for errors
 
 ### Scenario 2: Application Server Failure
+
 1. Detect failure via uptime monitoring
-3. Deploy to backup region
-4. Update DNS to point to backup
-5. Verify all systems operational
-6. Monitor performance
+2. Deploy to backup region
+3. Update DNS to point to backup
+4. Verify all systems operational
+5. Monitor performance
 
 ### Scenario 3: Security Breach
+
 1. Immediately revoke all JWT tokens
 2. Force password reset for all users
 3. Rotate all secrets (JWT, OAuth, API keys)
@@ -623,18 +626,21 @@ RATE_LIMIT_REGISTER_WINDOW=3600
 ## Training Checklist
 
 ### Development Team
+
 - [ ] Local development setup
 - [ ] Testing procedures
 - [ ] Deployment process
 - [ ] Debugging techniques
 
 ### Operations Team
+
 - [ ] Monitoring dashboards
 - [ ] Alert response procedures
 - [ ] Backup and restore procedures
 - [ ] Security incident response
 
 ### Support Team
+
 - [ ] Common user issues
 - [ ] Troubleshooting guide
 - [ ] Escalation procedures
@@ -666,6 +672,7 @@ RATE_LIMIT_REGISTER_WINDOW=3600
 ## Go/No-Go Decision
 
 ### Criteria for Go
+
 - All critical tests passing
 - No P0/P1 issues outstanding
 - Performance benchmarks met
@@ -674,10 +681,11 @@ RATE_LIMIT_REGISTER_WINDOW=3600
 - Team ready for support
 
 ### Approved By
-- Tech Lead: _______________ Date: ______
-- DevOps Lead: _______________ Date: ______
-- Security Lead: _______________ Date: ______
-- Product Manager: _______________ Date: ______
+
+- Tech Lead: ******\_\_\_****** Date: **\_\_**
+- DevOps Lead: ******\_\_\_****** Date: **\_\_**
+- Security Lead: ******\_\_\_****** Date: **\_\_**
+- Product Manager: ******\_\_\_****** Date: **\_\_**
 ```
 
 ---
@@ -714,11 +722,13 @@ RATE_LIMIT_REGISTER_WINDOW=3600
 
 ```markdown
 ### Technical Support
+
 - DevOps: devops@korella.com
 - Security: security@korella.com
 - Database: dba@korella.com
 
 ### External Support
+
 - Supabase: https://supabase.com/support
 - Vercel: https://vercel.com/support
 - Sentry: https://sentry.io/support/
@@ -732,4 +742,5 @@ RATE_LIMIT_REGISTER_WINDOW=3600
 **Next Review:** 2026-02-08
 
 **Change Log:**
+
 - 2026-01-08: Initial production deployment guide created

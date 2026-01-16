@@ -11,7 +11,7 @@ export function validateEnvironment(): void {
     // Access env to trigger validation
     const requiredVars = [
       'NEXT_PUBLIC_SUPABASE_URL',
-      'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
       'SUPABASE_DATABASE_URL',
       'GOOGLE_CLIENT_ID',
       'GOOGLE_CLIENT_SECRET',

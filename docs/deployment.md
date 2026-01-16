@@ -87,7 +87,7 @@ BETTER_AUTH_URL=https://your-domain.com
 ```bash
 # Get these from: https://app.supabase.com > Your Project > Settings > API
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_DATABASE_URL=postgresql://postgres:[password]@db.your-project.supabase.co:5432/postgres
 ```
 
@@ -714,10 +714,12 @@ pm2 logs korella --lines 100
 #### Issue: Database Connection Failed
 
 **Symptoms:**
+
 - Error: "Connection refused"
 - Health check fails
 
 **Solutions:**
+
 ```bash
 # Check Supabase status
 curl https://status.supabase.com
@@ -732,10 +734,12 @@ psql $SUPABASE_DATABASE_URL -c "SELECT 1"
 #### Issue: OAuth Callback Fails
 
 **Symptoms:**
+
 - Error: "redirect_uri_mismatch"
 - OAuth returns error
 
 **Solutions:**
+
 ```bash
 # Verify redirect URIs in OAuth provider console
 # Check APP_URL environment variable
@@ -748,10 +752,12 @@ curl https://app.your-domain.com/api/auth/callback/google
 #### Issue: Emails Not Sending
 
 **Symptoms:**
+
 - Users don't receive verification emails
 - Resend API errors
 
 **Solutions:**
+
 ```bash
 # Verify Resend API key
 echo $RESEND_API_KEY
@@ -774,10 +780,12 @@ curl -X POST https://api.resend.com/emails \
 #### Issue: Rate Limiting Too Aggressive
 
 **Symptoms:**
+
 - Legitimate users locked out
 - 429 errors
 
 **Solutions:**
+
 ```bash
 # Adjust rate limits in .env.local
 RATE_LIMIT_LOGIN_MAX=20
@@ -790,10 +798,12 @@ RATE_LIMIT_LOGIN_WINDOW=60
 #### Issue: JWT Token Invalid
 
 **Symptoms:**
+
 - 401 Unauthorized errors
 - Users logged out unexpectedly
 
 **Solutions:**
+
 ```bash
 # Verify JWT_SECRET is consistent
 echo $BETTER_AUTH_SECRET | wc -c
@@ -881,16 +891,19 @@ pm2 logs korella --lines 500
 ### Regular Maintenance Tasks
 
 **Daily:**
+
 - Review error logs
 - Check authentication metrics
 - Monitor failed login rates
 
 **Weekly:**
+
 - Review security logs
 - Check OAuth provider status
 - Verify email delivery rates
 
 **Monthly:**
+
 - Review and update dependencies
 - Check for security vulnerabilities
 - Test disaster recovery
@@ -898,6 +911,7 @@ pm2 logs korella --lines 500
 - Update documentation
 
 **Quarterly:**
+
 - Security audit
 - Penetration testing
 - Performance review

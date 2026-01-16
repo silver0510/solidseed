@@ -86,6 +86,7 @@ author: Claude Code PM System
 ### UI Framework
 
 **Tailwind CSS v4**
+
 - Utility-first CSS framework
 - Mobile-first responsive design
 - Custom breakpoints: xs (375px), sm (640px), md (768px), lg (1024px)
@@ -93,6 +94,7 @@ author: Claude Code PM System
 - Touch-friendly defaults (44x44px minimum tap targets)
 
 **shadcn/ui**
+
 - 45+ accessible components built on Radix UI
 - Full TypeScript support
 - Customizable with Tailwind
@@ -103,12 +105,14 @@ author: Claude Code PM System
 ### State Management
 
 **TanStack Query v5**
+
 - **Purpose**: Server state management (API data caching)
 - **Features**: Auto-caching, retry logic, optimistic updates, suspense support
 - **Bundle Size**: ~12KB
 - **Use Cases**: Client data, documents, notes, tasks
 
 **Zustand**
+
 - **Purpose**: Client state management (UI state)
 - **Features**: Simple API, no boilerplate, DevTools support
 - **Bundle Size**: ~3KB
@@ -117,11 +121,13 @@ author: Claude Code PM System
 ### Form Handling
 
 **React Hook Form v7**
+
 - 10x faster than Formik (dirty fields only)
 - Minimal re-renders
 - Bundle Size: ~45KB
 
 **Zod v4.3.5**
+
 - **Status**: ✅ Configured for environment validation and forms
 - Type-safe validation with TypeScript
 - Custom error messages
@@ -134,6 +140,7 @@ author: Claude Code PM System
 - Bundle Size: ~5KB
 
 **jsonwebtoken**
+
 - **Version**: ^9.0.3
 - **Status**: ✅ Integrated with Better Auth
 - **Purpose**: JWT token generation and validation
@@ -151,6 +158,7 @@ author: Claude Code PM System
 ### Email Services
 
 **Resend (Transactional Emails)**
+
 - **Version**: 6.6.0
 - **Status**: ✅ Configured and tested
 - **Purpose**: System emails (verification, password reset)
@@ -165,6 +173,7 @@ author: Claude Code PM System
   - From address: onboarding@resend.dev (development)
 
 **Nylas (Marketing Emails - Phase 2)**
+
 - OAuth-based Gmail/Outlook integration
 - Sends from agent's actual email account
 - Email tracking (opens, clicks, bounces)
@@ -174,6 +183,7 @@ author: Claude Code PM System
 ### Monitoring & Error Tracking
 
 **Sentry**
+
 - **Version**: @sentry/nextjs@10.32.1
 - **Status**: ✅ Configured and tested
 - **Purpose**: Error tracking and performance monitoring
@@ -194,6 +204,7 @@ author: Claude Code PM System
 - **Pricing**: Free (5K events/mo) → $26/mo (50K events)
 
 **Health Check System**
+
 - **Status**: ✅ Implemented
 - **Endpoint**: `/api/health`
 - **Features**:
@@ -211,6 +222,7 @@ author: Claude Code PM System
 ### Storage
 
 **Supabase Storage**
+
 - **Status**: ✅ Configured with RLS policies
 - **Bucket**: `client-documents` (private)
 - **Features**:
@@ -225,6 +237,7 @@ author: Claude Code PM System
 ### OAuth Providers
 
 **Google OAuth 2.0**
+
 - **Status**: ✅ Configured and operational
 - GCP project created: "Korella CRM"
 - OAuth consent screen configured (External user type)
@@ -235,6 +248,7 @@ author: Claude Code PM System
 - Bug fix: Fixed user registration issue (2470a78 commit)
 
 **Microsoft OAuth**
+
 - **Status**: ⏳ Pending setup (next priority)
 - Azure AD app registration required
 - Scopes: email, profile, openid, User.Read
@@ -243,6 +257,7 @@ author: Claude Code PM System
 ### PWA Support
 
 **next-pwa**
+
 - **Status**: ✅ Configured in next.config.ts
 - **Features**:
   - Service worker for offline viewing
@@ -256,6 +271,7 @@ author: Claude Code PM System
 ### Testing
 
 **Vitest**
+
 - **Version**: 4.0.16
 - **Status**: ✅ Configured with 63 tests passing
 - **Purpose**: Unit and integration testing
@@ -273,6 +289,7 @@ author: Claude Code PM System
 - **Coverage Target**: >80%
 
 **Playwright**
+
 - **Version**: 1.57.0
 - **Status**: ✅ Configured for e2e testing
 - **Purpose**: End-to-end testing
@@ -286,6 +303,7 @@ author: Claude Code PM System
 ### Development Tools
 
 **Supabase CLI**
+
 - **Status**: ✅ Installed and operational
 - **Purpose**: Database migrations and management
 - **Key Commands**:
@@ -295,6 +313,7 @@ author: Claude Code PM System
 - **Migrations**: 7 authentication migrations created and applied
 
 **tsx**
+
 - **Version**: ^4.21.0
 - **Status**: ✅ Installed for running TypeScript scripts
 - **Purpose**: Execute TypeScript files directly without compilation
@@ -309,12 +328,14 @@ author: Claude Code PM System
   - `npm run db:reset-auth` - Reset authentication data
 
 **Vercel CLI**
+
 - **Status**: ✅ Configured
 - **Purpose**: Deployment and preview environments
 - **Configuration**: `vercel.json`
 - **Documentation**: `DEPLOYMENT.md`
 
 **CCPM (Claude Code Project Management)**
+
 - **Location**: `.claude/` directory
 - **Features**:
   - PRD creation and management
@@ -331,6 +352,7 @@ author: Claude Code PM System
 **Rationale**: Real estate agents work primarily on mobile during showings, open houses, and client meetings
 
 **Implications**:
+
 - Touch-friendly UI (44x44px minimum touch targets)
 - Simplified navigation for small screens
 - Progressive enhancement for larger screens
@@ -340,6 +362,7 @@ author: Claude Code PM System
 ### Data Management Patterns
 
 **Soft Delete Pattern**
+
 - Never hard delete records
 - Use `is_deleted` boolean flag
 - Enables data recovery and audit trails
@@ -355,6 +378,7 @@ SELECT * FROM clients WHERE is_deleted = false;
 ```
 
 **Tag-Based Organization**
+
 - Flexible, user-defined categorization
 - Many-to-many relationship (clients ↔ tags)
 - Enables multiple organizational schemes
@@ -374,6 +398,7 @@ CREATE TABLE client_tags (
 **Token-Based Authentication (JWT)**
 
 **Flow**:
+
 1. User authenticates → Server generates JWT
 2. Client stores JWT (localStorage/sessionStorage)
 3. Client sends JWT in Authorization header
@@ -381,6 +406,7 @@ CREATE TABLE client_tags (
 5. Server extracts user_id and subscription_tier from token
 
 **Token Structure**:
+
 ```javascript
 {
   user_id: "uuid",
@@ -392,6 +418,7 @@ CREATE TABLE client_tags (
 ```
 
 **Security Considerations**:
+
 - Short-lived tokens (3 days default)
 - HTTPS only (never over HTTP)
 - No sensitive data in token payload
@@ -413,6 +440,7 @@ Server-side OAuth token exchange (not client-side):
 ```
 
 **Benefits**:
+
 - Client secret never exposed to browser
 - Server controls user creation
 - Can enrich user data before session creation
@@ -444,6 +472,7 @@ Password reset: 3 requests / hour / email address
 **Audit Logging Pattern**
 
 Events logged:
+
 - Login success/failure
 - Password reset request
 - Email verification
@@ -467,6 +496,7 @@ if (user.subscription_tier === "trial" &&
 ```
 
 **Business Logic**:
+
 - Trial starts on email verification (not registration)
 - 14 days from verification
 - Auto-downgrade to free tier on expiration
@@ -486,6 +516,7 @@ CREATE TABLE users (
 ```
 
 **Rationale**:
+
 - Prevents enumeration attacks
 - Enables distributed systems
 - No collision risk across databases
@@ -541,6 +572,7 @@ POST   /api/clients/:id/documents
 **Response Format**
 
 Success:
+
 ```json
 {
   "success": true,
@@ -549,6 +581,7 @@ Success:
 ```
 
 Error:
+
 ```json
 {
   "success": false,
@@ -558,6 +591,7 @@ Error:
 ```
 
 **Error Categories**:
+
 - `VALIDATION_ERROR` - Invalid input
 - `AUTH_ERROR` - Authentication failure
 - `FORBIDDEN` - Insufficient permissions
@@ -737,7 +771,7 @@ BETTER_AUTH_SECRET=minimum-32-characters-long-random-string
 
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_DATABASE_URL=postgresql://postgres:[password]@db.your-project.supabase.co:5432/postgres
 
 # OAuth - Google
@@ -758,6 +792,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 ```
 
 **Validation**:
+
 - ✅ Zod schema validation in `lib/env.ts`
 - ✅ Type-safe access throughout codebase
 - ✅ Startup validation via `instrumentation.ts`
@@ -777,6 +812,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 ### OAuth Setup
 
 **Google Cloud Platform**:
+
 1. Create project at https://console.cloud.google.com (✅ completed)
 2. Enable Google+ API
 3. Create OAuth 2.0 Client ID (✅ completed)
@@ -784,6 +820,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 5. Add redirect URIs for all environments
 
 **Microsoft Azure AD**:
+
 1. Register application at https://portal.azure.com
 2. Configure redirect URIs
 3. Add API permissions (email, profile)
@@ -793,6 +830,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 ## Performance Targets
 
 **Response Times**:
+
 - Login: <2 seconds
 - Registration: <3 seconds
 - OAuth flow: <5 seconds end-to-end
@@ -801,22 +839,26 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 - Page load: <3 seconds
 
 **Bundle Sizes**:
+
 - Main bundle: ~185KB gzipped
 - Per-page: <50KB additional
 - Total JavaScript: <250KB
 
 **Scalability**:
+
 - Support 100+ concurrent logins
 - Handle 1,000+ active users
 - Maintain performance with 10,000+ client records per user
 
 **Availability**:
+
 - 99.9% uptime target
 - Supabase SLA: 99.9%
 
 ## Cost Analysis
 
 ### MVP (10 users)
+
 - Vercel: Free
 - Supabase: Free (500MB DB, 1GB storage)
 - Resend: Free (3K emails/mo)
@@ -824,6 +866,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 - **Total**: $0/month
 
 ### Growth (100 users)
+
 - Vercel: Free (100GB bandwidth)
 - Supabase Pro: $25/mo
 - Resend: $20/mo (50K emails)
@@ -831,6 +874,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 - **Total**: $71/month
 
 ### Scale (1,000 users)
+
 - Vercel Pro: $20/mo
 - Supabase Pro: $25/mo
 - Resend: $20/mo
@@ -838,6 +882,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 - **Total**: $91/month
 
 **Revenue vs Cost** (at $49/mo subscription):
+
 - 100 users: $4,900 revenue - $71 costs = **$4,829 profit (98% margin)**
 - 1,000 users: $49,000 revenue - $91 costs = **$48,909 profit (99% margin)**
 

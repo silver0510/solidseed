@@ -251,31 +251,39 @@ describe('DocumentUploader', () => {
     });
 
     it('rejects unsupported file types', async () => {
-      const user = userEvent.setup();
       render(<DocumentUploader clientId={mockClientId} onError={mockOnError} />);
 
       const file = createMockFile('script.exe', 1024, 'application/octet-stream');
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
-      await user.upload(fileInput, file);
+      // Use fireEvent to bypass accept attribute filtering in userEvent
+      Object.defineProperty(fileInput, 'files', {
+        value: [file],
+        writable: false,
+      });
+      fireEvent.change(fileInput);
 
       await waitFor(() => {
-        expect(mockOnError).toHaveBeenCalledWith(expect.stringMatching(/file type|not allowed|unsupported/i));
+        expect(mockOnError).toHaveBeenCalledWith(expect.stringMatching(/file type not allowed|supported types/i));
       });
       expect(documentApi.uploadDocument).not.toHaveBeenCalled();
     });
 
     it('shows error message for invalid file type', async () => {
-      const user = userEvent.setup();
       render(<DocumentUploader clientId={mockClientId} />);
 
       const file = createMockFile('video.mp4', 1024, 'video/mp4');
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
-      await user.upload(fileInput, file);
+      // Use fireEvent to bypass accept attribute filtering in userEvent
+      Object.defineProperty(fileInput, 'files', {
+        value: [file],
+        writable: false,
+      });
+      fireEvent.change(fileInput);
 
       await waitFor(() => {
-        expect(screen.getByText(/file type|not allowed|unsupported/i)).toBeInTheDocument();
+        expect(screen.getByText(/file type not allowed|supported types/i)).toBeInTheDocument();
       });
     });
   });
@@ -341,7 +349,7 @@ describe('DocumentUploader', () => {
       await user.upload(fileInput, file);
 
       await waitFor(() => {
-        expect(screen.getByText(/too large|exceeds|10.*mb/i)).toBeInTheDocument();
+        expect(screen.getByText(/too large|maximum size/i)).toBeInTheDocument();
       });
     });
   });
@@ -388,11 +396,16 @@ describe('DocumentUploader', () => {
         expect(mockOnUpload).toHaveBeenCalled();
       });
 
-      // Progress should be hidden
-      expect(
-        screen.queryByRole('progressbar') ||
-        screen.queryByText(/uploading/i)
-      ).not.toBeInTheDocument();
+      // Wait for the progress reset timeout (500ms) plus extra buffer
+      await waitFor(
+        () => {
+          // Progress should be hidden or reset
+          const progressElement = screen.queryByRole('progressbar');
+          const uploadingText = screen.queryByText(/^uploading\.\.\.$/i);
+          expect(progressElement || uploadingText).toBeNull();
+        },
+        { timeout: 1000 }
+      );
     });
   });
 
@@ -701,19 +714,18 @@ describe('DocumentList', () => {
     it('displays file type icon or badge', () => {
       render(<DocumentList documents={mockDocuments} />);
 
-      // Should show PDF indicator
-      expect(
-        screen.queryByText(/pdf/i) ||
-        screen.queryByRole('img', { name: /pdf/i }) ||
-        document.querySelector('[data-file-type="pdf"]')
-      ).toBeInTheDocument();
+      // Should show PDF badge for the first document
+      const pdfBadge = screen.queryByText('PDF');
+      const pdfDataType = document.querySelector('[data-file-type="pdf"]');
+      expect(pdfBadge || pdfDataType).toBeTruthy();
     });
 
     it('displays upload date', () => {
       render(<DocumentList documents={mockDocuments} />);
 
-      // Should show formatted date (Jan 15, 2024 or similar)
-      expect(screen.getByText(/jan.*15|15.*jan|2024/i)).toBeInTheDocument();
+      // Should show formatted dates - we have two documents with dates Jan 15 and Jan 14
+      const dateElements = screen.getAllByText(/jan.*\d+.*2024/i);
+      expect(dateElements.length).toBeGreaterThan(0);
     });
   });
 

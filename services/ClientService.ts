@@ -7,6 +7,8 @@ import type {
   ListClientsParams,
   PaginatedClients
 } from '@/lib/types/client';
+console.log('ClientService initialized with Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+console.log('Supabase Anon Key is set:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 // Initialize Supabase client at module level
 const supabase = createClient(
