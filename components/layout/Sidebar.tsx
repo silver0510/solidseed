@@ -15,7 +15,6 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Separator } from '@/components/ui/separator';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -222,11 +221,6 @@ const secondaryNavigation: SecondaryNavItem[] = [
     href: '/help',
     icon: <HelpCircleIcon className="h-5 w-5" />,
   },
-  {
-    name: 'Search',
-    href: '#',
-    icon: <SearchIcon className="h-5 w-5" />,
-  },
 ];
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
@@ -241,8 +235,6 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         </div>
         <span className="font-semibold text-lg">Korella</span>
       </div>
-
-      <Separator />
 
       {/* Main Navigation */}
       <ScrollArea className="flex-1 px-4 py-4">

@@ -13,7 +13,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ClientList } from '@/features/clients/components/ClientList';
 import { ClientForm } from '@/features/clients/components/ClientForm';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -55,38 +54,9 @@ export default function ClientsPage() {
 
   return (
     <div className="p-4 lg:p-6">
-      {/* Page header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-semibold">
-            Clients
-          </h1>
-          <p className="mt-1 text-muted-foreground">
-            Manage your client relationships
-          </p>
-        </div>
-        <Button onClick={handleAddClient} size="lg" aria-label="Add new client">
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          <span className="hidden sm:inline">Add Client</span>
-        </Button>
-      </div>
-
       {/* Content */}
       <Suspense fallback={<SectionLoader message="Loading clients..." />}>
-        <ClientList onClientClick={handleClientClick} />
+        <ClientList onClientClick={handleClientClick} onAddClient={handleAddClient} />
       </Suspense>
 
       {/* Add Client Dialog */}

@@ -23,17 +23,6 @@ export default function TasksPage() {
 
   return (
     <div className="p-4 lg:p-6">
-      {/* Page header */}
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold text-foreground">
-          My Tasks
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          Track and manage your tasks across all clients
-        </p>
-      </div>
-
-      {/* Content */}
       <Suspense fallback={<SectionLoader message="Loading tasks..." />}>
         <TaskDashboard onTaskClick={handleTaskClick} />
       </Suspense>

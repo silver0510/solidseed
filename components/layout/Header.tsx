@@ -1,13 +1,9 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { PanelLeftIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Separator } from '@/components/ui/separator';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -41,29 +37,22 @@ export function Header({ onMenuClick }: HeaderProps) {
   const pageTitle = getPageTitle(pathname);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center border-b border-border bg-card px-4 lg:px-6">
-      {/* Mobile menu button */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onMenuClick}
-              className="lg:hidden mr-3"
-              aria-label="Open menu"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Open menu</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+    <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4 lg:px-6">
+      {/* Sidebar toggle - mobile only */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onMenuClick}
+        className="lg:hidden h-8 w-8"
+        aria-label="Open menu"
+      >
+        <PanelLeftIcon className="h-5 w-5" />
+      </Button>
+
+      <Separator orientation="vertical" className="h-4 lg:hidden" />
 
       {/* Page title */}
-      <h1 className="font-semibold text-lg">{pageTitle}</h1>
+      <h1 className="text-base font-medium">{pageTitle}</h1>
     </header>
   );
 }

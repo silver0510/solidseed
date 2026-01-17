@@ -74,24 +74,6 @@ const ClipboardListIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const FilterIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-  </svg>
-);
-
 // =============================================================================
 // FILTER OPTIONS
 // =============================================================================
@@ -219,20 +201,29 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
 
   return (
     <div className={cn('space-y-4', className)}>
-      {/* Header with Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold text-foreground">Task Dashboard</h2>
+      {/* Toolbar with Filters */}
+      <div className="flex flex-col sm:flex-row gap-2 p-2 bg-muted/50 rounded-lg">
+        {/* Task Count Summary */}
+        <div className="flex items-center gap-2 flex-1">
+          <Badge variant="destructive" className="text-xs">
+            {overdueTasksCount} overdue
+          </Badge>
+          <Badge variant="outline" className="text-xs bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
+            {todayTasksCount} today
+          </Badge>
+          <Badge variant="secondary" className="text-xs">
+            {upcomingTasksCount} upcoming
+          </Badge>
+        </div>
 
         {/* Filter Controls */}
-        <div className="flex items-center gap-3">
-          <FilterIcon className="text-muted-foreground hidden sm:block" />
-
+        <div className="flex items-center gap-2">
           {/* Status Filter */}
           <Select
             value={statusFilter}
             onValueChange={(value) => setStatusFilter(value as TaskStatus | 'all')}
           >
-            <SelectTrigger className="w-full sm:w-[140px] min-h-[44px]" aria-label="Filter by status">
+            <SelectTrigger className="w-full sm:w-[120px] h-9" aria-label="Filter by status">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -249,7 +240,7 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
             value={priorityFilter}
             onValueChange={(value) => setPriorityFilter(value as TaskPriority | 'all')}
           >
-            <SelectTrigger className="w-full sm:w-[140px] min-h-[44px]" aria-label="Filter by priority">
+            <SelectTrigger className="w-full sm:w-[120px] h-9" aria-label="Filter by priority">
               <SelectValue placeholder="Priority" />
             </SelectTrigger>
             <SelectContent>
@@ -261,19 +252,6 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
             </SelectContent>
           </Select>
         </div>
-      </div>
-
-      {/* Task Count Summary */}
-      <div className="flex flex-wrap gap-2 text-sm">
-        <Badge variant="destructive" className="font-medium">
-          {overdueTasksCount} overdue
-        </Badge>
-        <Badge variant="outline" className="font-medium bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
-          {todayTasksCount} due today
-        </Badge>
-        <Badge variant="secondary" className="font-medium">
-          {upcomingTasksCount} upcoming
-        </Badge>
       </div>
 
       {/* Loading State */}
