@@ -10,6 +10,13 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { TaskGroup } from './TaskGroup';
 import { useAllTasks } from '../../hooks/useAllTasks';
 import { isPast, isToday } from '../../helpers';
@@ -221,56 +228,38 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
           <FilterIcon className="text-muted-foreground hidden sm:block" />
 
           {/* Status Filter */}
-          <div className="flex flex-col">
-            <label htmlFor="status-filter" className="sr-only">
-              Filter by status
-            </label>
-            <select
-              id="status-filter"
-              aria-label="Filter by status"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as TaskStatus | 'all')}
-              className={cn(
-                'block w-full sm:w-auto px-3 py-2 text-sm',
-                'border border-input rounded-lg',
-                'bg-background text-foreground',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:border-input',
-                'min-h-[44px]' // Mobile touch target
-              )}
-            >
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => setStatusFilter(value as TaskStatus | 'all')}
+          >
+            <SelectTrigger className="w-full sm:w-[140px] min-h-[44px]" aria-label="Filter by status">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
               {STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={option.value}>
                   {option.label}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-          </div>
+            </SelectContent>
+          </Select>
 
           {/* Priority Filter */}
-          <div className="flex flex-col">
-            <label htmlFor="priority-filter" className="sr-only">
-              Filter by priority
-            </label>
-            <select
-              id="priority-filter"
-              aria-label="Filter by priority"
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value as TaskPriority | 'all')}
-              className={cn(
-                'block w-full sm:w-auto px-3 py-2 text-sm',
-                'border border-input rounded-lg',
-                'bg-background text-foreground',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:border-input',
-                'min-h-[44px]' // Mobile touch target
-              )}
-            >
+          <Select
+            value={priorityFilter}
+            onValueChange={(value) => setPriorityFilter(value as TaskPriority | 'all')}
+          >
+            <SelectTrigger className="w-full sm:w-[140px] min-h-[44px]" aria-label="Filter by priority">
+              <SelectValue placeholder="Priority" />
+            </SelectTrigger>
+            <SelectContent>
               {PRIORITY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={option.value}>
                   {option.label}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-          </div>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

@@ -250,20 +250,20 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
   // Error state
   if (error || !client) {
     return (
-      <div className={cn('rounded-lg border border-gray-200 bg-white p-8', className)}>
+      <div className={cn('rounded-lg border border-border bg-card p-8', className)}>
         <div className="flex flex-col items-center justify-center py-8">
-          <UserIcon className="h-12 w-12 text-gray-300 mb-4" />
-          <p className="text-sm text-gray-900 font-medium">
+          <UserIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
+          <p className="text-sm text-foreground font-medium">
             {error || 'Client not found'}
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             The client you're looking for doesn't exist or has been deleted.
           </p>
           {onBack && (
             <button
               type="button"
               onClick={onBack}
-              className="mt-4 inline-flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+              className="mt-4 inline-flex items-center gap-2 rounded-md bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted/80 transition-colors"
               aria-label="Go back"
             >
               <ArrowLeftIcon className="h-4 w-4" />
@@ -287,9 +287,9 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
             className={cn(
               'inline-flex items-center gap-1',
               'min-h-[44px] px-2 -ml-2',
-              'text-sm text-gray-500 hover:text-gray-700',
+              'text-sm text-muted-foreground hover:text-foreground',
               'transition-colors mb-2',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:rounded-md'
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded-md'
             )}
             aria-label="Go back"
           >
@@ -301,10 +301,10 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
         {/* Client name and edit button */}
         <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
               {client.name}
             </h1>
-            <p className="text-sm text-gray-500 mt-1 truncate">{client.email}</p>
+            <p className="text-sm text-muted-foreground mt-1 truncate">{client.email}</p>
           </div>
 
           {onEdit && (
@@ -333,7 +333,7 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
       <div
         role="tablist"
         aria-label="Client profile tabs"
-        className="flex border-b border-gray-200 mb-6 overflow-x-auto scrollbar-hide"
+        className="flex border-b border-border mb-6 overflow-x-auto scrollbar-hide"
       >
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -354,11 +354,11 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
                 'min-h-[48px] px-3 sm:px-4 py-3',
                 'text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
                 // Focus states for accessibility
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 // Active state
                 isActive
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
               )}
             >
               <Icon className="h-5 w-5 flex-shrink-0" />

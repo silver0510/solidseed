@@ -249,11 +249,11 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           // Flex layout for buttons
           'flex gap-3 pt-4',
           // Border top for visual separation
-          'border-t border-gray-200',
+          'border-t border-border',
           // Sticky positioning for mobile keyboard
           'sticky bottom-0',
           // Background to prevent content showing through
-          'bg-white',
+          'bg-background',
           // Safe area padding for iOS
           'pb-safe',
           // Button alignment
@@ -276,7 +276,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
         <Button
           type="submit"
-          variant="primary"
+          variant="default"
           isLoading={isLoading}
           disabled={isLoading}
           className={cn('flex-1 sm:flex-initial', !onCancel && 'w-full sm:w-auto')}

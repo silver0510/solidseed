@@ -3,36 +3,42 @@
 /**
  * Form Input Component
  *
- * Reusable input component with label and error handling
+ * Extends shadcn Input with label and error handling for auth forms
  */
 
-import { type InputHTMLAttributes, forwardRef } from 'react';
+import { forwardRef, type ComponentPropsWithoutRef } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
-interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface FormInputProps extends ComponentPropsWithoutRef<typeof Input> {
   label?: string;
   error?: string;
   required?: boolean;
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
-  ({ label, error, required, className = '', ...props }, ref) => {
+  ({ label, error, required, className, id, ...props }, ref) => {
     return (
       <div className="space-y-1.5">
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-gray-700">
+          <Label htmlFor={id} className="text-slate-900 dark:text-slate-100">
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
-          </label>
+          </Label>
         )}
-        <input
+        <Input
           ref={ref}
-          className={`block w-full rounded-md border px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 ${
-            error ? 'border-red-500' : 'border-gray-300'
-          } ${className}`}
+          id={id}
+          className={cn(
+            'min-h-[44px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
+            error && 'border-red-500 focus-visible:border-red-500',
+            className
+          )}
           {...props}
         />
         {error && (
-          <p className="text-xs text-red-600">{error}</p>
+          <p className="text-xs text-red-500">{error}</p>
         )}
       </div>
     );

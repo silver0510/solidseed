@@ -2,16 +2,36 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import {
+  SettingsIcon,
+  HelpCircleIcon,
+  SearchIcon,
+  UserCircleIcon,
+  CreditCardIcon,
+  BellIcon,
+  LogOutIcon,
+  MoreVerticalIcon,
+} from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useAuth } from '@/lib/auth/useAuth';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -82,7 +102,136 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
   );
 }
 
+function getInitials(name: string | undefined, email: string | undefined): string {
+  if (name) {
+    const parts = name.split(' ');
+    if (parts.length >= 2 && parts[0] && parts[1]) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+  if (email) {
+    return email.substring(0, 2).toUpperCase();
+  }
+  return 'U';
+}
+
+function UserMenu({ onClose }: { onClose?: () => void }) {
+  const { user, logout, isLoading } = useAuth();
+
+  const displayName = user?.full_name || user?.email || 'User';
+  const displayEmail = user?.email || '';
+  const initials = getInitials(user?.full_name, user?.email);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-2 animate-pulse">
+        <div className="h-8 w-8 rounded-lg bg-muted" />
+        <div className="flex-1 space-y-1">
+          <div className="h-4 w-20 rounded bg-muted" />
+          <div className="h-3 w-28 rounded bg-muted" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex w-full items-center gap-3 rounded-lg bg-muted/50 p-2 text-sm hover:bg-muted transition-colors">
+          <Avatar className="h-8 w-8 rounded-lg">
+            <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-medium">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 text-left leading-tight">
+            <p className="truncate font-medium text-sm">{displayName}</p>
+            <p className="truncate text-xs text-muted-foreground">{displayEmail}</p>
+          </div>
+          <MoreVerticalIcon className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-56 rounded-lg"
+        align="start"
+        side="right"
+        sideOffset={8}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-medium">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 leading-tight">
+              <p className="truncate font-medium">{displayName}</p>
+              <p className="truncate text-xs text-muted-foreground">{displayEmail}</p>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link href="/settings" onClick={onClose}>
+              <UserCircleIcon className="mr-2 h-4 w-4" />
+              Account
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/settings/billing" onClick={onClose}>
+              <CreditCardIcon className="mr-2 h-4 w-4" />
+              Billing
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/settings/notifications" onClick={onClose}>
+              <BellIcon className="mr-2 h-4 w-4" />
+              Notifications
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => logout()}
+          className="text-destructive focus:text-destructive"
+        >
+          <LogOutIcon className="mr-2 h-4 w-4" />
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+interface SecondaryNavItem {
+  name: string;
+  href?: string;
+  icon: React.ReactNode;
+  onClick?: () => void;
+}
+
+const secondaryNavigation: SecondaryNavItem[] = [
+  {
+    name: 'Settings',
+    href: '/settings',
+    icon: <SettingsIcon className="h-5 w-5" />,
+  },
+  {
+    name: 'Get Help',
+    href: '/help',
+    icon: <HelpCircleIcon className="h-5 w-5" />,
+  },
+  {
+    name: 'Search',
+    href: '#',
+    icon: <SearchIcon className="h-5 w-5" />,
+  },
+];
+
 function SidebarContent({ onClose }: { onClose?: () => void }) {
+  const pathname = usePathname();
+
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
@@ -95,7 +244,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
       <Separator />
 
-      {/* Navigation */}
+      {/* Main Navigation */}
       <ScrollArea className="flex-1 px-4 py-4">
         <nav className="flex flex-col gap-1">
           {navigation.map((item) => (
@@ -104,20 +253,37 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         </nav>
       </ScrollArea>
 
-      {/* Bottom section */}
-      <Separator />
+      {/* Secondary Navigation */}
+      <div className="mt-auto px-4 pb-2">
+        <nav className="flex flex-col gap-1">
+          {secondaryNavigation.map((item) => {
+            const isActive = item.href ? (pathname === item.href || pathname.startsWith(`${item.href}/`)) : false;
+
+            return (
+              <Link
+                key={item.name}
+                href={item.href || '#'}
+                onClick={onClose}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <span className={cn(isActive ? 'text-primary' : 'text-muted-foreground')}>
+                  {item.icon}
+                </span>
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* User menu */}
       <div className="p-4">
-        <Link
-          href="/settings"
-          onClick={onClose}
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors min-h-11"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Settings
-        </Link>
+        <UserMenu onClose={onClose} />
       </div>
     </div>
   );

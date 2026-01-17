@@ -13,6 +13,10 @@ import { useAuth } from '@/lib/auth/useAuth';
 import { FormInput } from '@/components/auth/FormInput';
 import { Button } from '@/components/auth/Button';
 import { SocialLoginButton, SocialLoginDivider } from '@/components/auth/SocialLoginButton';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import { formatAuthError } from '@/lib/auth/utils';
 
 export default function LoginPage() {
@@ -89,8 +93,8 @@ export default function LoginPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Welcome Back</h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
           Sign in to your account to continue
         </p>
       </div>
@@ -105,8 +109,8 @@ export default function LoginPage() {
       {/* Login Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         {apiError && (
-          <div className="rounded-md bg-red-50 p-4">
-            <p className="text-sm text-red-800">{apiError}</p>
+          <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+            <p className="text-sm text-red-700 dark:text-red-400">{apiError}</p>
           </div>
         )}
 
@@ -125,44 +129,43 @@ export default function LoginPage() {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <Label htmlFor="password" className="text-sm font-medium text-slate-900 dark:text-slate-100">
               Password <span className="text-red-500">*</span>
-            </label>
+            </Label>
             <Link
               href="/forgot-password"
-              className="text-sm font-medium text-blue-600 hover:text-blue-500"
+              className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
             >
               Forgot password?
             </Link>
           </div>
-          <input
+          <Input
             id="password"
             type="password"
             autoComplete="current-password"
             required
             value={formData.password}
             onChange={(e) => handleInputChange('password', e.target.value)}
-            className={`block w-full rounded-md border px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 ${
-              errors.password ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={cn(
+              'min-h-[44px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
+              errors.password && 'border-red-500 focus-visible:border-red-500'
+            )}
             placeholder="••••••••"
           />
           {errors.password && (
-            <p className="text-xs text-red-600">{errors.password}</p>
+            <p className="text-xs text-red-500">{errors.password}</p>
           )}
         </div>
 
-        <div className="flex items-center">
-          <input
+        <div className="flex items-center gap-2">
+          <Checkbox
             id="remember-me"
-            type="checkbox"
             checked={formData.rememberMe}
-            onChange={(e) => handleInputChange('rememberMe', e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            onCheckedChange={(checked) => handleInputChange('rememberMe', checked as boolean)}
           />
-          <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+          <Label htmlFor="remember-me" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
             Remember me for 30 days
-          </label>
+          </Label>
         </div>
 
         <Button type="submit" isLoading={isLoading} className="w-full">
@@ -171,9 +174,9 @@ export default function LoginPage() {
       </form>
 
       <div className="text-center">
-        <p className="text-sm text-gray-600">
-          Don't have an account?{' '}
-          <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          Don&apos;t have an account?{' '}
+          <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
             Sign up for free
           </Link>
         </p>

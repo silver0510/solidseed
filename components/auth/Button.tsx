@@ -1,45 +1,41 @@
 'use client';
 
 /**
- * Button Component
+ * Auth Button Component
  *
- * Reusable button component with loading state
+ * Extends shadcn Button with loading state for auth forms
  */
 
-import { type ButtonHTMLAttributes, forwardRef } from 'react';
-import { cn } from '@/lib/utils/cn';
+import { forwardRef } from 'react';
+import { Loader2Icon } from 'lucide-react';
+import {
+  Button as ShadcnButton,
+  type ButtonProps as ShadcnButtonProps,
+} from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ShadcnButtonProps {
   isLoading?: boolean;
-  variant?: 'primary' | 'secondary' | 'outline';
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ children, isLoading, disabled, variant = 'primary', className = '', ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]';
-
-    const variantStyles = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700',
-      secondary: 'bg-gray-600 text-white hover:bg-gray-700',
-      outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
-    };
-
+  ({ children, isLoading, disabled, className, ...props }, ref) => {
     return (
-      <button
+      <ShadcnButton
         ref={ref}
         disabled={disabled || isLoading}
-        className={cn(baseStyles, variantStyles[variant], className)}
+        className={cn('min-h-[44px]', className)}
         {...props}
       >
         {isLoading ? (
           <>
-            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
             Loading...
           </>
         ) : (
           children
         )}
-      </button>
+      </ShadcnButton>
     );
   }
 );

@@ -205,28 +205,28 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   return (
     <div className={cn('space-y-6', className)}>
       {/* Contact Information */}
-      <div className="rounded-lg border border-gray-200 bg-white p-4 sm:p-6">
-        <h3 className="text-sm font-medium text-gray-900 mb-4">
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
+        <h3 className="text-sm font-medium text-card-foreground mb-4">
           Contact Information
         </h3>
 
         <div className="space-y-4">
           {/* Email */}
           <div className="flex items-start gap-3">
-            <MailIcon className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+            <MailIcon className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="text-sm font-medium text-gray-900">{client.email}</p>
+              <p className="text-sm text-muted-foreground">Email</p>
+              <p className="text-sm font-medium text-card-foreground">{client.email}</p>
             </div>
           </div>
 
           {/* Phone */}
           {client.phone && (
             <div className="flex items-start gap-3">
-              <PhoneIcon className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+              <PhoneIcon className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm text-gray-500">Phone</p>
-                <p className="text-sm font-medium text-gray-900">{client.phone}</p>
+                <p className="text-sm text-muted-foreground">Phone</p>
+                <p className="text-sm font-medium text-card-foreground">{client.phone}</p>
               </div>
             </div>
           )}
@@ -234,10 +234,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           {/* Address */}
           {client.address && (
             <div className="flex items-start gap-3">
-              <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+              <MapPinIcon className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm text-gray-500">Address</p>
-                <p className="text-sm font-medium text-gray-900">{client.address}</p>
+                <p className="text-sm text-muted-foreground">Address</p>
+                <p className="text-sm font-medium text-card-foreground">{client.address}</p>
               </div>
             </div>
           )}
@@ -245,10 +245,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           {/* Birthday */}
           {client.birthday && (
             <div className="flex items-start gap-3">
-              <CakeIcon className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+              <CakeIcon className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm text-gray-500">Birthday</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm text-muted-foreground">Birthday</p>
+                <p className="text-sm font-medium text-card-foreground">
                   {formatBirthday(client.birthday)}
                 </p>
               </div>
@@ -260,30 +260,30 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-3 sm:gap-4">
         {/* Documents Count */}
-        <div className="rounded-lg border border-gray-200 bg-white p-3 sm:p-4 text-center">
+        <div className="rounded-lg border border-border bg-card p-3 sm:p-4 text-center">
           <FileTextIcon className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-card-foreground">
             {client.documents_count}
           </p>
-          <p className="text-xs text-gray-500">Documents</p>
+          <p className="text-xs text-muted-foreground">Documents</p>
         </div>
 
         {/* Notes Count */}
-        <div className="rounded-lg border border-gray-200 bg-white p-3 sm:p-4 text-center">
+        <div className="rounded-lg border border-border bg-card p-3 sm:p-4 text-center">
           <StickyNoteIcon className="h-6 w-6 text-amber-500 mx-auto mb-2" />
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-card-foreground">
             {client.notes_count}
           </p>
-          <p className="text-xs text-gray-500">Notes</p>
+          <p className="text-xs text-muted-foreground">Notes</p>
         </div>
 
         {/* Tasks Count */}
-        <div className="rounded-lg border border-gray-200 bg-white p-3 sm:p-4 text-center">
+        <div className="rounded-lg border border-border bg-card p-3 sm:p-4 text-center">
           <CheckSquareIcon className="h-6 w-6 text-green-500 mx-auto mb-2" />
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-card-foreground">
             {client.tasks_count}
           </p>
-          <p className="text-xs text-gray-500">Tasks</p>
+          <p className="text-xs text-muted-foreground">Tasks</p>
         </div>
       </div>
     </div>

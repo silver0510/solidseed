@@ -73,7 +73,19 @@ function MonitorIcon({ className }: { className?: string }) {
   );
 }
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  variant?: React.ComponentProps<typeof Button>['variant'];
+  size?: React.ComponentProps<typeof Button>['size'];
+  className?: string;
+  tooltipSide?: 'top' | 'right' | 'bottom' | 'left';
+}
+
+export function ThemeToggle({
+  variant = 'ghost',
+  size = 'icon',
+  className,
+  tooltipSide = 'bottom'
+}: ThemeToggleProps) {
   const { setTheme, theme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
@@ -82,10 +94,12 @@ export function ThemeToggle() {
     setMounted(true);
   }, []);
 
+  const iconSize = size === 'icon' ? 'h-5 w-5' : 'h-4 w-4';
+
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" disabled>
-        <SunIcon className="h-5 w-5" />
+      <Button variant={variant} size={size} className={className} disabled>
+        <SunIcon className={iconSize} />
         <span className="sr-only">Toggle theme</span>
       </Button>
     );
@@ -97,14 +111,14 @@ export function ThemeToggle() {
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <SunIcon className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <MoonIcon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <Button variant={variant} size={size} className={className}>
+                <SunIcon className={`${iconSize} rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0`} />
+                <MoonIcon className={`absolute ${iconSize} rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100`} />
                 <span className="sr-only">Toggle theme</span>
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
-          <TooltipContent>Toggle theme</TooltipContent>
+          <TooltipContent side={tooltipSide}>Toggle theme</TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <DropdownMenuContent align="end">

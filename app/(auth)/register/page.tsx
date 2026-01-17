@@ -14,6 +14,8 @@ import { FormInput } from '@/components/auth/FormInput';
 import { Button } from '@/components/auth/Button';
 import { SocialLoginButton, SocialLoginDivider } from '@/components/auth/SocialLoginButton';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { formatAuthError } from '@/lib/auth/utils';
 
 export default function RegisterPage() {
@@ -165,9 +167,9 @@ export default function RegisterPage() {
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
             <svg
-              className="h-8 w-8 text-green-600"
+              className="h-8 w-8 text-emerald-600 dark:text-emerald-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -180,40 +182,40 @@ export default function RegisterPage() {
               />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Check Your Email</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            We've sent a verification link to{' '}
-            <span className="font-medium text-gray-900">{formData.email}</span>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Check Your Email</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            We&apos;ve sent a verification link to{' '}
+            <span className="font-medium text-slate-900 dark:text-slate-100">{formData.email}</span>
           </p>
         </div>
 
-        <div className="rounded-md bg-blue-50 p-4">
-          <p className="text-sm text-blue-800">
+        <div className="rounded-md bg-blue-50 dark:bg-blue-900/20 p-4">
+          <p className="text-sm text-blue-700 dark:text-blue-400">
             <strong>Next steps:</strong>
-            <ul className="mt-2 list-inside list-disc space-y-1 text-blue-700">
-              <li>Check your inbox for the verification email</li>
-              <li>Click the link to verify your account</li>
-              <li>Return here to login</li>
-            </ul>
           </p>
+          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-blue-600 dark:text-blue-300">
+            <li>Check your inbox for the verification email</li>
+            <li>Click the link to verify your account</li>
+            <li>Return here to login</li>
+          </ul>
         </div>
 
         {resendMessage && (
-          <div className={`rounded-md p-4 ${resendMessage.type === 'success' ? 'bg-green-50' : 'bg-red-50'}`}>
-            <p className={`text-sm ${resendMessage.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
+          <div className={`rounded-md p-4 ${resendMessage.type === 'success' ? 'bg-emerald-500/10' : 'bg-destructive/10'}`}>
+            <p className={`text-sm ${resendMessage.type === 'success' ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>
               {resendMessage.text}
             </p>
           </div>
         )}
 
         <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Didn't receive the email?{' '}
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Didn&apos;t receive the email?{' '}
             <button
               type="button"
               onClick={handleResendVerification}
               disabled={resendLoading}
-              className="font-medium text-blue-600 hover:text-blue-500 disabled:text-gray-400 disabled:cursor-not-allowed"
+              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 disabled:text-slate-400 disabled:cursor-not-allowed"
             >
               {resendLoading ? 'Sending...' : 'Resend verification email'}
             </button>
@@ -223,7 +225,7 @@ export default function RegisterPage() {
         <div className="text-center">
           <Link
             href="/login"
-            className="text-sm font-medium text-blue-600 hover:text-blue-500"
+            className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
           >
             Go to login page
           </Link>
@@ -236,8 +238,8 @@ export default function RegisterPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900">Create Your Account</h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Create Your Account</h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
           Start your 14-day free trial. No credit card required.
         </p>
       </div>
@@ -252,8 +254,8 @@ export default function RegisterPage() {
       {/* Registration Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         {apiError && (
-          <div className="rounded-md bg-red-50 p-4">
-            <p className="text-sm text-red-800">{apiError}</p>
+          <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+            <p className="text-sm text-red-700 dark:text-red-400">{apiError}</p>
           </div>
         )}
 
@@ -310,42 +312,42 @@ export default function RegisterPage() {
         />
 
         <div className="space-y-2">
-          <label className="flex items-start gap-2">
-            <input
-              type="checkbox"
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="agreeToTerms"
               checked={formData.agreeToTerms}
-              onChange={(e) => handleInputChange('agreeToTerms', e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              onCheckedChange={(checked) => handleInputChange('agreeToTerms', checked as boolean)}
+              className="mt-0.5"
             />
-            <span className="text-sm text-gray-600">
+            <Label htmlFor="agreeToTerms" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer leading-relaxed">
               I agree to the{' '}
-              <Link href="/terms" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link href="/terms" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
                 Terms of Service
               </Link>
-            </span>
-          </label>
+            </Label>
+          </div>
           {errors.agreeToTerms && (
-            <p className="text-xs text-red-600">{errors.agreeToTerms}</p>
+            <p className="text-xs text-red-500">{errors.agreeToTerms}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <label className="flex items-start gap-2">
-            <input
-              type="checkbox"
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="agreeToPrivacy"
               checked={formData.agreeToPrivacy}
-              onChange={(e) => handleInputChange('agreeToPrivacy', e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              onCheckedChange={(checked) => handleInputChange('agreeToPrivacy', checked as boolean)}
+              className="mt-0.5"
             />
-            <span className="text-sm text-gray-600">
+            <Label htmlFor="agreeToPrivacy" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer leading-relaxed">
               I agree to the{' '}
-              <Link href="/privacy" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link href="/privacy" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
                 Privacy Policy
               </Link>
-            </span>
-          </label>
+            </Label>
+          </div>
           {errors.agreeToPrivacy && (
-            <p className="text-xs text-red-600">{errors.agreeToPrivacy}</p>
+            <p className="text-xs text-red-500">{errors.agreeToPrivacy}</p>
           )}
         </div>
 
@@ -355,9 +357,9 @@ export default function RegisterPage() {
       </form>
 
       <div className="text-center">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           Already have an account?{' '}
-          <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+          <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
             Sign in
           </Link>
         </p>

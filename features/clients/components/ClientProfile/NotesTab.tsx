@@ -120,7 +120,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
 
       {/* Notes List */}
       <div>
-        <h3 className="text-sm font-medium text-gray-900 mb-3">
+        <h3 className="text-sm font-medium text-foreground mb-3">
           {notes.length > 0 ? `Notes (${notes.length})` : 'Notes'}
         </h3>
         <NoteList

@@ -355,7 +355,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
       case 'error':
         return <AlertCircleIcon className="text-red-500" />;
       default:
-        return <FileTextIcon className="text-gray-400" />;
+        return <FileTextIcon className="text-muted-foreground" />;
     }
   };
 
@@ -384,8 +384,8 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
           'flex flex-col items-center justify-center text-center',
           'min-h-[180px] cursor-pointer',
           isDragActive
-            ? 'border-blue-500 bg-blue-50 drag-active'
-            : 'border-gray-300 hover:border-gray-400',
+            ? 'border-primary bg-primary/10 drag-active'
+            : 'border-border hover:border-muted-foreground',
           isUploading && 'pointer-events-none opacity-75'
         )}
         onClick={handleBrowseClick}
@@ -402,7 +402,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
           <div
             className={cn(
               'rounded-full p-3',
-              isDragActive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+              isDragActive ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
             )}
           >
             <UploadIcon />
@@ -410,21 +410,21 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
 
           <div className="space-y-1">
             {isDragActive ? (
-              <p className="text-sm font-medium text-blue-600">Drop files here</p>
+              <p className="text-sm font-medium text-primary">Drop files here</p>
             ) : (
               <>
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-foreground">
                   Drag and drop files here
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   or{' '}
-                  <span className="text-blue-600 underline">browse files</span>
+                  <span className="text-primary underline">browse files</span>
                 </p>
               </>
             )}
           </div>
 
-          <div className="text-xs text-gray-400 space-y-0.5">
+          <div className="text-xs text-muted-foreground/70 space-y-0.5">
             <p>Accepted: PDF, DOC, DOCX, JPG, PNG</p>
             <p>Max size: 10 MB per file</p>
           </div>
@@ -440,15 +440,15 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
           data-testid="upload-progress"
         >
           <div className="flex items-center gap-2">
-            <SpinnerIcon className="text-blue-600" />
-            <span className="text-sm text-gray-600">
+            <SpinnerIcon className="text-primary" />
+            <span className="text-sm text-muted-foreground">
               Uploading... {uploadProgress}%
             </span>
           </div>
           {/* Progress bar */}
-          <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-600 transition-all duration-300"
+              className="h-full bg-primary transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
               role="progressbar"
               aria-valuenow={uploadProgress}
@@ -475,11 +475,11 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 {getStatusIcon(uploadingFile.status)}
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate">{uploadingFile.file.name}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm font-medium text-foreground truncate">{uploadingFile.file.name}</p>
+                  <p className="text-xs text-muted-foreground">
                     {formatFileSize(uploadingFile.file.size)}
                     {uploadingFile.error && (
-                      <span className="ml-2 text-red-500">{uploadingFile.error}</span>
+                      <span className="ml-2 text-destructive">{uploadingFile.error}</span>
                     )}
                   </p>
                 </div>
@@ -492,7 +492,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
                     removeFile(uploadingFile.file);
                   }}
                   aria-label={`Remove ${uploadingFile.file.name}`}
-                  className="p-1 hover:bg-gray-100 rounded"
+                  className="p-1 hover:bg-muted rounded"
                 >
                   <XIcon />
                 </button>

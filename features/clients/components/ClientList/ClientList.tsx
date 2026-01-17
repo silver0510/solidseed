@@ -13,6 +13,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useClientsInfinite, getTotalCount, flattenClientPages } from '../../hooks/useClientsInfinite';
 import { ClientCard } from './ClientCard';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils/cn';
 import type { ClientWithTags, ClientSortField, SortDirection } from '../../types';
 
@@ -160,12 +168,12 @@ export const ClientList: React.FC<ClientListProps> = ({
     setSearchInput('');
   }, []);
 
-  const handleTagChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setTagFilter(e.target.value);
+  const handleTagChange = useCallback((value: string) => {
+    setTagFilter(value === 'all' ? '' : value);
   }, []);
 
-  const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortBy(e.target.value as ClientSortField);
+  const handleSortChange = useCallback((value: string) => {
+    setSortBy(value as ClientSortField);
   }, []);
 
   const handleToggleSortDirection = useCallback(() => {
@@ -205,7 +213,7 @@ export const ClientList: React.FC<ClientListProps> = ({
           <label htmlFor="client-search" className="sr-only">
             Search clients
           </label>
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
             <svg
               className="h-5 w-5 text-muted-foreground"
               fill="none"
@@ -221,24 +229,19 @@ export const ClientList: React.FC<ClientListProps> = ({
               />
             </svg>
           </div>
-          <input
+          <Input
             id="client-search"
             type="search"
             placeholder="Search clients..."
             value={searchInput}
             onChange={handleSearchChange}
-            className={cn(
-              'block w-full pl-10 pr-10 py-2 border border-input rounded-md leading-5',
-              'bg-background text-foreground placeholder:text-muted-foreground',
-              'focus:outline-none focus:ring-2 focus:ring-ring focus:border-input',
-              'sm:text-sm min-h-[44px]'
-            )}
+            className="pl-10 pr-10 min-h-[44px]"
             aria-label="Search clients"
           />
           {searchInput && (
             <button
               onClick={handleClearSearch}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center min-h-[44px] min-w-[44px] justify-center"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center min-h-[44px] min-w-[44px] justify-center z-10"
               aria-label="Clear search"
             >
               <svg
@@ -262,53 +265,35 @@ export const ClientList: React.FC<ClientListProps> = ({
         <div className="flex gap-2 flex-wrap">
           {/* Tag Filter */}
           <div className="flex-1 min-w-[140px]">
-            <label htmlFor="tag-filter" className="sr-only">
-              Filter by tag
-            </label>
-            <select
-              id="tag-filter"
-              value={tagFilter}
-              onChange={handleTagChange}
-              className={cn(
-                'block w-full py-2 px-3 border border-input rounded-md shadow-sm',
-                'bg-background text-foreground',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:border-input',
-                'sm:text-sm min-h-[44px]'
-              )}
-              aria-label="Filter by tag"
-            >
-              <option value="">All Tags</option>
-              {TAG_OPTIONS.map((tag) => (
-                <option key={tag} value={tag}>
-                  {tag}
-                </option>
-              ))}
-            </select>
+            <Select value={tagFilter || 'all'} onValueChange={handleTagChange}>
+              <SelectTrigger className="min-h-[44px]" aria-label="Filter by tag">
+                <SelectValue placeholder="All Tags" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tags</SelectItem>
+                {TAG_OPTIONS.map((tag) => (
+                  <SelectItem key={tag} value={tag}>
+                    {tag}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Sort By */}
           <div className="flex-1 min-w-[140px]">
-            <label htmlFor="sort-by" className="sr-only">
-              Sort by
-            </label>
-            <select
-              id="sort-by"
-              value={sortBy}
-              onChange={handleSortChange}
-              className={cn(
-                'block w-full py-2 px-3 border border-input rounded-md shadow-sm',
-                'bg-background text-foreground',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:border-input',
-                'sm:text-sm min-h-[44px]'
-              )}
-              aria-label="Sort by"
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <Select value={sortBy} onValueChange={handleSortChange}>
+              <SelectTrigger className="min-h-[44px]" aria-label="Sort by">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Sort Direction Toggle */}

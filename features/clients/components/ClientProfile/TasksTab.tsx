@@ -105,9 +105,9 @@ export const TasksTab: React.FC<TasksTabProps> = ({
     <div className={cn('space-y-4', className)}>
       {/* Task Summary */}
       {tasks.length > 0 && (
-        <div className="flex items-center gap-4 text-sm text-gray-500">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span>{pendingCount} pending</span>
-          <span className="text-gray-300">|</span>
+          <span className="text-muted-foreground/50">|</span>
           <span>{completedCount} completed</span>
         </div>
       )}

@@ -100,11 +100,11 @@ export const TaskList: React.FC<TaskListProps> = ({
   // Empty state
   if (tasks.length === 0) {
     return (
-      <div className={cn('w-full rounded-lg border border-gray-200 bg-white p-8', className)}>
+      <div className={cn('w-full rounded-lg border border-border bg-card p-8', className)}>
         <div className="flex flex-col items-center justify-center py-4">
-          <ClipboardListIcon className="h-12 w-12 text-gray-300 mb-4" />
-          <p className="text-sm text-gray-500">{emptyMessage}</p>
-          <p className="text-xs text-gray-400 mt-1">Tasks will appear here when added</p>
+          <ClipboardListIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
+          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Tasks will appear here when added</p>
         </div>
       </div>
     );

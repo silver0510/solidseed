@@ -103,7 +103,7 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
 
       {/* Document List */}
       <div>
-        <h3 className="text-sm font-medium text-gray-900 mb-3">
+        <h3 className="text-sm font-medium text-foreground mb-3">
           Uploaded Documents
         </h3>
         <DocumentList

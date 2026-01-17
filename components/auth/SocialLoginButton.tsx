@@ -45,10 +45,10 @@ export function SocialLoginButton({
   const providerConfig = {
     google: {
       name: 'Google',
-      bgColor: 'bg-white',
-      textColor: 'text-gray-700',
-      borderColor: 'border-gray-300',
-      hoverBg: 'hover:bg-gray-50',
+      bgColor: 'bg-white dark:bg-slate-700',
+      textColor: 'text-slate-700 dark:text-slate-200',
+      borderColor: 'border-slate-300 dark:border-slate-600',
+      hoverBg: 'hover:bg-slate-50 dark:hover:bg-slate-600',
       icon: (
         <svg className="h-5 w-5" viewBox="0 0 24 24">
           <path
@@ -105,10 +105,10 @@ export function SocialLoginDivider({ text = 'OR' }: SocialLoginDividerProps) {
   return (
     <div className="relative my-6">
       <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t border-gray-300" />
+        <div className="w-full border-t border-slate-300 dark:border-slate-600" />
       </div>
       <div className="relative flex justify-center text-sm">
-        <span className="bg-gray-100 px-4 text-gray-500">{text}</span>
+        <span className="bg-white dark:bg-slate-800 px-4 text-slate-500 dark:text-slate-400">{text}</span>
       </div>
     </div>
   );

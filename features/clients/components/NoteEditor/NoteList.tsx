@@ -166,11 +166,11 @@ export const NoteList: React.FC<NoteListProps> = ({
   // Empty state
   if (notes.length === 0) {
     return (
-      <div className={cn('w-full rounded-lg border border-gray-200 bg-white p-8', className)}>
+      <div className={cn('w-full rounded-lg border border-border bg-card p-8', className)}>
         <div className="flex flex-col items-center justify-center py-4">
-          <StickyNoteIcon className="h-12 w-12 text-gray-300 mb-4" />
-          <p className="text-sm text-gray-500">No notes yet</p>
-          <p className="text-xs text-gray-400 mt-1">Add your first note above</p>
+          <StickyNoteIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
+          <p className="text-sm text-muted-foreground">No notes yet</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Add your first note above</p>
         </div>
       </div>
     );
@@ -190,14 +190,14 @@ export const NoteList: React.FC<NoteListProps> = ({
               data-important={note.is_important || undefined}
               className={cn(
                 // Base styles
-                'rounded-lg border bg-white p-4',
+                'rounded-lg border bg-card p-4',
                 'transition-all duration-200',
                 // Important note styling
-                note.is_important && 'border-amber-200 bg-amber-50/30',
+                note.is_important && 'border-amber-300 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-900/10',
                 // Deleting state
                 isCurrentlyDeleting && 'opacity-50',
                 // Default border
-                !note.is_important && 'border-gray-200'
+                !note.is_important && 'border-border'
               )}
             >
               {/* Header with importance and actions */}
@@ -205,7 +205,7 @@ export const NoteList: React.FC<NoteListProps> = ({
                 <div className="flex items-center gap-2 flex-wrap">
                   {note.is_important && (
                     <span
-                      className="flex items-center gap-1 text-amber-600"
+                      className="flex items-center gap-1 text-amber-600 dark:text-amber-400"
                       aria-label="Important note"
                     >
                       <StarIcon className="h-4 w-4" />
@@ -214,7 +214,7 @@ export const NoteList: React.FC<NoteListProps> = ({
                   )}
                   <time
                     dateTime={note.created_at}
-                    className="text-xs text-gray-500"
+                    className="text-xs text-muted-foreground"
                   >
                     {formatDateTime(note.created_at)}
                   </time>
@@ -232,7 +232,7 @@ export const NoteList: React.FC<NoteListProps> = ({
                         // Accessible touch target (44px minimum)
                         'p-2.5 rounded-lg transition-colors min-w-[44px] min-h-[44px]',
                         'flex items-center justify-center',
-                        'text-gray-400 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200',
+                        'text-muted-foreground hover:text-foreground hover:bg-muted active:bg-muted/80',
                         isCurrentlyDeleting && 'cursor-not-allowed opacity-50'
                       )}
                     >
@@ -254,8 +254,8 @@ export const NoteList: React.FC<NoteListProps> = ({
                         'p-2.5 rounded-lg transition-colors min-w-[44px] min-h-[44px]',
                         'flex items-center justify-center',
                         isCurrentlyDeleting
-                          ? 'text-gray-400 cursor-not-allowed'
-                          : 'text-red-400 hover:text-red-600 hover:bg-red-50 active:bg-red-100'
+                          ? 'text-muted-foreground cursor-not-allowed'
+                          : 'text-destructive/70 hover:text-destructive hover:bg-destructive/10 active:bg-destructive/20'
                       )}
                     >
                       {isCurrentlyDeleting ? <SpinnerIcon /> : <TrashIcon />}
@@ -265,7 +265,7 @@ export const NoteList: React.FC<NoteListProps> = ({
               </div>
 
               {/* Note content */}
-              <p className="text-sm text-gray-700 whitespace-pre-wrap break-words leading-relaxed">
+              <p className="text-sm text-card-foreground whitespace-pre-wrap break-words leading-relaxed">
                 {note.content}
               </p>
             </li>

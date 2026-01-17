@@ -239,10 +239,10 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   // Empty state
   if (documents.length === 0) {
     return (
-      <div className={cn('w-full rounded-lg border bg-white p-8', className)}>
+      <div className={cn('w-full rounded-lg border border-border bg-card p-8', className)}>
         <div className="flex flex-col items-center justify-center py-4">
-          <FolderOpenIcon className="h-12 w-12 text-gray-300 mb-4" />
-          <p className="text-sm text-gray-500">No documents uploaded yet</p>
+          <FolderOpenIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
+          <p className="text-sm text-muted-foreground">No documents uploaded yet</p>
         </div>
       </div>
     );
@@ -259,23 +259,23 @@ export const DocumentList: React.FC<DocumentListProps> = ({
             <li
               key={document.id}
               className={cn(
-                'flex items-center gap-3 p-3 rounded-lg border bg-white',
-                'transition-colors hover:bg-gray-50',
+                'flex items-center gap-3 p-3 rounded-lg border border-border bg-card',
+                'transition-colors hover:bg-muted/50',
                 isCurrentlyDeleting && 'opacity-50'
               )}
               data-file-type={getFileTypeLabel(document.file_type).toLowerCase()}
             >
               {/* File icon */}
               <div className="flex-shrink-0">
-                <div className="p-2 rounded-lg bg-gray-100">
-                  <FileIconComponent className="text-gray-500" />
+                <div className="p-2 rounded-lg bg-muted">
+                  <FileIconComponent className="text-muted-foreground" />
                 </div>
               </div>
 
               {/* File info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-card-foreground truncate">
                     {document.file_name}
                   </p>
                   <span
@@ -287,7 +287,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                     {getFileTypeLabel(document.file_type)}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                   <span>{formatFileSize(document.file_size)}</span>
                   <span className="hidden sm:inline">-</span>
                   <span className="hidden sm:inline">
@@ -295,7 +295,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                   </span>
                 </div>
                 {document.description && (
-                  <p className="text-xs text-gray-400 mt-1 truncate">
+                  <p className="text-xs text-muted-foreground/70 mt-1 truncate">
                     {document.description}
                   </p>
                 )}
@@ -308,7 +308,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                     type="button"
                     onClick={() => onDownload(document)}
                     aria-label={`Download ${document.file_name}`}
-                    className="p-2 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+                    className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <DownloadIcon />
                   </button>
@@ -326,8 +326,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                     className={cn(
                       'p-2 rounded-md transition-colors',
                       isCurrentlyDeleting
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-red-500 hover:text-red-600 hover:bg-red-50'
+                        ? 'text-muted-foreground cursor-not-allowed'
+                        : 'text-destructive hover:text-destructive hover:bg-destructive/10'
                     )}
                   >
                     {isCurrentlyDeleting ? <SpinnerIcon /> : <TrashIcon />}

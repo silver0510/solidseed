@@ -9,6 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils/cn';
+import { Textarea } from '@/components/ui/textarea';
 import type { ClientNote, NoteFormData } from '../../types';
 
 // =============================================================================
@@ -159,7 +160,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
           <label htmlFor="note-content" className="sr-only">
             Note content
           </label>
-          <textarea
+          <Textarea
             id="note-content"
             name="content"
             value={content}
@@ -168,17 +169,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             placeholder="Add a note..."
             rows={4}
             aria-label="Note content"
-            className={cn(
-              // Base styles
-              'w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm',
-              'placeholder:text-gray-400',
-              // Focus styles
-              'focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20',
-              // Disabled state
-              'disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500',
-              // Mobile-first: Larger touch target on mobile
-              'min-h-[100px] resize-y sm:min-h-[80px]'
-            )}
+            className="min-h-[100px] resize-y sm:min-h-[80px]"
           />
         </div>
 
@@ -197,8 +188,8 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               'min-h-[44px] transition-colors',
               // Active/inactive states
               isImportant
-                ? 'bg-amber-50 text-amber-600 hover:bg-amber-100 active:bg-amber-200'
-                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 active:bg-gray-200',
+                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 active:bg-amber-500/30'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground active:bg-muted/80',
               // Disabled state
               isSubmitting && 'cursor-not-allowed opacity-50'
             )}
@@ -219,7 +210,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                 className={cn(
                   // Base styles with accessible touch target
                   'rounded-lg px-4 py-2 text-sm font-medium min-h-[44px]',
-                  'text-gray-600 hover:bg-gray-100 active:bg-gray-200',
+                  'text-muted-foreground hover:bg-muted active:bg-muted/80',
                   'transition-colors',
                   'disabled:cursor-not-allowed disabled:opacity-50'
                 )}
@@ -233,13 +224,13 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               className={cn(
                 // Base styles with accessible touch target
                 'flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium min-h-[44px]',
-                'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800',
+                'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80',
                 'transition-colors shadow-sm',
                 // Disabled state
-                'disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none'
+                'disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none'
               )}
             >
-              {isSubmitting && <SpinnerIcon className="text-white" />}
+              {isSubmitting && <SpinnerIcon className="text-primary-foreground" />}
               {isSubmitting ? 'Saving...' : isEditMode ? 'Update' : 'Add Note'}
             </button>
           </div>
