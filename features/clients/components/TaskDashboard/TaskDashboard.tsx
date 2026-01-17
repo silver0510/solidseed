@@ -8,8 +8,10 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
+import { PlusIcon } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -32,6 +34,8 @@ import type { TaskWithClient, TaskStatus, TaskPriority } from '../../types';
 export interface TaskDashboardProps {
   /** Callback when a task is clicked */
   onTaskClick?: (task: TaskWithClient) => void;
+  /** Callback when Add Task button is clicked */
+  onAddTask?: () => void;
   /** Additional CSS classes */
   className?: string;
 }
@@ -148,6 +152,7 @@ function groupTasksByDueDate(tasks: TaskWithClient[]): GroupedTasks {
  */
 export const TaskDashboard: React.FC<TaskDashboardProps> = ({
   onTaskClick,
+  onAddTask,
   className,
 }) => {
   // Filter state
@@ -251,6 +256,14 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
               ))}
             </SelectContent>
           </Select>
+
+          {/* Add Task Button */}
+          {onAddTask && (
+            <Button onClick={onAddTask} className="h-9 shrink-0">
+              <PlusIcon className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Add Task</span>
+            </Button>
+          )}
         </div>
       </div>
 
