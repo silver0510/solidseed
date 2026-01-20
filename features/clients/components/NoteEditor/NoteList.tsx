@@ -178,7 +178,7 @@ export const NoteList: React.FC<NoteListProps> = ({
 
   return (
     <div className={cn('w-full', className)}>
-      <ul className="space-y-3" role="list">
+      <ul className="divide-y divide-border" role="list">
         {sortedNotes.map((note) => {
           const isCurrentlyDeleting = isDeleting === note.id;
 
@@ -189,39 +189,33 @@ export const NoteList: React.FC<NoteListProps> = ({
               role="article"
               data-important={note.is_important || undefined}
               className={cn(
-                // Base styles
-                'rounded-lg border bg-card p-4',
-                'transition-all duration-200',
-                // Important note styling
-                note.is_important && 'border-amber-300 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-900/10',
-                // Deleting state
-                isCurrentlyDeleting && 'opacity-50',
-                // Default border
-                !note.is_important && 'border-border'
+                'py-3 first:pt-0 last:pb-0',
+                'transition-opacity duration-200',
+                isCurrentlyDeleting && 'opacity-50'
               )}
             >
-              {/* Header with importance and actions */}
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {note.is_important && (
-                    <span
-                      className="flex items-center gap-1 text-amber-600 dark:text-amber-400"
-                      aria-label="Important note"
-                    >
-                      <StarIcon className="h-4 w-4" />
-                      <span className="text-xs font-medium hidden xs:inline">Important</span>
-                    </span>
-                  )}
+              {/* Row layout: content left, actions right */}
+              <div className="flex items-start gap-3">
+                {/* Important indicator */}
+                {note.is_important && (
+                  <StarIcon className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                )}
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground line-clamp-2 wrap-break-word">
+                    {note.content}
+                  </p>
                   <time
                     dateTime={note.created_at}
-                    className="text-xs text-muted-foreground"
+                    className="text-xs text-muted-foreground mt-1 block"
                   >
                     {formatDateTime(note.created_at)}
                   </time>
                 </div>
 
-                {/* Action buttons - accessible touch targets */}
-                <div className="flex items-center gap-0.5 -mr-1.5">
+                {/* Action buttons */}
+                <div className="flex items-center gap-1 shrink-0">
                   {onEdit && (
                     <button
                       type="button"
@@ -229,10 +223,8 @@ export const NoteList: React.FC<NoteListProps> = ({
                       disabled={isCurrentlyDeleting}
                       aria-label="Edit note"
                       className={cn(
-                        // Accessible touch target (44px minimum)
-                        'p-2.5 rounded-lg transition-colors min-w-[44px] min-h-[44px]',
-                        'flex items-center justify-center',
-                        'text-muted-foreground hover:text-foreground hover:bg-muted active:bg-muted/80',
+                        'p-1.5 rounded transition-colors',
+                        'text-muted-foreground hover:text-foreground hover:bg-muted',
                         isCurrentlyDeleting && 'cursor-not-allowed opacity-50'
                       )}
                     >
@@ -244,18 +236,12 @@ export const NoteList: React.FC<NoteListProps> = ({
                       type="button"
                       onClick={() => onDelete(note)}
                       disabled={isCurrentlyDeleting}
-                      aria-label={
-                        isCurrentlyDeleting
-                          ? 'Deleting note'
-                          : 'Delete note'
-                      }
+                      aria-label={isCurrentlyDeleting ? 'Deleting note' : 'Delete note'}
                       className={cn(
-                        // Accessible touch target (44px minimum)
-                        'p-2.5 rounded-lg transition-colors min-w-[44px] min-h-[44px]',
-                        'flex items-center justify-center',
+                        'p-1.5 rounded transition-colors',
                         isCurrentlyDeleting
                           ? 'text-muted-foreground cursor-not-allowed'
-                          : 'text-destructive/70 hover:text-destructive hover:bg-destructive/10 active:bg-destructive/20'
+                          : 'text-destructive/70 hover:text-destructive hover:bg-destructive/10'
                       )}
                     >
                       {isCurrentlyDeleting ? <SpinnerIcon /> : <TrashIcon />}
@@ -263,11 +249,6 @@ export const NoteList: React.FC<NoteListProps> = ({
                   )}
                 </div>
               </div>
-
-              {/* Note content */}
-              <p className="text-sm text-card-foreground whitespace-pre-wrap break-words leading-relaxed">
-                {note.content}
-              </p>
             </li>
           );
         })}

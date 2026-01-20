@@ -112,12 +112,12 @@ export const TaskList: React.FC<TaskListProps> = ({
 
   return (
     <div className={cn('w-full', className)}>
-      <ul className="space-y-3" role="list">
+      <ul className="divide-y divide-border" role="list">
         {sortedTasks.map((task) => {
           const isUpdating = updatingTaskId === task.id || deletingTaskId === task.id;
 
           return (
-            <li key={task.id}>
+            <li key={task.id} className="first:pt-0 last:pb-0">
               <TaskCard
                 task={task}
                 onStatusChange={onStatusChange}

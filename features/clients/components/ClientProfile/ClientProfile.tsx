@@ -277,63 +277,50 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
 
   return (
     <div className={cn('w-full', className)}>
-      {/* Header */}
-      <div className="mb-6">
-        {/* Back button row - touch-friendly */}
+      {/* Header - Back button, name, and edit in one row */}
+      <div className="flex items-center gap-2 mb-4">
         {onBack && (
           <button
             type="button"
             onClick={onBack}
             className={cn(
-              'inline-flex items-center gap-1',
-              'min-h-[44px] px-2 -ml-2',
-              'text-sm text-muted-foreground hover:text-foreground',
-              'transition-colors mb-2',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded-md'
+              'p-1.5 -ml-1.5 rounded',
+              'text-muted-foreground hover:text-foreground hover:bg-muted',
+              'transition-colors',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring'
             )}
             aria-label="Go back"
           >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back
+            <ArrowLeftIcon className="h-5 w-5" />
           </button>
         )}
 
-        {/* Client name and edit button */}
-        <div className="flex items-start justify-between gap-3 sm:gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
-              {client.name}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1 truncate">{client.email}</p>
-          </div>
-
-          {onEdit && (
-            <button
-              type="button"
-              onClick={handleEdit}
-              className={cn(
-                'inline-flex items-center gap-1.5 rounded-md',
-                'bg-blue-600 px-3 py-2 sm:py-1.5',
-                'text-sm font-medium text-white',
-                'hover:bg-blue-700 active:bg-blue-800',
-                'transition-colors',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
-                'flex-shrink-0'
-              )}
-              aria-label="Edit client"
-            >
-              <PencilIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Edit</span>
-            </button>
-          )}
-        </div>
+        {onEdit && (
+          <button
+            type="button"
+            onClick={handleEdit}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-md',
+              'bg-blue-600 px-3 py-1.5',
+              'text-sm font-medium text-white',
+              'hover:bg-blue-700 active:bg-blue-800',
+              'transition-colors',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+              'shrink-0'
+            )}
+            aria-label="Edit client"
+          >
+            <PencilIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Edit</span>
+          </button>
+        )}
       </div>
 
-      {/* Tab Navigation - Mobile optimized with larger touch targets */}
+      {/* Tab Navigation - Compact */}
       <div
         role="tablist"
         aria-label="Client profile tabs"
-        className="flex border-b border-border mb-6 overflow-x-auto scrollbar-hide"
+        className="flex border-b border-border mb-4 overflow-x-auto scrollbar-hide"
       >
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -349,9 +336,9 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
               tabIndex={isActive ? 0 : -1}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                // Base styles with touch-friendly sizing
-                'flex items-center justify-center gap-2',
-                'min-h-[48px] px-3 sm:px-4 py-3',
+                // Base styles with compact sizing
+                'flex items-center justify-center gap-1.5',
+                'min-h-10 px-3 py-2',
                 'text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
                 // Focus states for accessibility
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
@@ -361,7 +348,7 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
               )}
             >
-              <Icon className="h-5 w-5 flex-shrink-0" />
+              <Icon className="h-4 w-4 shrink-0" />
               <span className="truncate">{tab.label}</span>
             </button>
           );

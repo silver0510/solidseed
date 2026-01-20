@@ -102,12 +102,12 @@ export const TasksTab: React.FC<TasksTabProps> = ({
   const completedCount = tasks.filter((t) => t.status === 'completed').length;
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn('space-y-3', className)}>
       {/* Task Summary */}
       {tasks.length > 0 && (
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span>{pendingCount} pending</span>
-          <span className="text-muted-foreground/50">|</span>
+          <span className="text-muted-foreground/50">·</span>
           <span>{completedCount} completed</span>
         </div>
       )}

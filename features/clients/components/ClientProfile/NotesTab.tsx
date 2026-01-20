@@ -108,7 +108,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
   );
 
   return (
-    <div className={cn('space-y-6', className)}>
+    <div className={cn('space-y-4', className)}>
       {/* Note Editor */}
       <NoteEditor
         clientId={clientId}
@@ -120,7 +120,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
 
       {/* Notes List */}
       <div>
-        <h3 className="text-sm font-medium text-foreground mb-3">
+        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
           {notes.length > 0 ? `Notes (${notes.length})` : 'Notes'}
         </h3>
         <NoteList

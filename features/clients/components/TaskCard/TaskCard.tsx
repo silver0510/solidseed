@@ -10,16 +10,11 @@
 import React from 'react';
 import {
   AlertCircleIcon,
-  CalendarIcon,
-  CheckIcon,
   Loader2Icon,
   PencilIcon,
   TrashIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getTaskDisplayInfo, formatRelativeTime, formatDate } from '../../helpers';
 import type { ClientTask, TaskStatus } from '../../types';
@@ -140,7 +135,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   return (
-    <Card
+    <div
       data-testid="task-item"
       data-completed={isCompleted || undefined}
       data-overdue={displayInfo.isOverdue || undefined}
@@ -148,177 +143,117 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       data-priority={task.priority}
       data-status={task.status}
       className={cn(
-        // Base styles
-        'transition-all duration-200',
-        // Status-based styling
-        isCompleted && 'bg-muted/50',
-        // Urgency-based styling (only for pending tasks)
-        !isCompleted && displayInfo.isOverdue && 'border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-900/10',
-        !isCompleted && displayInfo.isDueToday && 'border-amber-300 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-900/10',
-        // Updating state
+        'flex items-start gap-3 py-3',
+        'transition-opacity duration-200',
         isUpdating && 'opacity-50',
         className
       )}
     >
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          {/* Status Checkbox */}
-          <div className="flex-shrink-0 pt-0.5">
-            {isUpdating ? (
-              <div className="h-5 w-5 flex items-center justify-center">
-                <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <Checkbox
-                checked={isCompleted}
-                onCheckedChange={() => handleStatusToggle()}
-                disabled={!onStatusChange}
-                aria-label={`Mark task "${task.title}" as ${isCompleted ? 'pending' : 'completed'}`}
-                className={cn(
-                  'h-5 w-5 rounded',
-                  isCompleted && 'bg-green-500 border-green-500 text-white data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 dark:bg-green-600 dark:border-green-600 dark:data-[state=checked]:bg-green-600 dark:data-[state=checked]:border-green-600'
-                )}
-              />
-            )}
+      {/* Status Checkbox */}
+      <div className="shrink-0 pt-0.5">
+        {isUpdating ? (
+          <div className="h-4 w-4 flex items-center justify-center">
+            <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            {/* Header row with title and badges */}
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <div className="flex-1 min-w-0">
-                {/* Title */}
-                <h3
-                  className={cn(
-                    'text-sm font-medium text-foreground break-words',
-                    isCompleted && 'line-through text-muted-foreground'
-                  )}
-                >
-                  {task.title}
-                </h3>
-              </div>
-
-              {/* Action buttons - desktop */}
-              <div className="hidden sm:flex items-center gap-0.5 flex-shrink-0">
-                {onEdit && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit(task)}
-                    disabled={isUpdating}
-                    aria-label="Edit task"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                  >
-                    <PencilIcon className="h-4 w-4" />
-                  </Button>
-                )}
-                {onDelete && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDelete(task)}
-                    disabled={isUpdating}
-                    aria-label="Delete task"
-                    className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Description */}
-            {task.description && (
-              <p
-                className={cn(
-                  'text-sm text-muted-foreground mb-2 break-words',
-                  isCompleted && 'text-muted-foreground/60'
-                )}
-              >
-                {task.description}
-              </p>
+        ) : (
+          <Checkbox
+            checked={isCompleted}
+            onCheckedChange={() => handleStatusToggle()}
+            disabled={!onStatusChange}
+            aria-label={`Mark task "${task.title}" as ${isCompleted ? 'pending' : 'completed'}`}
+            className={cn(
+              'h-4 w-4 rounded',
+              isCompleted && 'bg-green-500 border-green-500 text-white data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 dark:bg-green-600 dark:border-green-600 dark:data-[state=checked]:bg-green-600 dark:data-[state=checked]:border-green-600'
             )}
+          />
+        )}
+      </div>
 
-            {/* Footer row with badges and due date */}
-            <div className="flex items-center flex-wrap gap-2">
-              {/* Priority badge */}
-              <Badge
-                variant={getPriorityVariant(task.priority)}
-                data-priority={task.priority}
-                className="text-xs"
-              >
-                {getPriorityLabel(task.priority)}
-              </Badge>
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        {/* Title */}
+        <h3
+          className={cn(
+            'text-sm text-foreground',
+            isCompleted && 'line-through text-muted-foreground'
+          )}
+        >
+          {task.title}
+        </h3>
 
-              {/* Completed badge */}
-              {isCompleted && (
-                <Badge
-                  variant="outline"
-                  data-status="completed"
-                  className="text-xs bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                >
-                  Completed
-                </Badge>
-              )}
-
-              {/* Due date */}
-              <span
-                role="time"
-                className={cn(
-                  'inline-flex items-center gap-1 text-xs',
-                  isCompleted
-                    ? 'text-muted-foreground/60'
-                    : displayInfo.isOverdue
-                      ? 'text-red-600 dark:text-red-400 font-medium'
-                      : displayInfo.isDueToday
-                        ? 'text-amber-600 dark:text-amber-400 font-medium'
-                        : 'text-muted-foreground'
-                )}
-              >
-                {!isCompleted && displayInfo.isOverdue ? (
-                  <AlertCircleIcon className="h-3.5 w-3.5" />
-                ) : (
-                  <CalendarIcon className="h-3.5 w-3.5" />
-                )}
-                <time dateTime={task.due_date}>
-                  {formatDueDate(task.due_date, displayInfo)}
-                </time>
-              </span>
-            </div>
-
-            {/* Mobile action buttons */}
-            {(onEdit || onDelete) && (
-              <div className="flex sm:hidden items-center gap-1 mt-3 pt-3 border-t border-border">
-                {onEdit && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => onEdit(task)}
-                    disabled={isUpdating}
-                    aria-label="Edit task"
-                    className="flex-1 h-11 text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    <PencilIcon className="mr-1.5 h-4 w-4" />
-                    Edit
-                  </Button>
-                )}
-                {onDelete && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => onDelete(task)}
-                    disabled={isUpdating}
-                    aria-label="Delete task"
-                    className="flex-1 h-11 text-sm text-destructive hover:bg-destructive/10"
-                  >
-                    <TrashIcon className="mr-1.5 h-4 w-4" />
-                    Delete
-                  </Button>
-                )}
-              </div>
+        {/* Meta row: priority, due date */}
+        <div className="flex items-center gap-2 mt-1">
+          {/* Priority indicator */}
+          <span
+            className={cn(
+              'text-xs',
+              task.priority === 'high' && 'text-red-600 dark:text-red-400',
+              task.priority === 'medium' && 'text-amber-600 dark:text-amber-400',
+              task.priority === 'low' && 'text-muted-foreground'
             )}
-          </div>
+          >
+            {getPriorityLabel(task.priority)}
+          </span>
+
+          <span className="text-muted-foreground/50">·</span>
+
+          {/* Due date */}
+          <span
+            className={cn(
+              'inline-flex items-center gap-1 text-xs',
+              isCompleted
+                ? 'text-muted-foreground/60'
+                : displayInfo.isOverdue
+                  ? 'text-red-600 dark:text-red-400'
+                  : displayInfo.isDueToday
+                    ? 'text-amber-600 dark:text-amber-400'
+                    : 'text-muted-foreground'
+            )}
+          >
+            {!isCompleted && displayInfo.isOverdue && (
+              <AlertCircleIcon className="h-3 w-3" />
+            )}
+            <time dateTime={task.due_date}>
+              {formatDueDate(task.due_date, displayInfo)}
+            </time>
+          </span>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex items-center gap-1 shrink-0">
+        {onEdit && (
+          <button
+            type="button"
+            onClick={() => onEdit(task)}
+            disabled={isUpdating}
+            aria-label="Edit task"
+            className={cn(
+              'p-1.5 rounded transition-colors',
+              'text-muted-foreground hover:text-foreground hover:bg-muted',
+              isUpdating && 'cursor-not-allowed opacity-50'
+            )}
+          >
+            <PencilIcon className="h-4 w-4" />
+          </button>
+        )}
+        {onDelete && (
+          <button
+            type="button"
+            onClick={() => onDelete(task)}
+            disabled={isUpdating}
+            aria-label="Delete task"
+            className={cn(
+              'p-1.5 rounded transition-colors',
+              'text-destructive/70 hover:text-destructive hover:bg-destructive/10',
+              isUpdating && 'cursor-not-allowed opacity-50'
+            )}
+          >
+            <TrashIcon className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+    </div>
   );
 };
 
