@@ -213,7 +213,7 @@ export class TaskService {
   async getTasksByAgent(userId: string, filters?: TaskFilters): Promise<TaskWithClient[]> {
     let query = this.supabase
       .from('client_tasks')
-      .select('*, clients(first_name, last_name)')
+      .select('*, clients(name)')
       .eq('assigned_to', userId);
 
     if (filters?.status) {
@@ -235,11 +235,13 @@ export class TaskService {
       throw new Error('Failed to get tasks: ' + error.message);
     }
 
-    return (data || []).map((task) => ({
-      ...task,
-      client_name: task.clients
-        ? `${task.clients.first_name} ${task.clients.last_name}`
-        : 'Unknown Client',
-    }));
+    return (data || []).map((task) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { clients, ...taskData } = task;
+      return {
+        ...taskData,
+        client_name: clients?.name || 'Unknown Client',
+      };
+    });
   }
 }

@@ -100,11 +100,7 @@ export default function ClientProfilePage() {
             />
           </svg>
         </Button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-semibold">
-            Client Profile
-          </h1>
-        </div>
+        <div className="flex-1" />
         <Button variant="outline" onClick={handleEdit} aria-label="Edit client">
           <svg
             className="h-5 w-5"

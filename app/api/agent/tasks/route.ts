@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TaskService } from '@/services/TaskService';
 import { taskFiltersSchema } from '@/lib/validation/task';
+import { getSessionUser } from '@/lib/auth/session';
 import { z } from 'zod';
 
 // Initialize TaskService
@@ -45,6 +46,15 @@ const taskService = new TaskService();
  */
 export async function GET(request: NextRequest) {
   try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     // Get filter parameters from URL
     const searchParams = request.nextUrl.searchParams;
 
@@ -67,7 +77,9 @@ export async function GET(request: NextRequest) {
       : undefined;
 
     // Get tasks using TaskService
-    const tasks = await taskService.getTasksByAgent(filters);
+    console.log('[API] getTasksByAgent for user:', user.id, 'filters:', filters);
+    const tasks = await taskService.getTasksByAgent(user.id, filters);
+    console.log('[API] Tasks returned:', tasks.length);
 
     // Return tasks
     return NextResponse.json({ tasks }, { status: 200 });
@@ -93,6 +105,7 @@ export async function GET(request: NextRequest) {
         );
       }
 
+      console.error('[API] Error in getTasksByAgent:', error.message);
       return NextResponse.json(
         { error: error.message || 'Internal server error' },
         { status: 500 }
@@ -100,6 +113,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Unknown error
+    console.error('[API] Unknown error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
