@@ -69,7 +69,7 @@ export default function ClientsPage() {
     queryFn: () => clientApi.listClients({ limit: 1 }),
   });
 
-  const totalClients = clientsData?.total ?? 0;
+  const totalClients = clientsData?.total_count ?? 0;
 
   const createClientMutation = useMutation({
     mutationFn: (data: ClientFormData) => clientApi.createClient(data),

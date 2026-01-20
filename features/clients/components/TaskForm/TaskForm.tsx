@@ -35,7 +35,7 @@ const taskFormSchema = z.object({
     .max(255, 'Task title must be 255 characters or less'),
   description: z.string().optional(),
   due_date: z.string().min(1, 'Due date is required'),
-  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  priority: z.enum(['low', 'medium', 'high']),
 });
 
 type TaskFormData = z.infer<typeof taskFormSchema>;

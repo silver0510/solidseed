@@ -78,7 +78,7 @@ export default function TasksPage() {
   // Fetch all tasks for metrics
   const { data: allTasksData } = useQuery({
     queryKey: ['tasks', 'all'],
-    queryFn: () => taskApi.getAllTasks(),
+    queryFn: () => taskApi.getUserTasks(),
   });
 
   const tasks = allTasksData ?? [];

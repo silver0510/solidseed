@@ -15,7 +15,6 @@ import { ClientForm } from '@/features/clients/components/ClientForm';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -78,19 +77,19 @@ export default function ClientProfilePage() {
   // Fetch counts for metrics
   const { data: tasks } = useQuery({
     queryKey: ['clients', clientId, 'tasks'],
-    queryFn: () => taskApi.listTasks(clientId),
+    queryFn: () => taskApi.getClientTasks(clientId),
     enabled: !!clientId,
   });
 
   const { data: notes } = useQuery({
     queryKey: ['clients', clientId, 'notes'],
-    queryFn: () => noteApi.listNotes(clientId),
+    queryFn: () => noteApi.getClientNotes(clientId),
     enabled: !!clientId,
   });
 
   const { data: documents } = useQuery({
     queryKey: ['clients', clientId, 'documents'],
-    queryFn: () => documentApi.listDocuments(clientId),
+    queryFn: () => documentApi.getClientDocuments(clientId),
     enabled: !!clientId,
   });
 
@@ -166,20 +165,6 @@ export default function ClientProfilePage() {
             <h1 className="text-2xl font-semibold truncate">
               {client?.name || 'Loading...'}
             </h1>
-            {client?.tags && client.tags.length > 0 && (
-              <div className="flex gap-1 flex-wrap">
-                {client.tags.slice(0, 2).map((tag: string) => (
-                  <Badge key={tag} variant="secondary" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-                {client.tags.length > 2 && (
-                  <Badge variant="outline" className="text-xs">
-                    +{client.tags.length - 2}
-                  </Badge>
-                )}
-              </div>
-            )}
           </div>
           <p className="mt-1 text-muted-foreground">
             {client?.email || 'Loading client details...'}

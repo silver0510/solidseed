@@ -357,7 +357,7 @@ export const taskApi = {
    */
   getUserTasks: async (filters?: TaskFilters): Promise<TaskWithClient[]> => {
     const baseUrl = getBaseUrl();
-    const response = await fetch(`${baseUrl}/api/agent/tasks${buildQueryString(filters || {})}`, {
+    const response = await fetch(`${baseUrl}/api/agent/tasks${buildQueryString(filters as Record<string, unknown> || {})}`, {
       credentials: 'include',
     });
     const result = await handleResponse<{ tasks: TaskWithClient[] }>(response);
