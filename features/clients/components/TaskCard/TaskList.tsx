@@ -111,24 +111,46 @@ export const TaskList: React.FC<TaskListProps> = ({
   }
 
   return (
-    <div className={cn('w-full', className)}>
-      <ul className="divide-y divide-border" role="list">
-        {sortedTasks.map((task) => {
-          const isUpdating = updatingTaskId === task.id || deletingTaskId === task.id;
+    <div className={cn('w-full rounded-lg border border-border bg-card', className)}>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border bg-muted/50">
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-12">
+                Status
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Task
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-32">
+                Priority
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-40">
+                Due Date
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-24">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {sortedTasks.map((task) => {
+              const isUpdating = updatingTaskId === task.id || deletingTaskId === task.id;
 
-          return (
-            <li key={task.id} className="first:pt-0 last:pb-0">
-              <TaskCard
-                task={task}
-                onStatusChange={onStatusChange}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                isUpdating={isUpdating}
-              />
-            </li>
-          );
-        })}
-      </ul>
+              return (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onStatusChange={onStatusChange}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  isUpdating={isUpdating}
+                />
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

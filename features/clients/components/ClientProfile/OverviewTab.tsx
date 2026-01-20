@@ -110,65 +110,6 @@ const CakeIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const FileTextIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-    <path d="M10 9H8" />
-    <path d="M16 13H8" />
-    <path d="M16 17H8" />
-  </svg>
-);
-
-const StickyNoteIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z" />
-    <path d="M15 3v4a2 2 0 0 0 2 2h4" />
-  </svg>
-);
-
-const CheckSquareIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <rect width="18" height="18" x="3" y="3" rx="2" />
-    <path d="m9 12 2 2 4-4" />
-  </svg>
-);
 
 // =============================================================================
 // HELPERS
@@ -203,60 +144,71 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   className,
 }) => {
   return (
-    <div className={cn('space-y-4', className)}>
-      {/* Stats Row - Compact horizontal layout */}
-      <div className="flex items-center gap-6 py-2 border-b border-border">
-        <div className="flex items-center gap-2">
-          <FileTextIcon className="h-4 w-4 text-blue-500" />
-          <span className="text-sm font-medium">{client.documents_count}</span>
-          <span className="text-xs text-muted-foreground">docs</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <StickyNoteIcon className="h-4 w-4 text-amber-500" />
-          <span className="text-sm font-medium">{client.notes_count}</span>
-          <span className="text-xs text-muted-foreground">notes</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <CheckSquareIcon className="h-4 w-4 text-green-500" />
-          <span className="text-sm font-medium">{client.tasks_count}</span>
-          <span className="text-xs text-muted-foreground">tasks</span>
-        </div>
-      </div>
-
-      {/* Contact Information - Compact list */}
-      <div className="space-y-2">
-        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Contact
+    <div className={cn('space-y-6', className)}>
+      {/* Contact Information */}
+      <div className="bg-card rounded-lg border border-border p-6">
+        <h3 className="text-sm font-semibold text-foreground mb-4">
+          Contact Information
         </h3>
 
-        <div className="space-y-1.5">
+        <div className="space-y-4">
           {/* Email */}
-          <div className="flex items-center gap-2 text-sm">
-            <MailIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-foreground truncate">{client.email}</span>
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
+              <MailIcon className="h-4 w-4 text-blue-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-muted-foreground mb-1">Email</p>
+              <a
+                href={`mailto:${client.email}`}
+                className="text-sm text-foreground hover:text-primary transition-colors truncate block"
+              >
+                {client.email}
+              </a>
+            </div>
           </div>
 
           {/* Phone */}
           {client.phone && (
-            <div className="flex items-center gap-2 text-sm">
-              <PhoneIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="text-foreground">{client.phone}</span>
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-500/10">
+                <PhoneIcon className="h-4 w-4 text-green-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Phone</p>
+                <a
+                  href={`tel:${client.phone}`}
+                  className="text-sm text-foreground hover:text-primary transition-colors"
+                >
+                  {client.phone}
+                </a>
+              </div>
             </div>
           )}
 
           {/* Address */}
           {client.address && (
-            <div className="flex items-center gap-2 text-sm">
-              <MapPinIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="text-foreground truncate">{client.address}</span>
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+                <MapPinIcon className="h-4 w-4 text-amber-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Address</p>
+                <p className="text-sm text-foreground">{client.address}</p>
+              </div>
             </div>
           )}
 
           {/* Birthday */}
           {client.birthday && (
-            <div className="flex items-center gap-2 text-sm">
-              <CakeIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="text-foreground">{formatBirthday(client.birthday)}</span>
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10">
+                <CakeIcon className="h-4 w-4 text-purple-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Birthday</p>
+                <p className="text-sm text-foreground">{formatBirthday(client.birthday)}</p>
+              </div>
             </div>
           )}
         </div>

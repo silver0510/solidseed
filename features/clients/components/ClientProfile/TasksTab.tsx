@@ -97,21 +97,8 @@ export const TasksTab: React.FC<TasksTabProps> = ({
     [clientId, onTaskChanged]
   );
 
-  // Count pending and completed tasks
-  const pendingCount = tasks.filter((t) => t.status === 'pending').length;
-  const completedCount = tasks.filter((t) => t.status === 'completed').length;
-
   return (
-    <div className={cn('space-y-3', className)}>
-      {/* Task Summary */}
-      {tasks.length > 0 && (
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span>{pendingCount} pending</span>
-          <span className="text-muted-foreground/50">·</span>
-          <span>{completedCount} completed</span>
-        </div>
-      )}
-
+    <div className={cn('space-y-4', className)}>
       {/* Task List */}
       <TaskList
         tasks={tasks}

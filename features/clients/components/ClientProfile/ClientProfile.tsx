@@ -7,7 +7,7 @@
  * @module features/clients/components/ClientProfile/ClientProfile
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { useClient } from '../../hooks/useClient';
 import { OverviewTab } from './OverviewTab';
@@ -56,25 +56,6 @@ const ArrowLeftIcon = ({ className }: { className?: string }) => (
   >
     <path d="m12 19-7-7 7-7" />
     <path d="M19 12H5" />
-  </svg>
-);
-
-const PencilIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-    <path d="m15 5 4 4" />
   </svg>
 );
 
@@ -212,7 +193,6 @@ const tabs: TabDefinition[] = [
  */
 export const ClientProfile: React.FC<ClientProfileProps> = ({
   clientId,
-  onEdit,
   onBack,
   initialTab = 'overview',
   className,
@@ -231,18 +211,11 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
     refetchTasks,
   } = useClient({ clientId });
 
-  // Handle edit button click
-  const handleEdit = useCallback(() => {
-    if (client && onEdit) {
-      onEdit(client);
-    }
-  }, [client, onEdit]);
-
   // Loading state
   if (isLoading) {
     return (
       <div className={cn('flex items-center justify-center min-h-[400px]', className)}>
-        <LoadingSpinner className="h-8 w-8 text-blue-600" data-testid="loading-spinner" />
+        <LoadingSpinner className="h-8 w-8 text-primary" data-testid="loading-spinner" />
       </div>
     );
   }
@@ -277,45 +250,6 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
 
   return (
     <div className={cn('w-full', className)}>
-      {/* Header - Back button, name, and edit in one row */}
-      <div className="flex items-center gap-2 mb-4">
-        {onBack && (
-          <button
-            type="button"
-            onClick={onBack}
-            className={cn(
-              'p-1.5 -ml-1.5 rounded',
-              'text-muted-foreground hover:text-foreground hover:bg-muted',
-              'transition-colors',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-            )}
-            aria-label="Go back"
-          >
-            <ArrowLeftIcon className="h-5 w-5" />
-          </button>
-        )}
-
-        {onEdit && (
-          <button
-            type="button"
-            onClick={handleEdit}
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-md',
-              'bg-blue-600 px-3 py-1.5',
-              'text-sm font-medium text-white',
-              'hover:bg-blue-700 active:bg-blue-800',
-              'transition-colors',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
-              'shrink-0'
-            )}
-            aria-label="Edit client"
-          >
-            <PencilIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">Edit</span>
-          </button>
-        )}
-      </div>
-
       {/* Tab Navigation - Compact */}
       <div
         role="tablist"

@@ -135,7 +135,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   return (
-    <div
+    <tr
       data-testid="task-item"
       data-completed={isCompleted || undefined}
       data-overdue={displayInfo.isOverdue || undefined}
@@ -143,17 +143,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       data-priority={task.priority}
       data-status={task.status}
       className={cn(
-        'flex items-start gap-3 py-3',
-        'transition-opacity duration-200',
+        'transition-opacity duration-200 hover:bg-muted/30',
         isUpdating && 'opacity-50',
         className
       )}
     >
       {/* Status Checkbox */}
-      <div className="shrink-0 pt-0.5">
+      <td className="px-4 py-3">
         {isUpdating ? (
-          <div className="h-4 w-4 flex items-center justify-center">
-            <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+          <div className="h-5 w-5 flex items-center justify-center">
+            <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : (
           <Checkbox
@@ -162,98 +161,98 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             disabled={!onStatusChange}
             aria-label={`Mark task "${task.title}" as ${isCompleted ? 'pending' : 'completed'}`}
             className={cn(
-              'h-4 w-4 rounded',
+              'h-5 w-5 rounded',
               isCompleted && 'bg-green-500 border-green-500 text-white data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 dark:bg-green-600 dark:border-green-600 dark:data-[state=checked]:bg-green-600 dark:data-[state=checked]:border-green-600'
             )}
           />
         )}
-      </div>
+      </td>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        {/* Title */}
-        <h3
+      {/* Task Title */}
+      <td className="px-4 py-3">
+        <p
           className={cn(
             'text-sm text-foreground',
             isCompleted && 'line-through text-muted-foreground'
           )}
         >
           {task.title}
-        </h3>
+        </p>
+      </td>
 
-        {/* Meta row: priority, due date */}
-        <div className="flex items-center gap-2 mt-1">
-          {/* Priority indicator */}
-          <span
-            className={cn(
-              'text-xs',
-              task.priority === 'high' && 'text-red-600 dark:text-red-400',
-              task.priority === 'medium' && 'text-amber-600 dark:text-amber-400',
-              task.priority === 'low' && 'text-muted-foreground'
-            )}
-          >
-            {getPriorityLabel(task.priority)}
-          </span>
+      {/* Priority */}
+      <td className="px-4 py-3">
+        <span
+          className={cn(
+            'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+            task.priority === 'high' && 'bg-red-500/10 text-red-700 dark:text-red-400',
+            task.priority === 'medium' && 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+            task.priority === 'low' && 'bg-blue-500/10 text-blue-700 dark:text-blue-400'
+          )}
+        >
+          {getPriorityLabel(task.priority)}
+        </span>
+      </td>
 
-          <span className="text-muted-foreground/50">·</span>
+      {/* Due Date */}
+      <td className="px-4 py-3">
+        <span
+          className={cn(
+            'inline-flex items-center gap-1 text-sm whitespace-nowrap',
+            isCompleted
+              ? 'text-muted-foreground'
+              : displayInfo.isOverdue
+                ? 'text-red-600 dark:text-red-400 font-medium'
+                : displayInfo.isDueToday
+                  ? 'text-amber-600 dark:text-amber-400 font-medium'
+                  : 'text-muted-foreground'
+          )}
+        >
+          {!isCompleted && displayInfo.isOverdue && (
+            <AlertCircleIcon className="h-4 w-4" />
+          )}
+          <time dateTime={task.due_date}>
+            {formatDueDate(task.due_date, displayInfo)}
+          </time>
+        </span>
+      </td>
 
-          {/* Due date */}
-          <span
-            className={cn(
-              'inline-flex items-center gap-1 text-xs',
-              isCompleted
-                ? 'text-muted-foreground/60'
-                : displayInfo.isOverdue
-                  ? 'text-red-600 dark:text-red-400'
-                  : displayInfo.isDueToday
-                    ? 'text-amber-600 dark:text-amber-400'
-                    : 'text-muted-foreground'
-            )}
-          >
-            {!isCompleted && displayInfo.isOverdue && (
-              <AlertCircleIcon className="h-3 w-3" />
-            )}
-            <time dateTime={task.due_date}>
-              {formatDueDate(task.due_date, displayInfo)}
-            </time>
-          </span>
+      {/* Actions */}
+      <td className="px-4 py-3">
+        <div className="flex items-center justify-end gap-1">
+          {onEdit && (
+            <button
+              type="button"
+              onClick={() => onEdit(task)}
+              disabled={isUpdating}
+              aria-label="Edit task"
+              className={cn(
+                'p-1.5 rounded transition-colors',
+                'text-muted-foreground hover:text-foreground hover:bg-muted',
+                isUpdating && 'cursor-not-allowed opacity-50'
+              )}
+            >
+              <PencilIcon className="h-4 w-4" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(task)}
+              disabled={isUpdating}
+              aria-label="Delete task"
+              className={cn(
+                'p-1.5 rounded transition-colors',
+                'text-destructive/70 hover:text-destructive hover:bg-destructive/10',
+                isUpdating && 'cursor-not-allowed opacity-50'
+              )}
+            >
+              <TrashIcon className="h-4 w-4" />
+            </button>
+          )}
         </div>
-      </div>
-
-      {/* Action buttons */}
-      <div className="flex items-center gap-1 shrink-0">
-        {onEdit && (
-          <button
-            type="button"
-            onClick={() => onEdit(task)}
-            disabled={isUpdating}
-            aria-label="Edit task"
-            className={cn(
-              'p-1.5 rounded transition-colors',
-              'text-muted-foreground hover:text-foreground hover:bg-muted',
-              isUpdating && 'cursor-not-allowed opacity-50'
-            )}
-          >
-            <PencilIcon className="h-4 w-4" />
-          </button>
-        )}
-        {onDelete && (
-          <button
-            type="button"
-            onClick={() => onDelete(task)}
-            disabled={isUpdating}
-            aria-label="Delete task"
-            className={cn(
-              'p-1.5 rounded transition-colors',
-              'text-destructive/70 hover:text-destructive hover:bg-destructive/10',
-              isUpdating && 'cursor-not-allowed opacity-50'
-            )}
-          >
-            <TrashIcon className="h-4 w-4" />
-          </button>
-        )}
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 };
 

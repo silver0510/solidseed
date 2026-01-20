@@ -249,95 +249,124 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   }
 
   return (
-    <div className={cn('w-full', className)}>
-      <ul className="space-y-2" role="list">
-        {documents.map((document) => {
-          const FileIconComponent = getFileIcon(document.file_type);
-          const isCurrentlyDeleting = isDeleting === document.id;
+    <div className={cn('w-full rounded-lg border border-border bg-card', className)}>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border bg-muted/50">
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Type
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">
+                Size
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">
+                Uploaded
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-24">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+          {documents.map((document) => {
+            const FileIconComponent = getFileIcon(document.file_type);
+            const isCurrentlyDeleting = isDeleting === document.id;
 
-          return (
-            <li
-              key={document.id}
-              className={cn(
-                'flex items-center gap-3 p-3 rounded-lg border border-border bg-card',
-                'transition-colors hover:bg-muted/50',
-                isCurrentlyDeleting && 'opacity-50'
-              )}
-              data-file-type={getFileTypeLabel(document.file_type).toLowerCase()}
-            >
-              {/* File icon */}
-              <div className="flex-shrink-0">
-                <div className="p-2 rounded-lg bg-muted">
-                  <FileIconComponent className="text-muted-foreground" />
-                </div>
-              </div>
+            return (
+              <tr
+                key={document.id}
+                className={cn(
+                  'transition-colors hover:bg-muted/30',
+                  isCurrentlyDeleting && 'opacity-50'
+                )}
+                data-file-type={getFileTypeLabel(document.file_type).toLowerCase()}
+              >
+                {/* File name with icon */}
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="shrink-0">
+                      <FileIconComponent className="text-muted-foreground h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {document.file_name}
+                      </p>
+                      {document.description && (
+                        <p className="text-xs text-muted-foreground/70 truncate mt-0.5">
+                          {document.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </td>
 
-              {/* File info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-card-foreground truncate">
-                    {document.file_name}
-                  </p>
+                {/* File type */}
+                <td className="px-4 py-3">
                   <span
                     className={cn(
-                      'flex-shrink-0 px-1.5 py-0.5 text-xs font-medium rounded',
+                      'inline-flex px-2 py-1 text-xs font-medium rounded',
                       getFileTypeBadgeClass(document.file_type)
                     )}
                   >
                     {getFileTypeLabel(document.file_type)}
                   </span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                  <span>{formatFileSize(document.file_size)}</span>
-                  <span className="hidden sm:inline">-</span>
-                  <span className="hidden sm:inline">
-                    {formatDateTime(document.uploaded_at)}
-                  </span>
-                </div>
-                {document.description && (
-                  <p className="text-xs text-muted-foreground/70 mt-1 truncate">
-                    {document.description}
-                  </p>
-                )}
-              </div>
+                </td>
 
-              {/* Actions */}
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {onDownload && (
-                  <button
-                    type="button"
-                    onClick={() => onDownload(document)}
-                    aria-label={`Download ${document.file_name}`}
-                    className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <DownloadIcon />
-                  </button>
-                )}
-                {onDelete && (
-                  <button
-                    type="button"
-                    onClick={() => onDelete(document)}
-                    disabled={isCurrentlyDeleting}
-                    aria-label={
-                      isCurrentlyDeleting
-                        ? `Deleting ${document.file_name}`
-                        : `Delete ${document.file_name}`
-                    }
-                    className={cn(
-                      'p-2 rounded-md transition-colors',
-                      isCurrentlyDeleting
-                        ? 'text-muted-foreground cursor-not-allowed'
-                        : 'text-destructive hover:text-destructive hover:bg-destructive/10'
+                {/* File size */}
+                <td className="px-4 py-3 text-sm text-muted-foreground hidden sm:table-cell">
+                  {formatFileSize(document.file_size)}
+                </td>
+
+                {/* Upload date */}
+                <td className="px-4 py-3 text-sm text-muted-foreground hidden md:table-cell">
+                  {formatDateTime(document.uploaded_at)}
+                </td>
+
+                {/* Actions */}
+                <td className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-1">
+                    {onDownload && (
+                      <button
+                        type="button"
+                        onClick={() => onDownload(document)}
+                        aria-label={`Download ${document.file_name}`}
+                        className="p-1.5 rounded transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                      >
+                        <DownloadIcon />
+                      </button>
                     )}
-                  >
-                    {isCurrentlyDeleting ? <SpinnerIcon /> : <TrashIcon />}
-                  </button>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+                    {onDelete && (
+                      <button
+                        type="button"
+                        onClick={() => onDelete(document)}
+                        disabled={isCurrentlyDeleting}
+                        aria-label={
+                          isCurrentlyDeleting
+                            ? `Deleting ${document.file_name}`
+                            : `Delete ${document.file_name}`
+                        }
+                        className={cn(
+                          'p-1.5 rounded transition-colors',
+                          isCurrentlyDeleting
+                            ? 'text-muted-foreground cursor-not-allowed'
+                            : 'text-destructive/70 hover:text-destructive hover:bg-destructive/10'
+                        )}
+                      >
+                        {isCurrentlyDeleting ? <SpinnerIcon /> : <TrashIcon />}
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+        </table>
+      </div>
     </div>
   );
 };

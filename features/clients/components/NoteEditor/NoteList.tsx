@@ -177,82 +177,101 @@ export const NoteList: React.FC<NoteListProps> = ({
   }
 
   return (
-    <div className={cn('w-full', className)}>
-      <ul className="divide-y divide-border" role="list">
-        {sortedNotes.map((note) => {
-          const isCurrentlyDeleting = isDeleting === note.id;
+    <div className={cn('w-full rounded-lg border border-border bg-card', className)}>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border bg-muted/50">
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Note
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-40">
+                Date
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-24">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {sortedNotes.map((note) => {
+              const isCurrentlyDeleting = isDeleting === note.id;
 
-          return (
-            <li
-              key={note.id}
-              data-testid="note-item"
-              role="article"
-              data-important={note.is_important || undefined}
-              className={cn(
-                'py-3 first:pt-0 last:pb-0',
-                'transition-opacity duration-200',
-                isCurrentlyDeleting && 'opacity-50'
-              )}
-            >
-              {/* Row layout: content left, actions right */}
-              <div className="flex items-start gap-3">
-                {/* Important indicator */}
-                {note.is_important && (
-                  <StarIcon className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                )}
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground line-clamp-2 wrap-break-word">
-                    {note.content}
-                  </p>
-                  <time
-                    dateTime={note.created_at}
-                    className="text-xs text-muted-foreground mt-1 block"
-                  >
-                    {formatDateTime(note.created_at)}
-                  </time>
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex items-center gap-1 shrink-0">
-                  {onEdit && (
-                    <button
-                      type="button"
-                      onClick={() => onEdit(note)}
-                      disabled={isCurrentlyDeleting}
-                      aria-label="Edit note"
-                      className={cn(
-                        'p-1.5 rounded transition-colors',
-                        'text-muted-foreground hover:text-foreground hover:bg-muted',
-                        isCurrentlyDeleting && 'cursor-not-allowed opacity-50'
-                      )}
-                    >
-                      <EditIcon />
-                    </button>
+              return (
+                <tr
+                  key={note.id}
+                  data-testid="note-item"
+                  role="article"
+                  data-important={note.is_important || undefined}
+                  className={cn(
+                    'transition-opacity duration-200 hover:bg-muted/30',
+                    isCurrentlyDeleting && 'opacity-50'
                   )}
-                  {onDelete && (
-                    <button
-                      type="button"
-                      onClick={() => onDelete(note)}
-                      disabled={isCurrentlyDeleting}
-                      aria-label={isCurrentlyDeleting ? 'Deleting note' : 'Delete note'}
-                      className={cn(
-                        'p-1.5 rounded transition-colors',
-                        isCurrentlyDeleting
-                          ? 'text-muted-foreground cursor-not-allowed'
-                          : 'text-destructive/70 hover:text-destructive hover:bg-destructive/10'
+                >
+                  {/* Content */}
+                  <td className="px-4 py-3">
+                    <div className="flex items-start gap-2">
+                      {note.is_important && (
+                        <StarIcon className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                       )}
+                      <p className="text-sm text-foreground whitespace-pre-wrap wrap-break-word line-clamp-2">
+                        {note.content}
+                      </p>
+                    </div>
+                  </td>
+
+                  {/* Date */}
+                  <td className="px-4 py-3">
+                    <time
+                      dateTime={note.created_at}
+                      className="text-sm text-muted-foreground whitespace-nowrap"
                     >
-                      {isCurrentlyDeleting ? <SpinnerIcon /> : <TrashIcon />}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+                      {formatDateTime(note.created_at)}
+                    </time>
+                  </td>
+
+                  {/* Actions */}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      {onEdit && (
+                        <button
+                          type="button"
+                          onClick={() => onEdit(note)}
+                          disabled={isCurrentlyDeleting}
+                          aria-label="Edit note"
+                          className={cn(
+                            'p-1.5 rounded transition-colors',
+                            'text-muted-foreground hover:text-foreground hover:bg-muted',
+                            isCurrentlyDeleting && 'cursor-not-allowed opacity-50'
+                          )}
+                        >
+                          <EditIcon />
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button
+                          type="button"
+                          onClick={() => onDelete(note)}
+                          disabled={isCurrentlyDeleting}
+                          aria-label={isCurrentlyDeleting ? 'Deleting note' : 'Delete note'}
+                          className={cn(
+                            'p-1.5 rounded transition-colors',
+                            isCurrentlyDeleting
+                              ? 'text-muted-foreground cursor-not-allowed'
+                              : 'text-destructive/70 hover:text-destructive hover:bg-destructive/10'
+                          )}
+                        >
+                          {isCurrentlyDeleting ? <SpinnerIcon /> : <TrashIcon />}
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -259,7 +259,7 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
 
           {/* Add Task Button */}
           {onAddTask && (
-            <Button onClick={onAddTask} className="h-9 shrink-0">
+            <Button onClick={onAddTask} variant="outline" size="sm" className="h-9 shrink-0">
               <PlusIcon className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Add Task</span>
             </Button>

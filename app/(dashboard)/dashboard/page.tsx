@@ -274,16 +274,6 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
-      {/* Welcome section */}
-      <div>
-        <h1 className="text-2xl font-semibold">
-          Good morning, Agent
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          Here&apos;s what&apos;s happening with your clients today.
-        </p>
-      </div>
-
       {/* Metrics grid */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <MetricCard
