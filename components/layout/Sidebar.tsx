@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -11,7 +12,10 @@ import {
   BellIcon,
   LogOutIcon,
   MoreVerticalIcon,
+  Moon,
+  Sun,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -225,6 +229,18 @@ const secondaryNavigation: SecondaryNavItem[] = [
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  const isDark = mounted && theme === 'dark';
 
   return (
     <div className="flex h-full flex-col">
@@ -271,6 +287,19 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             );
           })}
         </nav>
+      </div>
+
+      {/* Theme toggle */}
+      <div className="px-4 pb-2">
+        <button
+          onClick={toggleTheme}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <span className="text-muted-foreground">
+            {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </span>
+          {isDark ? 'Light Mode' : 'Dark Mode'}
+        </button>
       </div>
 
       {/* User menu */}
