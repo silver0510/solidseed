@@ -6,8 +6,8 @@
  * User login with email/password and OAuth options
  */
 
-import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, FormEvent, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/useAuth';
 import { FormInput } from '@/components/auth/FormInput';
@@ -19,9 +19,13 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { formatAuthError } from '@/lib/auth/utils';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login: loginUser, clearError } = useAuth();
+
+  // Get redirect URL from query params
+  const redirectUrl = searchParams.get('redirect') || '/dashboard';
 
   const [formData, setFormData] = useState({
     email: '',
@@ -68,8 +72,8 @@ export default function LoginPage() {
         rememberMe: formData.rememberMe,
       });
 
-      // Redirect will be handled by AuthGuard
-      router.push('/dashboard');
+      // Redirect to the original page or dashboard
+      router.push(redirectUrl);
     } catch (error) {
       setApiError(formatAuthError(error instanceof Error ? error.message : undefined));
     } finally {
@@ -182,5 +186,22 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Welcome Back</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            Loading...
+          </p>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

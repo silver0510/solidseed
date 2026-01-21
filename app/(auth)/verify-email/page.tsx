@@ -6,7 +6,7 @@
  * Handles email verification token from URL
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { verifyEmail } from '@/lib/auth/api';
@@ -14,7 +14,7 @@ import { formatAuthError } from '@/lib/auth/utils';
 
 type VerificationStatus = 'loading' | 'success' | 'error';
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -174,5 +174,21 @@ export default function VerifyEmailPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900">Loading...</h2>
+        <p className="mt-2 text-sm text-gray-600">Please wait...</p>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

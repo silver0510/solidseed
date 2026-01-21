@@ -192,10 +192,11 @@ export async function changePassword(data: ChangePasswordData): Promise<AuthResp
 
 /**
  * Get current user (authenticated)
+ * Checks Better Auth session from cookies
  */
 export async function getCurrentUser(): Promise<AuthResponse> {
-  return request<AuthResponse>('/api/auth/me', {
-    headers: getAuthHeaders(),
+  return request<AuthResponse>('/api/auth/session', {
+    credentials: 'include', // Important: include cookies in request
   });
 }
 

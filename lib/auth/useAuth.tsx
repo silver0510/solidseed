@@ -46,6 +46,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadUser = async () => {
       try {
+        // First, try to get current user from API (this will check cookies)
+        const response = await getCurrentUser();
+
+        if (response.user) {
+          setUser(response.user);
+          setIsLoading(false);
+          return;
+        }
+
+        // If API call succeeded but no user, check localStorage token as fallback
         const token = getAuthToken();
 
         if (!token || isTokenExpired(token)) {
@@ -55,25 +65,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Try to fetch current user from API
-        const response = await getCurrentUser();
-
-        if (response.user) {
-          setUser(response.user);
+        // Fallback: decode from localStorage token
+        const decoded = decodeToken(token);
+        if (decoded) {
+          setUser({
+            id: decoded.userId,
+            email: decoded.email,
+            full_name: decoded.fullName,
+            subscription_tier: decoded.subscriptionTier,
+          });
         } else {
-          // Fallback: decode from token
-          const decoded = decodeToken(token);
-          if (decoded) {
-            setUser({
-              id: decoded.userId,
-              email: decoded.email,
-              full_name: decoded.fullName,
-              subscription_tier: decoded.subscriptionTier,
-            });
-          }
+          setUser(null);
         }
-      } catch {
-        // If fetching fails, try to decode token
+      } catch (err) {
+        // If fetching fails, try localStorage token
         const token = getAuthToken();
         if (token && !isTokenExpired(token)) {
           const decoded = decodeToken(token);
@@ -84,6 +89,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               full_name: decoded.fullName,
               subscription_tier: decoded.subscriptionTier,
             });
+          } else {
+            setUser(null);
           }
         } else {
           removeAuthToken();

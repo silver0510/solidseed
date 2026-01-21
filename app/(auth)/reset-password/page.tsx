@@ -6,7 +6,7 @@
  * Allows users to reset their password with a valid token
  */
 
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { resetPassword } from '@/lib/auth/api';
@@ -15,7 +15,7 @@ import { Button } from '@/components/auth/Button';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { formatAuthError } from '@/lib/auth/utils';
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -277,5 +277,21 @@ export default function ResetPasswordPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900">Loading...</h2>
+        <p className="mt-2 text-sm text-gray-600">Please wait...</p>
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
