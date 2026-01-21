@@ -7,7 +7,7 @@
  * Shows task title, description, status, priority, due date, and client info.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -120,6 +120,8 @@ export interface TaskDetailsDialogProps {
   isUpdating?: boolean;
   /** Whether to start in edit mode */
   initialEditMode?: boolean;
+  /** Whether to show client information (hide when in client profile page) */
+  showClientInfo?: boolean;
 }
 
 // =============================================================================
@@ -133,8 +135,10 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
   onUpdate,
   isUpdating = false,
   initialEditMode = false,
+  showClientInfo = true,
 }) => {
   const [isEditing, setIsEditing] = useState(initialEditMode);
+  const hasInitialized = useRef(false);
 
   const {
     register,
@@ -152,15 +156,23 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
 
   // Handle initial edit mode when dialog opens
   useEffect(() => {
-    if (open && task && initialEditMode) {
-      reset({
-        title: task.title,
-        description: task.description || '',
-        due_date: task.due_date,
-        priority: task.priority,
-        status: task.status,
-      });
-      setIsEditing(true);
+    if (open && task) {
+      if (initialEditMode && !hasInitialized.current) {
+        // Only set edit mode on first open
+        reset({
+          title: task.title,
+          description: task.description || '',
+          due_date: task.due_date,
+          priority: task.priority,
+          status: task.status,
+        });
+        setIsEditing(true);
+        hasInitialized.current = true;
+      }
+    } else if (!open) {
+      // Reset when dialog closes
+      setIsEditing(false);
+      hasInitialized.current = false;
     }
   }, [open, task, initialEditMode, reset]);
 
@@ -319,13 +331,15 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
             </div>
 
             {/* Client Info (read-only) */}
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">Client</Label>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <UserIcon className="h-4 w-4" />
-                <span>{task.client_name}</span>
+            {showClientInfo && (
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">Client</Label>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <UserIcon className="h-4 w-4" />
+                  <span>{task.client_name}</span>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Actions */}
             <div className="flex justify-end gap-2 pt-4 border-t">
@@ -416,21 +430,23 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
             </div>
 
             {/* Client */}
-            <div className="flex items-center gap-2 text-sm">
-              <UserIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Client:</span>
-              <Link
-                href={`/clients/${task.client_id}`}
-                className="font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm"
-                onClick={(e) => {
-                  // Close the dialog when clicking the link
-                  e.stopPropagation();
-                  handleOpenChange(false);
-                }}
-              >
-                {task.client_name}
-              </Link>
-            </div>
+            {showClientInfo && (
+              <div className="flex items-center gap-2 text-sm">
+                <UserIcon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Client:</span>
+                <Link
+                  href={`/clients/${task.client_id}`}
+                  className="font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm"
+                  onClick={(e) => {
+                    // Close the dialog when clicking the link
+                    e.stopPropagation();
+                    handleOpenChange(false);
+                  }}
+                >
+                  {task.client_name}
+                </Link>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex justify-end gap-2 pt-4 border-t">

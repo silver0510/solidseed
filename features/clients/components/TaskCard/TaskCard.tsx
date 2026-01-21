@@ -189,6 +189,32 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         className
       )}
     >
+      {/* Task Title */}
+      <td className="px-4 py-3">
+        <p
+          className={cn(
+            'text-sm text-foreground',
+            isClosed && 'line-through text-muted-foreground'
+          )}
+        >
+          {task.title}
+        </p>
+      </td>
+
+      {/* Priority */}
+      <td className="px-4 py-3">
+        <span
+          className={cn(
+            'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+            task.priority === 'high' && 'bg-red-500/10 text-red-700 dark:text-red-400',
+            task.priority === 'medium' && 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+            task.priority === 'low' && 'bg-blue-500/10 text-blue-700 dark:text-blue-400'
+          )}
+        >
+          {getPriorityLabel(task.priority)}
+        </span>
+      </td>
+
       {/* Status Dropdown */}
       <td className="px-4 py-3">
         {isUpdating ? (
@@ -234,32 +260,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </SelectContent>
           </Select>
         )}
-      </td>
-
-      {/* Task Title */}
-      <td className="px-4 py-3">
-        <p
-          className={cn(
-            'text-sm text-foreground',
-            isClosed && 'line-through text-muted-foreground'
-          )}
-        >
-          {task.title}
-        </p>
-      </td>
-
-      {/* Priority */}
-      <td className="px-4 py-3">
-        <span
-          className={cn(
-            'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-            task.priority === 'high' && 'bg-red-500/10 text-red-700 dark:text-red-400',
-            task.priority === 'medium' && 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
-            task.priority === 'low' && 'bg-blue-500/10 text-blue-700 dark:text-blue-400'
-          )}
-        >
-          {getPriorityLabel(task.priority)}
-        </span>
       </td>
 
       {/* Due Date */}

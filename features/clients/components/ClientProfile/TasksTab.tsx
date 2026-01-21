@@ -9,8 +9,9 @@
 import React, { useCallback, useState } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { TaskList } from '../TaskCard';
+import { TaskDetailsDialog } from '../TaskDetailsDialog';
 import { taskApi } from '../../api/clientApi';
-import type { ClientTask, TaskStatus, CreateTaskInput } from '../../types';
+import type { ClientTask, TaskStatus, CreateTaskInput, UpdateTaskInput, TaskWithClient } from '../../types';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,6 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 // =============================================================================
 // TYPES & SCHEMA
@@ -85,6 +93,10 @@ export const TasksTab: React.FC<TasksTabProps> = ({
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<ClientTask | null>(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<ClientTask | null>(null);
 
   // Task form
   const {
@@ -147,27 +159,57 @@ export const TasksTab: React.FC<TasksTabProps> = ({
     [clientId, onTaskChanged]
   );
 
-  // Handle task edit (placeholder - would typically open a modal)
+  // Handle task edit - open edit dialog
   const handleEdit = useCallback((task: ClientTask) => {
-    // TODO: Implement task editing modal
-    console.log('Edit task:', task.id);
+    setSelectedTask(task);
+    setIsDetailsDialogOpen(true);
   }, []);
 
-  // Handle task deletion
-  const handleDelete = useCallback(
-    async (task: ClientTask) => {
-      setDeletingTaskId(task.id);
+  // Handle task update
+  const handleTaskUpdate = useCallback(
+    async (task: ClientTask, data: UpdateTaskInput) => {
+      setUpdatingTaskId(task.id);
       try {
-        await taskApi.deleteTask(clientId, task.id);
+        await taskApi.updateTask(clientId, task.id, data);
         onTaskChanged?.();
       } catch (error) {
-        console.error('Failed to delete task:', error);
+        console.error('Failed to update task:', error);
+        throw error;
       } finally {
-        setDeletingTaskId(null);
+        setUpdatingTaskId(null);
       }
     },
     [clientId, onTaskChanged]
   );
+
+  // Handle task deletion - open confirm dialog
+  const handleDelete = useCallback((task: ClientTask) => {
+    setTaskToDelete(task);
+    setIsDeleteDialogOpen(true);
+  }, []);
+
+  // Confirm and execute delete
+  const handleConfirmDelete = useCallback(async () => {
+    if (!taskToDelete) return;
+
+    setDeletingTaskId(taskToDelete.id);
+    try {
+      await taskApi.deleteTask(clientId, taskToDelete.id);
+      onTaskChanged?.();
+      setIsDeleteDialogOpen(false);
+      setTaskToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+    } finally {
+      setDeletingTaskId(null);
+    }
+  }, [taskToDelete, clientId, onTaskChanged]);
+
+  // Cancel delete
+  const handleCancelDelete = useCallback(() => {
+    setIsDeleteDialogOpen(false);
+    setTaskToDelete(null);
+  }, []);
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -286,6 +328,66 @@ export const TasksTab: React.FC<TasksTabProps> = ({
         updatingTaskId={updatingTaskId ?? undefined}
         deletingTaskId={deletingTaskId ?? undefined}
       />
+
+      {/* Task Details Dialog */}
+      <TaskDetailsDialog
+        task={
+          selectedTask
+            ? {
+                ...selectedTask,
+                client_name: '', // ClientTask doesn't have client_name, but it's not used in edit mode
+              }
+            : null
+        }
+        open={isDetailsDialogOpen}
+        onOpenChange={setIsDetailsDialogOpen}
+        onUpdate={handleTaskUpdate}
+        isUpdating={updatingTaskId === selectedTask?.id}
+        initialEditMode={true}
+        showClientInfo={false}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Task</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this task? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {taskToDelete && (
+              <div className="rounded-lg border border-border bg-muted/50 p-3">
+                <p className="text-sm font-medium text-foreground">{taskToDelete.title}</p>
+                {taskToDelete.due_date && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Due: {new Date(taskToDelete.due_date).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancelDelete}
+                disabled={deletingTaskId === taskToDelete?.id}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={deletingTaskId === taskToDelete?.id}
+              >
+                {deletingTaskId === taskToDelete?.id ? 'Deleting...' : 'Delete Task'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
