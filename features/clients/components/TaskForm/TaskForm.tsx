@@ -45,8 +45,8 @@ type TaskFormData = z.infer<typeof taskFormSchema>;
 // =============================================================================
 
 export interface TaskFormProps {
-  /** List of clients to select from */
-  clients: ClientWithTags[];
+  /** List of clients to select from (not needed if fixedClientId is provided) */
+  clients?: ClientWithTags[];
   /** Whether clients are loading */
   isLoadingClients?: boolean;
   /** Callback when form is submitted with valid data */
@@ -55,6 +55,10 @@ export interface TaskFormProps {
   onCancel?: () => void;
   /** External loading state */
   isSubmitting?: boolean;
+  /** Fixed client ID (makes client field read-only and pre-selected) */
+  fixedClientId?: string;
+  /** Fixed client name (displayed when fixedClientId is set) */
+  fixedClientName?: string;
 }
 
 // =============================================================================
@@ -62,11 +66,13 @@ export interface TaskFormProps {
 // =============================================================================
 
 export const TaskForm: React.FC<TaskFormProps> = ({
-  clients,
+  clients = [],
   isLoadingClients,
   onSubmit,
   onCancel,
   isSubmitting,
+  fixedClientId,
+  fixedClientName,
 }) => {
   const {
     register,
@@ -77,7 +83,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: {
-      client_id: '',
+      client_id: fixedClientId || '',
       title: '',
       description: '',
       due_date: new Date().toISOString().split('T')[0],
@@ -98,22 +104,43 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       {/* Client Selection */}
       <div className="space-y-2">
         <Label htmlFor="client_id">Client *</Label>
-        <Select
-          value={selectedClientId}
-          onValueChange={(value) => setValue('client_id', value)}
-          disabled={isLoadingClients}
-        >
-          <SelectTrigger id="client_id" className="h-9">
-            <SelectValue placeholder={isLoadingClients ? 'Loading clients...' : 'Select a client'} />
-          </SelectTrigger>
-          <SelectContent>
-            {clients.map((client) => (
-              <SelectItem key={client.id} value={client.id}>
-                {client.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {fixedClientId ? (
+          // Fixed client - read-only display
+          <div className="flex items-center gap-2 rounded-md border border-input bg-muted px-3 py-2 text-sm h-9">
+            <svg
+              className="h-4 w-4 text-muted-foreground"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+              />
+            </svg>
+            <span className="text-foreground">{fixedClientName || 'Current Client'}</span>
+          </div>
+        ) : (
+          // Client dropdown selector
+          <Select
+            value={selectedClientId}
+            onValueChange={(value) => setValue('client_id', value)}
+            disabled={isLoadingClients}
+          >
+            <SelectTrigger id="client_id" className="h-9">
+              <SelectValue placeholder={isLoadingClients ? 'Loading clients...' : 'Select a client'} />
+            </SelectTrigger>
+            <SelectContent>
+              {clients.map((client) => (
+                <SelectItem key={client.id} value={client.id}>
+                  {client.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         {errors.client_id && (
           <p className="text-sm text-destructive">{errors.client_id.message}</p>
         )}

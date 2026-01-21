@@ -318,6 +318,7 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
         {activeTab === 'tasks' && (
           <TasksTab
             clientId={clientId}
+            clientName={client.name}
             tasks={tasks}
             onTaskChanged={refetchTasks}
           />

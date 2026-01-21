@@ -108,17 +108,17 @@ const PRIORITY_CONFIG = {
 // =============================================================================
 
 export interface TaskDetailsDialogProps {
-  /** The task to display */
+  /** The task to display (null for create mode) */
   task: TaskWithClient | null;
   /** Whether the dialog is open */
   open: boolean;
   /** Callback when dialog open state changes */
   onOpenChange: (open: boolean) => void;
-  /** Callback when task is updated */
-  onUpdate?: (task: TaskWithClient, data: UpdateTaskInput) => Promise<void>;
+  /** Callback when task is updated or created */
+  onUpdate?: (task: TaskWithClient | null, data: UpdateTaskInput) => Promise<void>;
   /** Whether an update is in progress */
   isUpdating?: boolean;
-  /** Whether to start in edit mode */
+  /** Whether to start in edit mode (or create mode if task is null) */
   initialEditMode?: boolean;
   /** Whether to show client information (hide when in client profile page) */
   showClientInfo?: boolean;
@@ -156,16 +156,28 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
 
   // Handle initial edit mode when dialog opens
   useEffect(() => {
-    if (open && task) {
+    if (open) {
       if (initialEditMode && !hasInitialized.current) {
-        // Only set edit mode on first open
-        reset({
-          title: task.title,
-          description: task.description || '',
-          due_date: task.due_date,
-          priority: task.priority,
-          status: task.status,
-        });
+        // Set edit mode on first open
+        if (task) {
+          // Editing existing task
+          reset({
+            title: task.title,
+            description: task.description || '',
+            due_date: task.due_date,
+            priority: task.priority,
+            status: task.status,
+          });
+        } else {
+          // Creating new task
+          reset({
+            title: '',
+            description: '',
+            due_date: new Date().toISOString().split('T')[0],
+            priority: 'medium',
+            status: 'todo',
+          });
+        }
         setIsEditing(true);
         hasInitialized.current = true;
       }
@@ -201,13 +213,19 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
 
   // Cancel editing
   const handleCancelEdit = () => {
-    setIsEditing(false);
-    reset();
+    if (!task) {
+      // If creating new task, close the dialog
+      handleOpenChange(false);
+    } else {
+      // If editing existing task, just exit edit mode
+      setIsEditing(false);
+      reset();
+    }
   };
 
   // Submit edit form
   const handleFormSubmit = async (data: TaskEditFormData) => {
-    if (!task || !onUpdate) return;
+    if (!onUpdate) return;
 
     const updateData: UpdateTaskInput = {
       title: data.title,
@@ -221,28 +239,31 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
     setIsEditing(false);
   };
 
-  if (!task) return null;
+  const isCreateMode = !task;
 
-  const displayInfo = getTaskDisplayInfo(task);
-  const statusConfig = STATUS_CONFIG[task.status];
-  const priorityConfig = PRIORITY_CONFIG[task.priority];
-  const StatusIcon = statusConfig.icon;
+  // In view mode, we need task data
+  const displayInfo = task ? getTaskDisplayInfo(task) : null;
+  const statusConfig = task ? STATUS_CONFIG[task.status] : null;
+  const priorityConfig = task ? PRIORITY_CONFIG[task.priority] : null;
+  const StatusIcon = statusConfig?.icon;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-125">
         <DialogHeader>
           <DialogTitle className="text-lg">
-            {isEditing ? 'Edit Task' : 'Task Details'}
+            {isCreateMode ? 'Add Task' : isEditing ? 'Edit Task' : 'Task Details'}
           </DialogTitle>
           <DialogDescription>
-            {isEditing
-              ? 'Update the task information below'
-              : 'View task information and status'}
+            {isCreateMode
+              ? 'Create a new task for this client'
+              : isEditing
+                ? 'Update the task information below'
+                : 'View task information and status'}
           </DialogDescription>
         </DialogHeader>
 
-        {isEditing ? (
+        {isEditing || isCreateMode ? (
           // Edit Mode
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
             {/* Title */}
@@ -281,7 +302,7 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(STATUS_CONFIG) as [TaskStatus, typeof statusConfig][]).map(
+                  {(Object.entries(STATUS_CONFIG) as [TaskStatus, typeof STATUS_CONFIG[TaskStatus]][]).map(
                     ([status, config]) => {
                       const Icon = config.icon;
                       return (
@@ -330,8 +351,8 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
               </Select>
             </div>
 
-            {/* Client Info (read-only) */}
-            {showClientInfo && (
+            {/* Client Info (read-only) - only show in edit mode, not create mode */}
+            {showClientInfo && task && (
               <div className="space-y-2">
                 <Label className="text-muted-foreground">Client</Label>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -352,12 +373,13 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
                 Cancel
               </Button>
               <Button type="submit" disabled={isUpdating}>
-                {isUpdating ? 'Saving...' : 'Save Changes'}
+                {isUpdating ? 'Saving...' : isCreateMode ? 'Add Task' : 'Save Changes'}
               </Button>
             </div>
           </form>
         ) : (
-          // View Mode
+          // View Mode (only shown when not in create mode and not editing)
+          task && statusConfig && priorityConfig && displayInfo && StatusIcon && (
           <div className="space-y-4">
             {/* Title */}
             <div>
@@ -461,6 +483,7 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
               )}
             </div>
           </div>
+          )
         )}
       </DialogContent>
     </Dialog>

@@ -160,7 +160,9 @@ export default function TasksPage() {
     setIsDetailsDialogOpen(true);
   };
 
-  const handleTaskUpdate = async (task: TaskWithClient, data: UpdateTaskInput) => {
+  const handleTaskUpdate = async (task: TaskWithClient | null, data: UpdateTaskInput) => {
+    if (!task) return; // Should not happen in this page (no create mode)
+
     await updateTaskMutation.mutateAsync({
       clientId: task.client_id,
       taskId: task.id,
@@ -273,7 +275,7 @@ export default function TasksPage() {
 
       {/* Add Task Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-125">
           <DialogHeader>
             <DialogTitle>Add New Task</DialogTitle>
             <DialogDescription>
@@ -307,7 +309,7 @@ export default function TasksPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle>Delete Task</DialogTitle>
             <DialogDescription>
