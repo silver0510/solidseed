@@ -22,12 +22,14 @@ function MetricCard({
   change,
   changeType,
   icon,
+  variant = 'default',
 }: {
   title: string;
   value: string | number;
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
   icon: React.ReactNode;
+  variant?: 'default' | 'warning' | 'danger' | 'info' | 'success';
 }) {
   return (
     <Card className="transition-shadow hover:shadow-md">
@@ -52,7 +54,13 @@ function MetricCard({
               </p>
             )}
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+          <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+            variant === 'danger' ? 'bg-destructive/10 text-destructive' :
+            variant === 'warning' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' :
+            variant === 'info' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
+            variant === 'success' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' :
+            'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
+          }`}>
             {icon}
           </div>
         </div>
@@ -281,6 +289,7 @@ export default function DashboardPage() {
           value={metrics.totalClients}
           change="+12 this month"
           changeType="positive"
+          variant="info"
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
@@ -292,6 +301,7 @@ export default function DashboardPage() {
           value={metrics.activeTasks}
           change={`${metrics.upcomingToday} due today`}
           changeType="neutral"
+          variant="default"
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -303,6 +313,7 @@ export default function DashboardPage() {
           value={metrics.completedThisWeek}
           change="This week"
           changeType="positive"
+          variant="success"
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3l1.5 1.5 3-3.75" />
@@ -314,6 +325,7 @@ export default function DashboardPage() {
           value={metrics.upcomingToday}
           change="Tasks pending"
           changeType={metrics.upcomingToday > 3 ? 'negative' : 'neutral'}
+          variant={metrics.upcomingToday > 3 ? 'danger' : 'warning'}
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
