@@ -15,6 +15,9 @@ import {
   CircleIcon,
   PlayCircleIcon,
   CheckCircle2Icon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ArrowUpDownIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +51,8 @@ export interface TaskDashboardProps {
 }
 
 type DueDateFilter = 'all' | 'overdue' | 'today' | 'upcoming';
+type SortField = 'task' | 'client' | 'priority' | 'status' | 'due_date';
+type SortDirection = 'asc' | 'desc' | null;
 
 // =============================================================================
 // STATUS CONFIGURATION
@@ -213,6 +218,54 @@ function filterTasksByDueDate(tasks: TaskWithClient[], dueDateFilter: DueDateFil
   });
 }
 
+/**
+ * Sort tasks by field and direction
+ */
+function sortTasks(
+  tasks: TaskWithClient[],
+  sortField: SortField | null,
+  sortDirection: SortDirection
+): TaskWithClient[] {
+  if (!sortField || !sortDirection) {
+    return tasks;
+  }
+
+  const sorted = [...tasks].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortField) {
+      case 'task':
+        comparison = a.title.localeCompare(b.title);
+        break;
+      case 'client':
+        comparison = a.client_name.localeCompare(b.client_name);
+        break;
+      case 'priority': {
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
+        break;
+      }
+      case 'status': {
+        const statusOrder = { todo: 1, in_progress: 2, closed: 3 };
+        comparison = statusOrder[a.status] - statusOrder[b.status];
+        break;
+      }
+      case 'due_date': {
+        // Handle null dates - put them at the end
+        if (!a.due_date && !b.due_date) return 0;
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        comparison = new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+        break;
+      }
+    }
+
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
+
+  return sorted;
+}
+
 // =============================================================================
 // COMPONENT
 // =============================================================================
@@ -238,6 +291,10 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
   const [dueDateFilter, setDueDateFilter] = useState<DueDateFilter>('all');
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
 
+  // Sort state
+  const [sortField, setSortField] = useState<SortField | null>('due_date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
   // Fetch tasks with hook
   const {
     tasks,
@@ -248,10 +305,11 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
     updateTaskStatus,
   } = useAllTasks({ status: statusFilter, priority: priorityFilter });
 
-  // Filter tasks by due date
+  // Filter tasks by due date and apply sorting
   const filteredTasks = useMemo(() => {
-    return filterTasksByDueDate(tasks, dueDateFilter);
-  }, [tasks, dueDateFilter]);
+    const filtered = filterTasksByDueDate(tasks, dueDateFilter);
+    return sortTasks(filtered, sortField, sortDirection);
+  }, [tasks, dueDateFilter, sortField, sortDirection]);
 
   // Handle status change
   const handleStatusChange = useCallback(
@@ -290,6 +348,34 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
       e.preventDefault();
       handleTaskClick(task);
     }
+  };
+
+  // Handle column sort
+  const handleSort = useCallback((field: SortField) => {
+    if (sortField === field) {
+      // Toggle direction or clear sort
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortField(null);
+        setSortDirection(null);
+      }
+    } else {
+      // New field, start with ascending
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  }, [sortField, sortDirection]);
+
+  // Get sort icon for column
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDownIcon className="h-3.5 w-3.5 opacity-40" />;
+    }
+    if (sortDirection === 'asc') {
+      return <ArrowUpIcon className="h-3.5 w-3.5" />;
+    }
+    return <ArrowDownIcon className="h-3.5 w-3.5" />;
   };
 
   return (
@@ -404,20 +490,65 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Task
+                  <th className="px-4 py-3 text-left w-auto">
+                    <button
+                      onClick={() => handleSort('task')}
+                      className={cn(
+                        'flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider hover:text-foreground transition-colors',
+                        sortField === 'task' ? 'text-foreground' : 'text-muted-foreground'
+                      )}
+                    >
+                      Task
+                      {getSortIcon('task')}
+                    </button>
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-40">
-                    Client
+                  <th className="px-4 py-3 text-left w-40">
+                    <button
+                      onClick={() => handleSort('client')}
+                      className={cn(
+                        'flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider hover:text-foreground transition-colors',
+                        sortField === 'client' ? 'text-foreground' : 'text-muted-foreground'
+                      )}
+                    >
+                      Client
+                      {getSortIcon('client')}
+                    </button>
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-24">
-                    Priority
+                  <th className="px-4 py-3 text-left w-24">
+                    <button
+                      onClick={() => handleSort('priority')}
+                      className={cn(
+                        'flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider hover:text-foreground transition-colors',
+                        sortField === 'priority' ? 'text-foreground' : 'text-muted-foreground'
+                      )}
+                    >
+                      Priority
+                      {getSortIcon('priority')}
+                    </button>
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-32">
-                    Status
+                  <th className="px-4 py-3 text-left w-32">
+                    <button
+                      onClick={() => handleSort('status')}
+                      className={cn(
+                        'flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider hover:text-foreground transition-colors',
+                        sortField === 'status' ? 'text-foreground' : 'text-muted-foreground'
+                      )}
+                    >
+                      Status
+                      {getSortIcon('status')}
+                    </button>
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-36">
-                    Due Date
+                  <th className="px-4 py-3 text-left w-36">
+                    <button
+                      onClick={() => handleSort('due_date')}
+                      className={cn(
+                        'flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider hover:text-foreground transition-colors',
+                        sortField === 'due_date' ? 'text-foreground' : 'text-muted-foreground'
+                      )}
+                    >
+                      Due Date
+                      {getSortIcon('due_date')}
+                    </button>
                   </th>
                 </tr>
               </thead>
