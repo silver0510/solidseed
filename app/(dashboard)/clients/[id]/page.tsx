@@ -93,8 +93,8 @@ export default function ClientProfilePage() {
     enabled: !!clientId,
   });
 
-  const pendingTasksCount = tasks?.filter((t) => t.status === 'pending').length ?? 0;
-  const completedTasksCount = tasks?.filter((t) => t.status === 'completed').length ?? 0;
+  const activeTasksCount = tasks?.filter((t) => t.status !== 'closed').length ?? 0;
+  const closedTasksCount = tasks?.filter((t) => t.status === 'closed').length ?? 0;
   const notesCount = notes?.length ?? 0;
   const documentsCount = documents?.length ?? 0;
 
@@ -192,9 +192,9 @@ export default function ClientProfilePage() {
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <MetricCard
-          title="Pending Tasks"
-          value={pendingTasksCount}
-          subtitle={pendingTasksCount === 1 ? 'Task to complete' : 'Tasks to complete'}
+          title="Active Tasks"
+          value={activeTasksCount}
+          subtitle={activeTasksCount === 1 ? 'Task to complete' : 'Tasks to complete'}
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
@@ -202,8 +202,8 @@ export default function ClientProfilePage() {
           }
         />
         <MetricCard
-          title="Completed"
-          value={completedTasksCount}
+          title="Closed"
+          value={closedTasksCount}
           subtitle="Tasks done"
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">

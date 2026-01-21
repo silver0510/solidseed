@@ -218,7 +218,7 @@ export interface TaskDisplayInfo {
   /** Priority color for UI */
   priorityColor: 'error' | 'warning' | 'success' | 'default';
   /** Status color for UI */
-  statusColor: 'success' | 'default';
+  statusColor: 'success' | 'primary' | 'default';
 }
 
 /**

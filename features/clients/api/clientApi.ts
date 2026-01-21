@@ -339,17 +339,24 @@ export const taskApi = {
   },
 
   /**
-   * Mark a task as complete
+   * Set task status to in_progress
    */
-  completeTask: async (clientId: string, taskId: string): Promise<ClientTask> => {
-    return taskApi.updateTask(clientId, taskId, { status: 'completed' });
+  startTask: async (clientId: string, taskId: string): Promise<ClientTask> => {
+    return taskApi.updateTask(clientId, taskId, { status: 'in_progress' });
   },
 
   /**
-   * Mark a task as pending (uncomplete)
+   * Close a task (mark as done)
    */
-  uncompleteTask: async (clientId: string, taskId: string): Promise<ClientTask> => {
-    return taskApi.updateTask(clientId, taskId, { status: 'pending' });
+  closeTask: async (clientId: string, taskId: string): Promise<ClientTask> => {
+    return taskApi.updateTask(clientId, taskId, { status: 'closed' });
+  },
+
+  /**
+   * Reopen a closed task (back to todo)
+   */
+  reopenTask: async (clientId: string, taskId: string): Promise<ClientTask> => {
+    return taskApi.updateTask(clientId, taskId, { status: 'todo' });
   },
 
   /**

@@ -180,7 +180,7 @@ export interface UpdateNoteInput {
 export type TaskPriority = 'low' | 'medium' | 'high';
 
 /** Valid task status values */
-export type TaskStatus = 'pending' | 'completed';
+export type TaskStatus = 'todo' | 'in_progress' | 'closed';
 
 /**
  * Client task record from the database
@@ -198,9 +198,9 @@ export interface ClientTask {
   due_date: string;
   /** Task priority: low, medium, high */
   priority: TaskPriority;
-  /** Task status: pending, completed */
+  /** Task status: todo, in_progress, closed */
   status: TaskStatus;
-  /** Timestamp when task was completed (ISO 8601, null if not completed) */
+  /** Timestamp when task was closed (ISO 8601, null if not closed) */
   completed_at?: string | null;
   /** User ID who created this task */
   created_by: string;
@@ -246,7 +246,7 @@ export interface UpdateTaskInput {
   due_date?: string;
   /** Task priority: low, medium, high */
   priority?: TaskPriority;
-  /** Task status: pending, completed */
+  /** Task status: todo, in_progress, closed */
   status?: TaskStatus;
 }
 
@@ -254,7 +254,7 @@ export interface UpdateTaskInput {
  * Parameters for filtering tasks in dashboard
  */
 export interface TaskFilters {
-  /** Filter by status: pending, completed */
+  /** Filter by status: todo, in_progress, closed */
   status?: TaskStatus;
   /** Filter by priority: low, medium, high */
   priority?: TaskPriority;

@@ -231,13 +231,33 @@ export function getTaskDisplayInfo(task: ClientTask): TaskDisplayInfo {
   const daysUntilDue = daysUntil(task.due_date);
 
   return {
-    isOverdue: task.status === 'pending' && isPast(task.due_date),
+    isOverdue: task.status !== 'closed' && isPast(task.due_date),
     isDueToday: isToday(task.due_date),
     isDueTomorrow: isTomorrow(task.due_date),
     daysUntilDue,
     priorityColor: getPriorityColor(task.priority),
-    statusColor: task.status === 'completed' ? 'success' : 'default',
+    statusColor: getStatusColor(task.status),
   };
+}
+
+/**
+ * Get the color for a task status
+ *
+ * @param status - Task status value
+ * @returns Color name for UI
+ */
+export function getStatusColor(
+  status: TaskStatus
+): 'success' | 'primary' | 'default' {
+  switch (status) {
+    case 'closed':
+      return 'success';
+    case 'in_progress':
+      return 'primary';
+    case 'todo':
+    default:
+      return 'default';
+  }
 }
 
 /**
@@ -288,10 +308,12 @@ export function getPriorityLabel(priority: TaskPriority): string {
  */
 export function getStatusLabel(status: TaskStatus): string {
   switch (status) {
-    case 'completed':
-      return 'Completed';
-    case 'pending':
-      return 'Pending';
+    case 'closed':
+      return 'Closed';
+    case 'in_progress':
+      return 'In Progress';
+    case 'todo':
+      return 'To Do';
     default:
       return 'Unknown';
   }

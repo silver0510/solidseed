@@ -14,7 +14,7 @@ export const taskPriorityEnum = z.enum(['low', 'medium', 'high']);
 /**
  * Valid task status values
  */
-export const taskStatusEnum = z.enum(['pending', 'completed']);
+export const taskStatusEnum = z.enum(['todo', 'in_progress', 'closed']);
 
 /**
  * Schema for creating a new task
@@ -44,7 +44,7 @@ export const createTaskSchema = z.object({
  * Schema for updating an existing task
  *
  * All fields are optional (partial update).
- * When status changes to 'completed', completed_at is auto-set by the service.
+ * When status changes to 'closed', completed_at is auto-set by the service.
  */
 export const updateTaskSchema = z.object({
   title: z

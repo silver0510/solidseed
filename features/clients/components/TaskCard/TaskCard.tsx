@@ -13,11 +13,51 @@ import {
   Loader2Icon,
   PencilIcon,
   TrashIcon,
+  CircleIcon,
+  PlayCircleIcon,
+  CheckCircle2Icon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { getTaskDisplayInfo, formatRelativeTime, formatDate } from '../../helpers';
 import type { ClientTask, TaskStatus } from '../../types';
+
+// =============================================================================
+// STATUS CONFIGURATION
+// =============================================================================
+
+/**
+ * Status configuration for colors and icons
+ */
+const STATUS_CONFIG = {
+  todo: {
+    label: 'To Do',
+    icon: CircleIcon,
+    bgColor: 'bg-slate-100 dark:bg-slate-800',
+    textColor: 'text-slate-600 dark:text-slate-400',
+    borderColor: 'border-slate-300 dark:border-slate-600',
+  },
+  in_progress: {
+    label: 'In Progress',
+    icon: PlayCircleIcon,
+    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+    textColor: 'text-blue-600 dark:text-blue-400',
+    borderColor: 'border-blue-300 dark:border-blue-600',
+  },
+  closed: {
+    label: 'Closed',
+    icon: CheckCircle2Icon,
+    bgColor: 'bg-green-100 dark:bg-green-900/30',
+    textColor: 'text-green-600 dark:text-green-400',
+    borderColor: 'border-green-300 dark:border-green-600',
+  },
+} as const;
 
 // =============================================================================
 // TYPES
@@ -125,19 +165,20 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   isUpdating = false,
   className,
 }) => {
-  const isCompleted = task.status === 'completed';
+  const isClosed = task.status === 'closed';
   const displayInfo = getTaskDisplayInfo(task);
+  const statusConfig = STATUS_CONFIG[task.status];
+  const StatusIcon = statusConfig.icon;
 
-  const handleStatusToggle = () => {
+  const handleStatusChange = (newStatus: TaskStatus) => {
     if (!onStatusChange || isUpdating) return;
-    const newStatus: TaskStatus = isCompleted ? 'pending' : 'completed';
     onStatusChange(task, newStatus);
   };
 
   return (
     <tr
       data-testid="task-item"
-      data-completed={isCompleted || undefined}
+      data-closed={isClosed || undefined}
       data-overdue={displayInfo.isOverdue || undefined}
       data-due-today={displayInfo.isDueToday || undefined}
       data-priority={task.priority}
@@ -148,23 +189,50 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         className
       )}
     >
-      {/* Status Checkbox */}
+      {/* Status Dropdown */}
       <td className="px-4 py-3">
         {isUpdating ? (
-          <div className="h-5 w-5 flex items-center justify-center">
-            <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
+          <div className="h-8 w-28 flex items-center justify-center">
+            <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <Checkbox
-            checked={isCompleted}
-            onCheckedChange={() => handleStatusToggle()}
+          <Select
+            value={task.status}
+            onValueChange={(value: string) => handleStatusChange(value as TaskStatus)}
             disabled={!onStatusChange}
-            aria-label={`Mark task "${task.title}" as ${isCompleted ? 'pending' : 'completed'}`}
-            className={cn(
-              'h-5 w-5 rounded',
-              isCompleted && 'bg-green-500 border-green-500 text-white data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 dark:bg-green-600 dark:border-green-600 dark:data-[state=checked]:bg-green-600 dark:data-[state=checked]:border-green-600'
-            )}
-          />
+          >
+            <SelectTrigger
+              className={cn(
+                'h-8 w-28 text-xs font-medium border',
+                statusConfig.bgColor,
+                statusConfig.textColor,
+                statusConfig.borderColor
+              )}
+              aria-label={`Change task "${task.title}" status`}
+            >
+              <SelectValue>
+                <div className="flex items-center gap-1.5">
+                  <StatusIcon className="h-3.5 w-3.5" />
+                  <span>{statusConfig.label}</span>
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.entries(STATUS_CONFIG) as [TaskStatus, typeof statusConfig][]).map(
+                ([status, config]) => {
+                  const Icon = config.icon;
+                  return (
+                    <SelectItem key={status} value={status}>
+                      <div className="flex items-center gap-2">
+                        <Icon className={cn('h-4 w-4', config.textColor)} />
+                        <span>{config.label}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                }
+              )}
+            </SelectContent>
+          </Select>
         )}
       </td>
 
@@ -173,7 +241,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <p
           className={cn(
             'text-sm text-foreground',
-            isCompleted && 'line-through text-muted-foreground'
+            isClosed && 'line-through text-muted-foreground'
           )}
         >
           {task.title}
@@ -199,7 +267,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <span
           className={cn(
             'inline-flex items-center gap-1 text-sm whitespace-nowrap',
-            isCompleted
+            isClosed
               ? 'text-muted-foreground'
               : displayInfo.isOverdue
                 ? 'text-red-600 dark:text-red-400 font-medium'
@@ -208,7 +276,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   : 'text-muted-foreground'
           )}
         >
-          {!isCompleted && displayInfo.isOverdue && (
+          {!isClosed && displayInfo.isOverdue && (
             <AlertCircleIcon className="h-4 w-4" />
           )}
           <time dateTime={task.due_date}>

@@ -1,17 +1,25 @@
 /**
  * TaskDashboard Component
  *
- * Displays all tasks across all clients with filtering and grouping capabilities.
- * Tasks are grouped by due date: Overdue, Today, Upcoming, and Completed.
+ * Displays all tasks across all clients in a single table with filtering capabilities.
+ * Supports filtering by status, priority, and due date.
  *
  * @module features/clients/components/TaskDashboard/TaskDashboard
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { PlusIcon } from 'lucide-react';
+import {
+  PlusIcon,
+  AlertCircleIcon,
+  Loader2Icon,
+  CircleIcon,
+  PlayCircleIcon,
+  CheckCircle2Icon,
+} from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -19,9 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TaskGroup } from './TaskGroup';
 import { useAllTasks } from '../../hooks/useAllTasks';
-import { isPast, isToday } from '../../helpers';
+import { getTaskDisplayInfo, formatRelativeTime, formatDate, isPast, isToday } from '../../helpers';
 import type { TaskWithClient, TaskStatus, TaskPriority } from '../../types';
 
 // =============================================================================
@@ -39,6 +46,61 @@ export interface TaskDashboardProps {
   /** Additional CSS classes */
   className?: string;
 }
+
+type DueDateFilter = 'all' | 'overdue' | 'today' | 'upcoming';
+
+// =============================================================================
+// STATUS CONFIGURATION
+// =============================================================================
+
+const STATUS_CONFIG = {
+  todo: {
+    label: 'To Do',
+    icon: CircleIcon,
+    bgColor: 'bg-slate-100 dark:bg-slate-800',
+    textColor: 'text-slate-600 dark:text-slate-400',
+    borderColor: 'border-slate-300 dark:border-slate-600',
+  },
+  in_progress: {
+    label: 'In Progress',
+    icon: PlayCircleIcon,
+    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+    textColor: 'text-blue-600 dark:text-blue-400',
+    borderColor: 'border-blue-300 dark:border-blue-600',
+  },
+  closed: {
+    label: 'Closed',
+    icon: CheckCircle2Icon,
+    bgColor: 'bg-green-100 dark:bg-green-900/30',
+    textColor: 'text-green-600 dark:text-green-400',
+    borderColor: 'border-green-300 dark:border-green-600',
+  },
+} as const;
+
+// =============================================================================
+// FILTER OPTIONS
+// =============================================================================
+
+const STATUS_OPTIONS: Array<{ value: TaskStatus | 'all'; label: string }> = [
+  { value: 'all', label: 'All' },
+  { value: 'todo', label: 'To Do' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'closed', label: 'Closed' },
+];
+
+const PRIORITY_OPTIONS: Array<{ value: TaskPriority | 'all'; label: string }> = [
+  { value: 'all', label: 'All' },
+  { value: 'high', label: 'High' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'low', label: 'Low' },
+];
+
+const DUE_DATE_OPTIONS: Array<{ value: DueDateFilter; label: string }> = [
+  { value: 'all', label: 'All' },
+  { value: 'overdue', label: 'Overdue' },
+  { value: 'today', label: 'Today' },
+  { value: 'upcoming', label: 'Upcoming' },
+];
 
 // =============================================================================
 // ICONS (inline SVG)
@@ -79,61 +141,76 @@ const ClipboardListIcon = ({ className }: { className?: string }) => (
 );
 
 // =============================================================================
-// FILTER OPTIONS
-// =============================================================================
-
-const STATUS_OPTIONS: Array<{ value: TaskStatus | 'all'; label: string }> = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'all', label: 'All' },
-];
-
-const PRIORITY_OPTIONS: Array<{ value: TaskPriority | 'all'; label: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'high', label: 'High' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'low', label: 'Low' },
-];
-
-// =============================================================================
 // HELPERS
 // =============================================================================
 
-interface GroupedTasks {
-  overdue: TaskWithClient[];
-  today: TaskWithClient[];
-  upcoming: TaskWithClient[];
-  noDueDate: TaskWithClient[];
-  completed: TaskWithClient[];
+/**
+ * Get priority label
+ */
+function getPriorityLabel(priority: TaskWithClient['priority']): string {
+  switch (priority) {
+    case 'high':
+      return 'High';
+    case 'medium':
+      return 'Medium';
+    case 'low':
+      return 'Low';
+    default:
+      return 'Unknown';
+  }
 }
 
 /**
- * Group tasks by due date category
+ * Format due date for display
  */
-function groupTasksByDueDate(tasks: TaskWithClient[]): GroupedTasks {
-  const groups: GroupedTasks = {
-    overdue: [],
-    today: [],
-    upcoming: [],
-    noDueDate: [],
-    completed: [],
-  };
+function formatDueDate(
+  dueDate: string,
+  displayInfo: ReturnType<typeof getTaskDisplayInfo>
+): string {
+  if (displayInfo.isOverdue) {
+    return `Overdue (${formatRelativeTime(dueDate)})`;
+  }
+  if (displayInfo.isDueToday) {
+    return 'Today';
+  }
+  if (displayInfo.isDueTomorrow) {
+    return 'Tomorrow';
+  }
+  if (displayInfo.daysUntilDue <= 7) {
+    return formatRelativeTime(dueDate);
+  }
+  return formatDate(dueDate);
+}
 
-  for (const task of tasks) {
-    if (task.status === 'completed') {
-      groups.completed.push(task);
-    } else if (!task.due_date) {
-      groups.noDueDate.push(task);
-    } else if (isToday(task.due_date)) {
-      groups.today.push(task);
-    } else if (isPast(task.due_date)) {
-      groups.overdue.push(task);
-    } else {
-      groups.upcoming.push(task);
-    }
+/**
+ * Filter tasks by due date
+ */
+function filterTasksByDueDate(tasks: TaskWithClient[], dueDateFilter: DueDateFilter): TaskWithClient[] {
+  if (dueDateFilter === 'all') {
+    return tasks;
   }
 
-  return groups;
+  return tasks.filter((task) => {
+    // Closed tasks are not filtered by due date
+    if (task.status === 'closed') {
+      return dueDateFilter === 'all';
+    }
+
+    if (!task.due_date) {
+      return dueDateFilter === 'all';
+    }
+
+    switch (dueDateFilter) {
+      case 'overdue':
+        return isPast(task.due_date) && !isToday(task.due_date);
+      case 'today':
+        return isToday(task.due_date);
+      case 'upcoming':
+        return !isPast(task.due_date) && !isToday(task.due_date);
+      default:
+        return true;
+    }
+  });
 }
 
 // =============================================================================
@@ -141,7 +218,7 @@ function groupTasksByDueDate(tasks: TaskWithClient[]): GroupedTasks {
 // =============================================================================
 
 /**
- * Task dashboard with filtering and grouping
+ * Task dashboard with single table view and comprehensive filtering
  *
  * @example
  * ```tsx
@@ -156,8 +233,9 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
   className,
 }) => {
   // Filter state
-  const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('pending');
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | 'all'>('all');
+  const [dueDateFilter, setDueDateFilter] = useState<DueDateFilter>('all');
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
 
   // Fetch tasks with hook
@@ -170,8 +248,10 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
     updateTaskStatus,
   } = useAllTasks({ status: statusFilter, priority: priorityFilter });
 
-  // Group tasks by due date
-  const groupedTasks = useMemo(() => groupTasksByDueDate(tasks), [tasks]);
+  // Filter tasks by due date
+  const filteredTasks = useMemo(() => {
+    return filterTasksByDueDate(tasks, dueDateFilter);
+  }, [tasks, dueDateFilter]);
 
   // Handle status change
   const handleStatusChange = useCallback(
@@ -196,13 +276,21 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
     [onTaskClick]
   );
 
-  // Check if there are any tasks to display
-  const hasAnyTasks =
-    groupedTasks.overdue.length > 0 ||
-    groupedTasks.today.length > 0 ||
-    groupedTasks.upcoming.length > 0 ||
-    groupedTasks.noDueDate.length > 0 ||
-    groupedTasks.completed.length > 0;
+  const handleRowClick = (e: React.MouseEvent, task: TaskWithClient) => {
+    // Don't trigger row click if clicking on the status dropdown
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-status-select]')) {
+      return;
+    }
+    handleTaskClick(task);
+  };
+
+  const handleRowKeyDown = (e: React.KeyboardEvent, task: TaskWithClient) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleTaskClick(task);
+    }
+  };
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -222,7 +310,7 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
         </div>
 
         {/* Filter Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Status Filter */}
           <Select
             value={statusFilter}
@@ -257,6 +345,23 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
             </SelectContent>
           </Select>
 
+          {/* Due Date Filter */}
+          <Select
+            value={dueDateFilter}
+            onValueChange={(value) => setDueDateFilter(value as DueDateFilter)}
+          >
+            <SelectTrigger className="w-full sm:w-[120px] h-9" aria-label="Filter by due date">
+              <SelectValue placeholder="Due Date" />
+            </SelectTrigger>
+            <SelectContent>
+              {DUE_DATE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           {/* Add Task Button */}
           {onAddTask && (
             <Button onClick={onAddTask} variant="outline" size="sm" className="h-9 shrink-0">
@@ -276,84 +381,183 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
       )}
 
       {/* Empty State */}
-      {!isLoading && !hasAnyTasks && (
+      {!isLoading && filteredTasks.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <ClipboardListIcon className="text-muted-foreground/50" />
-          <h3 className="mt-4 text-lg font-medium text-foreground">No tasks</h3>
+          <h3 className="mt-4 text-lg font-medium text-foreground">No tasks found</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            {statusFilter === 'pending'
-              ? 'You have no pending tasks. Great job!'
-              : statusFilter === 'completed'
-                ? 'No completed tasks found.'
-                : 'No tasks match your current filters.'}
+            {statusFilter === 'todo'
+              ? 'You have no tasks to do. Great job!'
+              : statusFilter === 'in_progress'
+                ? 'No tasks currently in progress.'
+                : statusFilter === 'closed'
+                  ? 'No closed tasks found.'
+                  : 'No tasks match your current filters.'}
           </p>
         </div>
       )}
 
-      {/* Task Groups */}
-      {!isLoading && hasAnyTasks && (
-        <div className="space-y-4">
-          {/* Overdue Tasks */}
-          {groupedTasks.overdue.length > 0 && (
-            <TaskGroup
-              title="Overdue"
-              tasks={groupedTasks.overdue}
-              onStatusChange={handleStatusChange}
-              onTaskClick={handleTaskClick}
-              updatingTaskId={updatingTaskId || undefined}
-              defaultExpanded={true}
-            />
-          )}
+      {/* Task Table */}
+      {!isLoading && filteredTasks.length > 0 && (
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Task
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-40">
+                    Client
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-24">
+                    Priority
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-32">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-36">
+                    Due Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border bg-card">
+                {filteredTasks.map((task) => {
+                  const isUpdating = updatingTaskId === task.id;
+                  const isClosed = task.status === 'closed';
+                  const displayInfo = getTaskDisplayInfo(task);
+                  const statusConfig = STATUS_CONFIG[task.status];
+                  const StatusIcon = statusConfig.icon;
 
-          {/* Today Tasks */}
-          {groupedTasks.today.length > 0 && (
-            <TaskGroup
-              title="Today"
-              tasks={groupedTasks.today}
-              onStatusChange={handleStatusChange}
-              onTaskClick={handleTaskClick}
-              updatingTaskId={updatingTaskId || undefined}
-              defaultExpanded={true}
-            />
-          )}
+                  return (
+                    <tr
+                      key={task.id}
+                      onClick={(e) => handleRowClick(e, task)}
+                      onKeyDown={(e) => handleRowKeyDown(e, task)}
+                      tabIndex={0}
+                      role="button"
+                      className={cn(
+                        'transition-colors duration-200 hover:bg-muted/50 cursor-pointer',
+                        isUpdating && 'opacity-50'
+                      )}
+                    >
+                      {/* Task Title */}
+                      <td className="px-4 py-3">
+                        <p
+                          className={cn(
+                            'text-sm text-foreground',
+                            isClosed && 'line-through text-muted-foreground'
+                          )}
+                        >
+                          {task.title}
+                        </p>
+                      </td>
 
-          {/* Upcoming Tasks */}
-          {groupedTasks.upcoming.length > 0 && (
-            <TaskGroup
-              title="Upcoming"
-              tasks={groupedTasks.upcoming}
-              onStatusChange={handleStatusChange}
-              onTaskClick={handleTaskClick}
-              updatingTaskId={updatingTaskId || undefined}
-              defaultExpanded={true}
-            />
-          )}
+                      {/* Client Name */}
+                      <td className="px-4 py-3">
+                        <span className="text-sm text-muted-foreground">
+                          {task.client_name}
+                        </span>
+                      </td>
 
-          {/* No Due Date Tasks */}
-          {groupedTasks.noDueDate.length > 0 && (
-            <TaskGroup
-              title="No Due Date"
-              tasks={groupedTasks.noDueDate}
-              onStatusChange={handleStatusChange}
-              onTaskClick={handleTaskClick}
-              updatingTaskId={updatingTaskId || undefined}
-              defaultExpanded={false}
-            />
-          )}
+                      {/* Priority */}
+                      <td className="px-4 py-3">
+                        <span
+                          className={cn(
+                            'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                            task.priority === 'high' &&
+                              'bg-red-500/10 text-red-700 dark:text-red-400',
+                            task.priority === 'medium' &&
+                              'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+                            task.priority === 'low' &&
+                              'bg-blue-500/10 text-blue-700 dark:text-blue-400'
+                          )}
+                        >
+                          {getPriorityLabel(task.priority)}
+                        </span>
+                      </td>
 
-          {/* Completed Tasks (only show if status filter includes them) */}
-          {(statusFilter === 'completed' || statusFilter === 'all') &&
-            groupedTasks.completed.length > 0 && (
-              <TaskGroup
-                title="Completed"
-                tasks={groupedTasks.completed}
-                onStatusChange={handleStatusChange}
-                onTaskClick={handleTaskClick}
-                updatingTaskId={updatingTaskId || undefined}
-                defaultExpanded={false}
-              />
-            )}
-        </div>
+                      {/* Status Dropdown */}
+                      <td className="px-4 py-3" data-status-select>
+                        {isUpdating ? (
+                          <div className="h-8 w-28 flex items-center justify-center">
+                            <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : (
+                          <Select
+                            value={task.status}
+                            onValueChange={(value: string) =>
+                              handleStatusChange(task, value as TaskStatus)
+                            }
+                            disabled={!updateTaskStatus}
+                          >
+                            <SelectTrigger
+                              className={cn(
+                                'h-8 w-28 text-xs font-medium border',
+                                statusConfig.bgColor,
+                                statusConfig.textColor,
+                                statusConfig.borderColor
+                              )}
+                              aria-label={`Change task "${task.title}" status`}
+                            >
+                              <SelectValue>
+                                <div className="flex items-center gap-1.5">
+                                  <StatusIcon className="h-3.5 w-3.5" />
+                                  <span>{statusConfig.label}</span>
+                                </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {(
+                                Object.entries(STATUS_CONFIG) as [
+                                  TaskStatus,
+                                  typeof statusConfig,
+                                ][]
+                              ).map(([status, config]) => {
+                                const Icon = config.icon;
+                                return (
+                                  <SelectItem key={status} value={status}>
+                                    <div className="flex items-center gap-2">
+                                      <Icon className={cn('h-4 w-4', config.textColor)} />
+                                      <span>{config.label}</span>
+                                    </div>
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </td>
+
+                      {/* Due Date */}
+                      <td className="px-4 py-3">
+                        <span
+                          className={cn(
+                            'inline-flex items-center gap-1 text-sm whitespace-nowrap',
+                            isClosed
+                              ? 'text-muted-foreground'
+                              : displayInfo.isOverdue
+                                ? 'text-red-600 dark:text-red-400 font-medium'
+                                : displayInfo.isDueToday
+                                  ? 'text-amber-600 dark:text-amber-400 font-medium'
+                                  : 'text-muted-foreground'
+                          )}
+                        >
+                          {!isClosed && displayInfo.isOverdue && (
+                            <AlertCircleIcon className="h-4 w-4" />
+                          )}
+                          <time dateTime={task.due_date}>
+                            {formatDueDate(task.due_date, displayInfo)}
+                          </time>
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       )}
     </div>
   );

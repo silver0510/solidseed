@@ -395,8 +395,8 @@ Table client_tasks {
   description text [note: 'Task description']
   due_date date [not null, note: 'Task due date']
   priority varchar(20) [not null, default: 'medium', note: 'Priority: low, medium, high']
-  status varchar(20) [not null, default: 'pending', note: 'Status: pending, completed']
-  completed_at timestamptz [note: 'When task was completed']
+  status varchar(20) [not null, default: 'todo', note: 'Status: todo, in_progress, closed']
+  completed_at timestamptz [note: 'When task was closed']
 
   // Ownership
   created_by uuid [not null, ref: > users.id, note: 'User who created task']

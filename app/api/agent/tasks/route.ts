@@ -21,7 +21,7 @@ const taskService = new TaskService();
  * Get all tasks assigned to the current agent
  *
  * Query parameters (all optional):
- * - status: 'pending' | 'completed' - Filter by task status
+ * - status: 'todo' | 'in_progress' | 'closed' - Filter by task status
  * - priority: 'low' | 'medium' | 'high' - Filter by priority
  * - due_before: string - Filter tasks due before this date (YYYY-MM-DD)
  * - due_after: string - Filter tasks due after this date (YYYY-MM-DD)

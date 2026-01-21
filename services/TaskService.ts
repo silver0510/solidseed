@@ -73,7 +73,7 @@ export class TaskService {
         description: data.description,
         due_date: data.due_date,
         priority: data.priority ?? 'medium',
-        status: 'pending',
+        status: 'todo',
         created_by: userId,
         assigned_to: userId,
       })
@@ -125,9 +125,10 @@ export class TaskService {
     }
     if (data.status !== undefined) {
       updateData.status = data.status;
-      if (data.status === 'completed') {
+      if (data.status === 'closed') {
         updateData.completed_at = new Date().toISOString();
-      } else if (data.status === 'pending') {
+      } else {
+        // Clear completed_at when task is reopened (todo or in_progress)
         updateData.completed_at = null;
       }
     }

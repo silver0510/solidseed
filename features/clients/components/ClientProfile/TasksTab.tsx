@@ -136,11 +136,7 @@ export const TasksTab: React.FC<TasksTabProps> = ({
     async (task: ClientTask, newStatus: TaskStatus) => {
       setUpdatingTaskId(task.id);
       try {
-        if (newStatus === 'completed') {
-          await taskApi.completeTask(clientId, task.id);
-        } else {
-          await taskApi.uncompleteTask(clientId, task.id);
-        }
+        await taskApi.updateTask(clientId, task.id, { status: newStatus });
         onTaskChanged?.();
       } catch (error) {
         console.error('Failed to update task status:', error);

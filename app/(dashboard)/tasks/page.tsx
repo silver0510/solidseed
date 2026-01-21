@@ -8,10 +8,10 @@
  */
 
 import { Suspense, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TaskDashboard } from '@/features/clients/components/TaskDashboard';
 import { TaskForm } from '@/features/clients/components/TaskForm';
+import { TaskDetailsDialog } from '@/features/clients/components/TaskDetailsDialog';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { clientApi, clientQueryKeys, taskApi } from '@/features/clients/api/clientApi';
-import type { TaskWithClient, ClientWithTags, CreateTaskInput } from '@/features/clients';
+import type { TaskWithClient, ClientWithTags, CreateTaskInput, UpdateTaskInput } from '@/features/clients';
 
 // Metric card component matching dashboard design
 function MetricCard({
@@ -36,7 +36,7 @@ function MetricCard({
   value: string | number;
   subtitle?: string;
   icon: React.ReactNode;
-  variant?: 'default' | 'warning' | 'danger';
+  variant?: 'default' | 'warning' | 'danger' | 'info' | 'success';
 }) {
   return (
     <Card className="transition-shadow hover:shadow-md">
@@ -47,6 +47,8 @@ function MetricCard({
             <p className={`mt-1 text-2xl font-semibold ${
               variant === 'danger' ? 'text-destructive' :
               variant === 'warning' ? 'text-amber-600 dark:text-amber-400' :
+              variant === 'info' ? 'text-blue-600 dark:text-blue-400' :
+              variant === 'success' ? 'text-green-600 dark:text-green-400' :
               ''
             }`}>
               {value}
@@ -60,6 +62,8 @@ function MetricCard({
           <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
             variant === 'danger' ? 'bg-destructive/10 text-destructive' :
             variant === 'warning' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' :
+            variant === 'info' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
+            variant === 'success' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' :
             'bg-accent text-accent-foreground'
           }`}>
             {icon}
@@ -71,9 +75,10 @@ function MetricCard({
 }
 
 export default function TasksPage() {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<TaskWithClient | null>(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   // Fetch all tasks for metrics
   const { data: allTasksData } = useQuery({
@@ -82,18 +87,20 @@ export default function TasksPage() {
   });
 
   const tasks = allTasksData ?? [];
-  const pendingTasks = tasks.filter((t: TaskWithClient) => t.status === 'pending');
-  const completedTasks = tasks.filter((t: TaskWithClient) => t.status === 'completed');
+  const todoTasks = tasks.filter((t: TaskWithClient) => t.status === 'todo');
+  const inProgressTasks = tasks.filter((t: TaskWithClient) => t.status === 'in_progress');
+  const closedTasks = tasks.filter((t: TaskWithClient) => t.status === 'closed');
+  const activeTasks = [...todoTasks, ...inProgressTasks]; // Combined for overdue/today calculation
 
-  // Calculate overdue and today counts
+  // Calculate overdue and today counts (only from active tasks)
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const overdueTasks = pendingTasks.filter((t: TaskWithClient) => {
+  const overdueTasks = activeTasks.filter((t: TaskWithClient) => {
     if (!t.due_date) return false;
     const dueDate = new Date(t.due_date);
     return dueDate < today;
   });
-  const todayTasks = pendingTasks.filter((t: TaskWithClient) => {
+  const todayTasks = activeTasks.filter((t: TaskWithClient) => {
     if (!t.due_date) return false;
     const dueDate = new Date(t.due_date);
     return dueDate.toDateString() === today.toDateString();
@@ -118,8 +125,33 @@ export default function TasksPage() {
     },
   });
 
+  // Update task mutation
+  const updateTaskMutation = useMutation({
+    mutationFn: ({ clientId, taskId, data }: { clientId: string; taskId: string; data: UpdateTaskInput }) =>
+      taskApi.updateTask(clientId, taskId, data),
+    onSuccess: (updatedTask) => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      // Update the selected task with new data
+      if (selectedTask) {
+        setSelectedTask({
+          ...selectedTask,
+          ...updatedTask,
+        });
+      }
+    },
+  });
+
   const handleTaskClick = (task: TaskWithClient) => {
-    router.push(`/clients/${task.client_id}?tab=tasks`);
+    setSelectedTask(task);
+    setIsDetailsDialogOpen(true);
+  };
+
+  const handleTaskUpdate = async (task: TaskWithClient, data: UpdateTaskInput) => {
+    await updateTaskMutation.mutateAsync({
+      clientId: task.client_id,
+      taskId: task.id,
+      data,
+    });
   };
 
   const handleAddTask = () => {
@@ -161,19 +193,21 @@ export default function TasksPage() {
           }
         />
         <MetricCard
-          title="Pending"
-          value={pendingTasks.length}
-          subtitle="In progress"
+          title="In Progress"
+          value={inProgressTasks.length}
+          subtitle="Currently working"
+          variant="info"
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
             </svg>
           }
         />
         <MetricCard
-          title="Completed"
-          value={completedTasks.length}
+          title="Closed"
+          value={closedTasks.length}
           subtitle="Well done!"
+          variant="success"
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -208,6 +242,15 @@ export default function TasksPage() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Task Details Dialog */}
+      <TaskDetailsDialog
+        task={selectedTask}
+        open={isDetailsDialogOpen}
+        onOpenChange={setIsDetailsDialogOpen}
+        onUpdate={handleTaskUpdate}
+        isUpdating={updateTaskMutation.isPending}
+      />
     </div>
   );
 }

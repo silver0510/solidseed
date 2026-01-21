@@ -7,7 +7,8 @@
  * @module features/clients/hooks/useAllTasks
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { taskApi } from '../api/clientApi';
 import { isPast, isToday } from '../helpers';
 import type { TaskWithClient, TaskStatus, TaskPriority, TaskFilters } from '../types';
@@ -72,7 +73,7 @@ function filterTasks(
 }
 
 /**
- * Count tasks by category
+ * Count tasks by category (excludes closed tasks from counts)
  */
 function countTasksByCategory(tasks: TaskWithClient[]) {
   let overdueCount = 0;
@@ -80,7 +81,8 @@ function countTasksByCategory(tasks: TaskWithClient[]) {
   let upcomingCount = 0;
 
   for (const task of tasks) {
-    if (task.status === 'completed') continue;
+    // Exclude closed tasks from date-based counts
+    if (task.status === 'closed') continue;
 
     if (task.due_date && isPast(task.due_date) && !isToday(task.due_date)) {
       overdueCount++;
@@ -111,42 +113,27 @@ function countTasksByCategory(tasks: TaskWithClient[]) {
  *   isLoading,
  *   refetch,
  *   updateTaskStatus,
- * } = useAllTasks({ status: 'pending', priority: 'all' });
+ * } = useAllTasks({ status: 'todo', priority: 'all' });
  * ```
  */
 export function useAllTasks(options: UseAllTasksOptions = {}): UseAllTasksReturn {
-  const { status = 'pending', priority = 'all' } = options;
+  const { status = 'todo', priority = 'all' } = options;
+  const queryClient = useQueryClient();
 
-  const [allTasks, setAllTasks] = useState<TaskWithClient[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Build filters for the API
+  const filters: TaskFilters = {};
+  if (status !== 'all') {
+    filters.status = status;
+  }
+  if (priority !== 'all') {
+    filters.priority = priority;
+  }
 
-  // Fetch all tasks
-  const fetchTasks = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Build filters for the API
-      const filters: TaskFilters = {};
-      if (status !== 'all') {
-        filters.status = status;
-      }
-      if (priority !== 'all') {
-        filters.priority = priority;
-      }
-
-      const tasks = await taskApi.getUserTasks(filters);
-      setAllTasks(tasks);
-    } catch (error) {
-      console.error('Failed to fetch tasks:', error);
-      setAllTasks([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [status, priority]);
-
-  // Fetch on mount and when filters change
-  useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+  // Fetch all tasks using React Query
+  const { data: allTasks = [], isLoading, refetch } = useQuery({
+    queryKey: ['tasks', 'all', filters],
+    queryFn: () => taskApi.getUserTasks(filters),
+  });
 
   // Filter tasks client-side based on options
   const filteredTasks = useMemo(() => {
@@ -170,23 +157,18 @@ export function useAllTasks(options: UseAllTasksOptions = {}): UseAllTasksReturn
       // Update via API
       await taskApi.updateTask(task.client_id, taskId, { status: newStatus });
 
-      // Update local state
-      setAllTasks((prevTasks) =>
-        prevTasks.map((t) =>
-          t.id === taskId
-            ? {
-                ...t,
-                status: newStatus,
-                completed_at: newStatus === 'completed' ? new Date().toISOString() : null,
-              }
-            : t
-        )
-      );
+      // Invalidate queries to refetch
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     } catch (error) {
       console.error('Failed to update task status:', error);
       throw error;
     }
-  }, [allTasks]);
+  }, [allTasks, queryClient]);
+
+  // Wrapper for refetch to match the expected return type
+  const refetchTasks = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
 
   return {
     tasks: filteredTasks,
@@ -194,7 +176,7 @@ export function useAllTasks(options: UseAllTasksOptions = {}): UseAllTasksReturn
     todayTasksCount: todayCount,
     upcomingTasksCount: upcomingCount,
     isLoading,
-    refetch: fetchTasks,
+    refetch: refetchTasks,
     updateTaskStatus,
   };
 }
