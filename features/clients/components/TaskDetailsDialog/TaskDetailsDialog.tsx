@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -401,7 +402,17 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
             <div className="flex items-center gap-2 text-sm">
               <UserIcon className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">Client:</span>
-              <span className="font-medium">{task.client_name}</span>
+              <Link
+                href={`/clients/${task.client_id}`}
+                className="font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm"
+                onClick={(e) => {
+                  // Close the dialog when clicking the link
+                  e.stopPropagation();
+                  handleOpenChange(false);
+                }}
+              >
+                {task.client_name}
+              </Link>
             </div>
 
             {/* Actions */}
