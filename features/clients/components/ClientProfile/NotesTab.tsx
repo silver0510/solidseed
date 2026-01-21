@@ -8,10 +8,18 @@
 
 import React, { useCallback, useState } from 'react';
 import { cn } from '@/lib/utils/cn';
-import { NoteEditor } from '../NoteEditor';
 import { NoteList } from '../NoteEditor/NoteList';
+import { NoteDetailsDialog } from '../NoteDetailsDialog';
 import { noteApi } from '../../api/clientApi';
 import type { ClientNote, NoteFormData } from '../../types';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 // =============================================================================
 // TYPES
@@ -53,115 +61,172 @@ export const NotesTab: React.FC<NotesTabProps> = ({
   onNoteChanged,
   className,
 }) => {
-  const [editingNote, setEditingNote] = useState<ClientNote | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<ClientNote | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [deletingNoteId, setDeletingNoteId] = useState<string | null>(null);
-  const [showNoteForm, setShowNoteForm] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<ClientNote | null>(null);
 
-  // Handle note submission (create or update)
-  const handleSubmit = useCallback(
-    async (data: NoteFormData) => {
-      setIsSubmitting(true);
+  // Handle opening dialog for new note
+  const handleAddNote = useCallback(() => {
+    setSelectedNote(null);
+    setIsEditMode(true);
+    setIsDialogOpen(true);
+  }, []);
+
+  // Handle opening dialog to view note (click on row)
+  const handleViewNote = useCallback((note: ClientNote) => {
+    setSelectedNote(note);
+    setIsEditMode(false);
+    setIsDialogOpen(true);
+  }, []);
+
+  // Handle opening dialog to edit note (click on edit button)
+  const handleEditNote = useCallback((note: ClientNote) => {
+    setSelectedNote(note);
+    setIsEditMode(true);
+    setIsDialogOpen(true);
+  }, []);
+
+  // Handle note update or creation
+  const handleUpdate = useCallback(
+    async (note: ClientNote | null, data: NoteFormData) => {
+      setIsUpdating(true);
       try {
-        if (editingNote) {
+        if (note?.id) {
           // Update existing note
-          await noteApi.updateNote(clientId, editingNote.id, data);
-          setEditingNote(null);
+          await noteApi.updateNote(clientId, note.id, data);
         } else {
           // Create new note
           await noteApi.createNote(clientId, data);
-          setShowNoteForm(false);
         }
         onNoteChanged?.();
+        setIsDialogOpen(false);
+        setSelectedNote(null);
       } catch (error) {
         console.error('Failed to save note:', error);
         throw error;
       } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [clientId, editingNote, onNoteChanged]
-  );
-
-  // Handle edit button click
-  const handleEdit = useCallback((note: ClientNote) => {
-    setEditingNote(note);
-    setShowNoteForm(true);
-  }, []);
-
-  // Handle cancel edit
-  const handleCancelEdit = useCallback(() => {
-    setEditingNote(null);
-    setShowNoteForm(false);
-  }, []);
-
-  // Handle note deletion
-  const handleDelete = useCallback(
-    async (note: ClientNote) => {
-      setDeletingNoteId(note.id);
-      try {
-        await noteApi.deleteNote(clientId, note.id);
-        onNoteChanged?.();
-      } catch (error) {
-        console.error('Failed to delete note:', error);
-      } finally {
-        setDeletingNoteId(null);
+        setIsUpdating(false);
       }
     },
     [clientId, onNoteChanged]
   );
 
+  // Handle note deletion - open confirm dialog
+  const handleDelete = useCallback((note: ClientNote) => {
+    setNoteToDelete(note);
+    setIsDeleteDialogOpen(true);
+  }, []);
+
+  // Confirm and execute delete
+  const handleConfirmDelete = useCallback(async () => {
+    if (!noteToDelete) return;
+
+    setDeletingNoteId(noteToDelete.id);
+    try {
+      await noteApi.deleteNote(clientId, noteToDelete.id);
+      onNoteChanged?.();
+      setIsDeleteDialogOpen(false);
+      setNoteToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete note:', error);
+    } finally {
+      setDeletingNoteId(null);
+    }
+  }, [noteToDelete, clientId, onNoteChanged]);
+
+  // Cancel delete
+  const handleCancelDelete = useCallback(() => {
+    setIsDeleteDialogOpen(false);
+    setNoteToDelete(null);
+  }, []);
+
   return (
     <div className={cn('space-y-4', className)}>
       {/* Add Note Button */}
-      {!showNoteForm && (
-        <div className="flex justify-end">
-          <button
-            onClick={() => setShowNoteForm(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+      <div className="flex justify-end">
+        <button
+          onClick={handleAddNote}
+          className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+        >
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            aria-hidden="true"
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
-            <span>Add Note</span>
-          </button>
-        </div>
-      )}
-
-      {/* Note Editor */}
-      {showNoteForm && (
-        <div className="bg-card rounded-lg border border-border p-4">
-          <h3 className="text-sm font-semibold text-foreground mb-4">
-            {editingNote ? 'Edit Note' : 'Add New Note'}
-          </h3>
-          <NoteEditor
-            clientId={clientId}
-            note={editingNote ?? undefined}
-            onSubmit={handleSubmit}
-            onCancel={handleCancelEdit}
-            isSubmitting={isSubmitting}
-          />
-        </div>
-      )}
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 4.5v15m7.5-7.5h-15"
+            />
+          </svg>
+          <span>Add Note</span>
+        </button>
+      </div>
 
       {/* Notes List */}
       <NoteList
         notes={notes}
-        onEdit={handleEdit}
+        onView={handleViewNote}
+        onEdit={handleEditNote}
         onDelete={handleDelete}
         isDeleting={deletingNoteId ?? undefined}
       />
+
+      {/* Note Details Dialog */}
+      <NoteDetailsDialog
+        note={selectedNote}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onUpdate={handleUpdate}
+        isUpdating={isUpdating}
+        initialEditMode={isEditMode}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Note</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this note? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {noteToDelete && (
+              <div className="rounded-lg border border-border bg-muted/50 p-3">
+                <p className="text-sm text-foreground line-clamp-3 whitespace-pre-wrap">
+                  {noteToDelete.content}
+                </p>
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancelDelete}
+                disabled={deletingNoteId === noteToDelete?.id}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={deletingNoteId === noteToDelete?.id}
+              >
+                {deletingNoteId === noteToDelete?.id ? 'Deleting...' : 'Delete Note'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

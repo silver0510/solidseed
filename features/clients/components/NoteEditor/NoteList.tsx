@@ -22,7 +22,9 @@ import type { ClientNote } from '../../types';
 export interface NoteListProps {
   /** Array of notes to display */
   notes: ClientNote[];
-  /** Callback when edit button is clicked */
+  /** Callback when note row is clicked (view mode) */
+  onView?: (note: ClientNote) => void;
+  /** Callback when edit button is clicked (edit mode) */
   onEdit?: (note: ClientNote) => void;
   /** Callback when delete button is clicked */
   onDelete?: (note: ClientNote) => void;
@@ -155,6 +157,7 @@ function sortNotesByDate(notes: ClientNote[]): ClientNote[] {
  */
 export const NoteList: React.FC<NoteListProps> = ({
   notes,
+  onView,
   onEdit,
   onDelete,
   isDeleting,
@@ -205,8 +208,10 @@ export const NoteList: React.FC<NoteListProps> = ({
                   data-important={note.is_important || undefined}
                   className={cn(
                     'transition-opacity duration-200 hover:bg-muted/30',
+                    onView && 'cursor-pointer',
                     isCurrentlyDeleting && 'opacity-50'
                   )}
+                  onClick={() => onView?.(note)}
                 >
                   {/* Content */}
                   <td className="px-4 py-3">
@@ -236,7 +241,10 @@ export const NoteList: React.FC<NoteListProps> = ({
                       {onEdit && (
                         <button
                           type="button"
-                          onClick={() => onEdit(note)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(note);
+                          }}
                           disabled={isCurrentlyDeleting}
                           aria-label="Edit note"
                           className={cn(
@@ -251,7 +259,10 @@ export const NoteList: React.FC<NoteListProps> = ({
                       {onDelete && (
                         <button
                           type="button"
-                          onClick={() => onDelete(note)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(note);
+                          }}
                           disabled={isCurrentlyDeleting}
                           aria-label={isCurrentlyDeleting ? 'Deleting note' : 'Delete note'}
                           className={cn(
