@@ -145,7 +145,7 @@ export function useAllTasks(options: UseAllTasksOptions = {}): UseAllTasksReturn
     return countTasksByCategory(allTasks);
   }, [allTasks]);
 
-  // Update a task's status
+  // Update a task's status with optimistic updates
   const updateTaskStatus = useCallback(async (taskId: string, newStatus: TaskStatus) => {
     // Find the task to get client_id
     const task = allTasks.find((t) => t.id === taskId);
@@ -153,17 +153,26 @@ export function useAllTasks(options: UseAllTasksOptions = {}): UseAllTasksReturn
       throw new Error('Task not found');
     }
 
+    const queryKey = ['tasks', 'all', filters];
+
+    // Optimistic update: immediately update cache
+    queryClient.setQueryData<TaskWithClient[]>(queryKey, (old) =>
+      old ? old.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)) : []
+    );
+
     try {
       // Update via API
       await taskApi.updateTask(task.client_id, taskId, { status: newStatus });
 
-      // Invalidate queries to refetch
+      // Invalidate to ensure sync with server
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     } catch (error) {
+      // Revert optimistic update on error
+      queryClient.setQueryData<TaskWithClient[]>(queryKey, allTasks);
       console.error('Failed to update task status:', error);
       throw error;
     }
-  }, [allTasks, queryClient]);
+  }, [allTasks, queryClient, filters]);
 
   // Wrapper for refetch to match the expected return type
   const refetchTasks = useCallback(async () => {

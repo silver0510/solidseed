@@ -18,6 +18,8 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   ArrowUpDownIcon,
+  LayoutListIcon,
+  LayoutGridIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +35,7 @@ import {
 import { useAllTasks } from '../../hooks/useAllTasks';
 import { getTaskDisplayInfo, formatRelativeTime, formatDate, isPast, isToday } from '../../helpers';
 import type { TaskWithClient, TaskStatus, TaskPriority } from '../../types';
+import { KanbanView } from './KanbanView';
 
 // =============================================================================
 // TYPES
@@ -53,6 +56,7 @@ export interface TaskDashboardProps {
 type DueDateFilter = 'all' | 'overdue' | 'today' | 'upcoming';
 type SortField = 'task' | 'client' | 'priority' | 'status' | 'due_date';
 type SortDirection = 'asc' | 'desc' | null;
+type ViewMode = 'list' | 'kanban';
 
 // =============================================================================
 // STATUS CONFIGURATION
@@ -198,11 +202,11 @@ function filterTasksByDueDate(tasks: TaskWithClient[], dueDateFilter: DueDateFil
   return tasks.filter((task) => {
     // Closed tasks are not filtered by due date
     if (task.status === 'closed') {
-      return dueDateFilter === 'all';
+      return false;
     }
 
     if (!task.due_date) {
-      return dueDateFilter === 'all';
+      return false;
     }
 
     switch (dueDateFilter) {
@@ -285,6 +289,9 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
   onAddTask,
   className,
 }) => {
+  // View state
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+
   // Filter state
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | 'all'>('all');
@@ -397,6 +404,27 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
 
         {/* Filter Controls */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* View Mode Toggle */}
+          <div className="flex items-center border rounded-md overflow-hidden">
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="h-9 rounded-none px-3"
+              aria-label="List view"
+            >
+              <LayoutListIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('kanban')}
+              className="h-9 rounded-none px-3"
+              aria-label="Kanban view"
+            >
+              <LayoutGridIcon className="h-4 w-4" />
+            </Button>
+          </div>
           {/* Status Filter */}
           <Select
             value={statusFilter}
@@ -483,8 +511,18 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
         </div>
       )}
 
+      {/* Kanban View */}
+      {!isLoading && filteredTasks.length > 0 && viewMode === 'kanban' && (
+        <KanbanView
+          tasks={filteredTasks}
+          onTaskClick={handleTaskClick}
+          onStatusChange={handleStatusChange}
+          updatingTaskId={updatingTaskId}
+        />
+      )}
+
       {/* Task Table */}
-      {!isLoading && filteredTasks.length > 0 && (
+      {!isLoading && filteredTasks.length > 0 && viewMode === 'list' && (
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
