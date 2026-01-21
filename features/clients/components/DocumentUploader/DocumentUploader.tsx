@@ -332,7 +332,13 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
    * Open file picker
    */
   const handleBrowseClick = useCallback(() => {
-    fileInputRef.current?.click();
+    console.log('handleBrowseClick called', fileInputRef.current);
+    if (fileInputRef.current) {
+      console.log('Triggering file input click');
+      fileInputRef.current.click();
+    } else {
+      console.error('File input ref is null');
+    }
   }, []);
 
   /**
@@ -364,6 +370,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
+        id="document-upload-input"
         type="file"
         accept={ACCEPT_TYPES}
         multiple={!maxFiles || maxFiles > 1}
@@ -372,8 +379,9 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
         aria-label="Upload document files"
       />
 
-      {/* Drop zone */}
-      <div
+      {/* Drop zone - wrapped in label for direct file input access */}
+      <label
+        htmlFor="document-upload-input"
         data-testid="drop-zone"
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -388,7 +396,6 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
             : 'border-border hover:border-muted-foreground',
           isUploading && 'pointer-events-none opacity-75'
         )}
-        onClick={handleBrowseClick}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -429,7 +436,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
             <p>Max size: 10 MB per file</p>
           </div>
         </div>
-      </div>
+      </label>
 
       {/* Upload progress and status */}
       {(isUploading || uploadProgress > 0) && (

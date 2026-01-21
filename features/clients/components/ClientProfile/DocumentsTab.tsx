@@ -8,7 +8,7 @@
 
 import React, { useCallback, useState } from 'react';
 import { cn } from '@/lib/utils/cn';
-import { DocumentUploader } from '../DocumentUploader';
+import { DocumentUploadDialog } from '../DocumentUploadDialog';
 import { DocumentList } from '../DocumentUploader/DocumentList';
 import { documentApi } from '../../api/clientApi';
 import type { ClientDocument } from '../../types';
@@ -57,13 +57,13 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
   className,
 }) => {
   const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
-  const [showUploader, setShowUploader] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
   // Handle document upload completion
   const handleUpload = useCallback(
     () => {
       onDocumentUploaded?.();
-      setShowUploader(false);
+      // Keep dialog open to allow multiple uploads
     },
     [onDocumentUploaded]
   );
@@ -98,51 +98,28 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
   return (
     <div className={cn('space-y-4', className)}>
       {/* Add Document Button */}
-      {!showUploader && (
-        <div className="flex justify-end">
-          <button
-            onClick={() => setShowUploader(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+      <div className="flex justify-end">
+        <button
+          onClick={() => setIsUploadDialogOpen(true)}
+          className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+        >
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            aria-hidden="true"
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
-            <span>Add Document</span>
-          </button>
-        </div>
-      )}
-
-      {/* Upload Area */}
-      {showUploader && (
-        <div className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-foreground">
-              Upload Document
-            </h3>
-            <button
-              onClick={() => setShowUploader(false)}
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-            >
-              Cancel
-            </button>
-          </div>
-          <DocumentUploader
-            clientId={clientId}
-            onUpload={handleUpload}
-          />
-        </div>
-      )}
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 4.5v15m7.5-7.5h-15"
+            />
+          </svg>
+          <span>Add Document</span>
+        </button>
+      </div>
 
       {/* Document List */}
       <DocumentList
@@ -150,6 +127,14 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
         onDownload={handleDownload}
         onDelete={handleDelete}
         isDeleting={deletingDocumentId ?? undefined}
+      />
+
+      {/* Document Upload Dialog */}
+      <DocumentUploadDialog
+        clientId={clientId}
+        open={isUploadDialogOpen}
+        onOpenChange={setIsUploadDialogOpen}
+        onUpload={handleUpload}
       />
     </div>
   );
