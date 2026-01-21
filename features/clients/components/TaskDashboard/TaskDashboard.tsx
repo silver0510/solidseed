@@ -20,6 +20,8 @@ import {
   ArrowUpDownIcon,
   LayoutListIcon,
   LayoutGridIcon,
+  PencilIcon,
+  TrashIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +51,10 @@ export interface TaskDashboardProps {
   onTaskClick?: (task: TaskWithClient) => void;
   /** Callback when Add Task button is clicked */
   onAddTask?: () => void;
+  /** Callback when edit button is clicked */
+  onEdit?: (task: TaskWithClient) => void;
+  /** Callback when delete button is clicked */
+  onDelete?: (task: TaskWithClient) => void;
   /** Additional CSS classes */
   className?: string;
 }
@@ -287,6 +293,8 @@ function sortTasks(
 export const TaskDashboard: React.FC<TaskDashboardProps> = ({
   onTaskClick,
   onAddTask,
+  onEdit,
+  onDelete,
   className,
 }) => {
   // View state
@@ -297,6 +305,7 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | 'all'>('all');
   const [dueDateFilter, setDueDateFilter] = useState<DueDateFilter>('all');
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
+  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
 
   // Sort state
   const [sortField, setSortField] = useState<SortField | null>('due_date');
@@ -342,9 +351,9 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
   );
 
   const handleRowClick = (e: React.MouseEvent, task: TaskWithClient) => {
-    // Don't trigger row click if clicking on the status dropdown
+    // Don't trigger row click if clicking on the status dropdown or action buttons
     const target = e.target as HTMLElement;
-    if (target.closest('[data-status-select]')) {
+    if (target.closest('[data-status-select]') || target.closest('[data-action-button]')) {
       return;
     }
     handleTaskClick(task);
@@ -356,6 +365,31 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
       handleTaskClick(task);
     }
   };
+
+  // Handle task edit
+  const handleEdit = useCallback(
+    (e: React.MouseEvent, task: TaskWithClient) => {
+      e.stopPropagation();
+      onEdit?.(task);
+    },
+    [onEdit]
+  );
+
+  // Handle task delete
+  const handleDelete = useCallback(
+    async (e: React.MouseEvent, task: TaskWithClient) => {
+      e.stopPropagation();
+      setDeletingTaskId(task.id);
+      try {
+        await onDelete?.(task);
+      } catch (error) {
+        console.error('Failed to delete task:', error);
+      } finally {
+        setDeletingTaskId(null);
+      }
+    },
+    [onDelete]
+  );
 
   // Handle column sort
   const handleSort = useCallback((field: SortField) => {
@@ -588,11 +622,18 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
                       {getSortIcon('due_date')}
                     </button>
                   </th>
+                  <th className="px-4 py-3 text-right w-24">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Actions
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-card">
                 {filteredTasks.map((task) => {
                   const isUpdating = updatingTaskId === task.id;
+                  const isDeleting = deletingTaskId === task.id;
+                  const isProcessing = isUpdating || isDeleting;
                   const isClosed = task.status === 'closed';
                   const displayInfo = getTaskDisplayInfo(task);
                   const statusConfig = STATUS_CONFIG[task.status];
@@ -607,7 +648,7 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
                       role="button"
                       className={cn(
                         'transition-colors duration-200 hover:bg-muted/50 cursor-pointer',
-                        isUpdating && 'opacity-50'
+                        isProcessing && 'opacity-50'
                       )}
                     >
                       {/* Task Title */}
@@ -719,6 +760,46 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
                             {formatDueDate(task.due_date, displayInfo)}
                           </time>
                         </span>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-1" data-action-button>
+                          {onEdit && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleEdit(e, task)}
+                              disabled={isProcessing}
+                              aria-label="Edit task"
+                              className={cn(
+                                'p-1.5 rounded transition-colors',
+                                'text-muted-foreground hover:text-foreground hover:bg-muted',
+                                isProcessing && 'cursor-not-allowed opacity-50'
+                              )}
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </button>
+                          )}
+                          {onDelete && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleDelete(e, task)}
+                              disabled={isProcessing}
+                              aria-label="Delete task"
+                              className={cn(
+                                'p-1.5 rounded transition-colors',
+                                'text-destructive/70 hover:text-destructive hover:bg-destructive/10',
+                                isProcessing && 'cursor-not-allowed opacity-50'
+                              )}
+                            >
+                              {isDeleting ? (
+                                <Loader2Icon className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <TrashIcon className="h-4 w-4" />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

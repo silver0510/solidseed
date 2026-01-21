@@ -14,6 +14,7 @@ import { TaskForm } from '@/features/clients/components/TaskForm';
 import { TaskDetailsDialog } from '@/features/clients/components/TaskDetailsDialog';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -79,6 +80,9 @@ export default function TasksPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskWithClient | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [shouldStartInEditMode, setShouldStartInEditMode] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<TaskWithClient | null>(null);
 
   // Fetch all tasks for metrics
   const { data: allTasksData } = useQuery({
@@ -141,8 +145,18 @@ export default function TasksPage() {
     },
   });
 
+  // Delete task mutation
+  const deleteTaskMutation = useMutation({
+    mutationFn: ({ clientId, taskId }: { clientId: string; taskId: string }) =>
+      taskApi.deleteTask(clientId, taskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+
   const handleTaskClick = (task: TaskWithClient) => {
     setSelectedTask(task);
+    setShouldStartInEditMode(false);
     setIsDetailsDialogOpen(true);
   };
 
@@ -152,6 +166,34 @@ export default function TasksPage() {
       taskId: task.id,
       data,
     });
+  };
+
+  const handleTaskEdit = (task: TaskWithClient) => {
+    setSelectedTask(task);
+    setShouldStartInEditMode(true);
+    setIsDetailsDialogOpen(true);
+  };
+
+  const handleTaskDelete = (task: TaskWithClient) => {
+    setTaskToDelete(task);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!taskToDelete) return;
+
+    await deleteTaskMutation.mutateAsync({
+      clientId: taskToDelete.client_id,
+      taskId: taskToDelete.id,
+    });
+
+    setIsDeleteDialogOpen(false);
+    setTaskToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteDialogOpen(false);
+    setTaskToDelete(null);
   };
 
   const handleAddTask = () => {
@@ -220,7 +262,12 @@ export default function TasksPage() {
       <div>
         <h2 className="text-lg font-semibold mb-3">All Tasks</h2>
         <Suspense fallback={<SectionLoader message="Loading tasks..." />}>
-          <TaskDashboard onTaskClick={handleTaskClick} onAddTask={handleAddTask} />
+          <TaskDashboard
+            onTaskClick={handleTaskClick}
+            onAddTask={handleAddTask}
+            onEdit={handleTaskEdit}
+            onDelete={handleTaskDelete}
+          />
         </Suspense>
       </div>
 
@@ -247,10 +294,54 @@ export default function TasksPage() {
       <TaskDetailsDialog
         task={selectedTask}
         open={isDetailsDialogOpen}
-        onOpenChange={setIsDetailsDialogOpen}
+        onOpenChange={(open) => {
+          setIsDetailsDialogOpen(open);
+          if (!open) {
+            setShouldStartInEditMode(false);
+          }
+        }}
         onUpdate={handleTaskUpdate}
         isUpdating={updateTaskMutation.isPending}
+        initialEditMode={shouldStartInEditMode}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Task</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this task? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {taskToDelete && (
+              <div className="rounded-lg border border-border bg-muted/50 p-3">
+                <p className="text-sm font-medium text-foreground">{taskToDelete.title}</p>
+                <p className="text-xs text-muted-foreground mt-1">Client: {taskToDelete.client_name}</p>
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancelDelete}
+                disabled={deleteTaskMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={deleteTaskMutation.isPending}
+              >
+                {deleteTaskMutation.isPending ? 'Deleting...' : 'Delete Task'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

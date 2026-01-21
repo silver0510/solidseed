@@ -7,7 +7,7 @@
  * Shows task title, description, status, priority, due date, and client info.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -118,6 +118,8 @@ export interface TaskDetailsDialogProps {
   onUpdate?: (task: TaskWithClient, data: UpdateTaskInput) => Promise<void>;
   /** Whether an update is in progress */
   isUpdating?: boolean;
+  /** Whether to start in edit mode */
+  initialEditMode?: boolean;
 }
 
 // =============================================================================
@@ -130,8 +132,9 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
   onOpenChange,
   onUpdate,
   isUpdating = false,
+  initialEditMode = false,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(initialEditMode);
 
   const {
     register,
@@ -146,6 +149,20 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
 
   const selectedPriority = watch('priority');
   const selectedStatus = watch('status');
+
+  // Handle initial edit mode when dialog opens
+  useEffect(() => {
+    if (open && task && initialEditMode) {
+      reset({
+        title: task.title,
+        description: task.description || '',
+        due_date: task.due_date,
+        priority: task.priority,
+        status: task.status,
+      });
+      setIsEditing(true);
+    }
+  }, [open, task, initialEditMode, reset]);
 
   // Reset form and edit state when task changes or dialog closes
   const handleOpenChange = (newOpen: boolean) => {
