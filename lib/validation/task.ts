@@ -62,6 +62,7 @@ export const updateTaskSchema = z.object({
     .optional(),
   priority: taskPriorityEnum.optional(),
   status: taskStatusEnum.optional(),
+  client_id: z.string().optional(),
 });
 
 /**

@@ -7,7 +7,7 @@
  * Uses react-hook-form with Zod validation.
  */
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils/cn';
 import type { ClientWithTags, CreateTaskInput, TaskPriority } from '../../types';
 
 // =============================================================================
@@ -79,6 +84,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskFormSchema),
@@ -174,11 +180,45 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       {/* Due Date */}
       <div className="space-y-2">
         <Label htmlFor="due_date">Due Date *</Label>
-        <Input
-          id="due_date"
-          type="date"
-          {...register('due_date')}
-          className="h-9"
+        <Controller
+          name="due_date"
+          control={control}
+          render={({ field }) => (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  className={cn(
+                    'w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm h-9',
+                    'hover:bg-accent hover:text-accent-foreground',
+                    'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                    'disabled:cursor-not-allowed disabled:opacity-50',
+                    !field.value && 'text-muted-foreground'
+                  )}
+                  aria-label="Select due date"
+                >
+                  <span>
+                    {field.value ? format(new Date(field.value), 'PPP') : 'Pick a date'}
+                  </span>
+                  <CalendarIcon className="h-4 w-4 opacity-50" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
+                <Calendar
+                  mode="single"
+                  selected={field.value ? new Date(field.value) : undefined}
+                  onSelect={(date) => {
+                    field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
+                  }}
+                  disabled={isSubmitting}
+                  captionLayout="dropdown"
+                  startMonth={new Date(2020, 0)}
+                  endMonth={new Date(2100, 11)}
+                />
+              </PopoverContent>
+            </Popover>
+          )}
         />
         {errors.due_date && (
           <p className="text-sm text-destructive">{errors.due_date.message}</p>

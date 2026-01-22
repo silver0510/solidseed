@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
@@ -30,6 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   AlertCircleIcon,
   CalendarIcon,
@@ -40,6 +42,7 @@ import {
   UserIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 import { getTaskDisplayInfo, formatDate } from '../../helpers';
 import type { TaskWithClient, UpdateTaskInput, TaskStatus, TaskPriority } from '../../types';
 
@@ -56,6 +59,7 @@ const taskEditSchema = z.object({
   due_date: z.string().min(1, 'Due date is required'),
   priority: z.enum(['low', 'medium', 'high']),
   status: z.enum(['todo', 'in_progress', 'closed']),
+  client_id: z.string().optional(), // Optional for when client change is not allowed
 });
 
 type TaskEditFormData = z.infer<typeof taskEditSchema>;
@@ -122,6 +126,12 @@ export interface TaskDetailsDialogProps {
   initialEditMode?: boolean;
   /** Whether to show client information (hide when in client profile page) */
   showClientInfo?: boolean;
+  /** Whether to allow changing the client (only in edit mode on main tasks page) */
+  allowClientChange?: boolean;
+  /** List of clients for the dropdown (required if allowClientChange is true) */
+  clients?: Array<{ id: string; name: string }>;
+  /** Whether clients are loading */
+  isLoadingClients?: boolean;
 }
 
 // =============================================================================
@@ -136,6 +146,9 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
   isUpdating = false,
   initialEditMode = false,
   showClientInfo = true,
+  allowClientChange = false,
+  clients = [],
+  isLoadingClients = false,
 }) => {
   const [isEditing, setIsEditing] = useState(initialEditMode);
   const hasInitialized = useRef(false);
@@ -145,6 +158,7 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
     handleSubmit,
     setValue,
     watch,
+    control,
     reset,
     formState: { errors },
   } = useForm<TaskEditFormData>({
@@ -153,6 +167,7 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
 
   const selectedPriority = watch('priority');
   const selectedStatus = watch('status');
+  const selectedClientId = watch('client_id');
 
   // Handle initial edit mode when dialog opens
   useEffect(() => {
@@ -167,6 +182,7 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
             due_date: task.due_date,
             priority: task.priority,
             status: task.status,
+            client_id: task.client_id,
           });
         } else {
           // Creating new task
@@ -176,6 +192,7 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
             due_date: new Date().toISOString().split('T')[0],
             priority: 'medium',
             status: 'todo',
+            client_id: '',
           });
         }
         setIsEditing(true);
@@ -206,6 +223,7 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
         due_date: task.due_date,
         priority: task.priority,
         status: task.status,
+        client_id: task.client_id,
       });
       setIsEditing(true);
     }
@@ -233,6 +251,8 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
       due_date: data.due_date,
       priority: data.priority,
       status: data.status,
+      // Include client_id if it's being changed
+      ...(allowClientChange && data.client_id ? { client_id: data.client_id } : {}),
     };
 
     await onUpdate(task, updateData);
@@ -266,6 +286,41 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
         {isEditing || isCreateMode ? (
           // Edit Mode
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+            {/* Client Info - editable if allowClientChange is true, otherwise read-only */}
+            {showClientInfo && task && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-client">Client{allowClientChange && ' *'}</Label>
+                {allowClientChange ? (
+                  // Editable client selector
+                  <Select
+                    value={selectedClientId}
+                    onValueChange={(value) => setValue('client_id', value)}
+                    disabled={isLoadingClients || isUpdating}
+                  >
+                    <SelectTrigger id="edit-client" className="h-9">
+                      <SelectValue placeholder={isLoadingClients ? 'Loading clients...' : 'Select a client'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  // Read-only client display
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <UserIcon className="h-4 w-4" />
+                    <span>{task.client_name}</span>
+                  </div>
+                )}
+                {errors.client_id && (
+                  <p className="text-sm text-destructive">{errors.client_id.message}</p>
+                )}
+              </div>
+            )}
+
             {/* Title */}
             <div className="space-y-2">
               <Label htmlFor="edit-title">Title *</Label>
@@ -289,6 +344,72 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
                 placeholder="Enter task description (optional)"
                 rows={3}
               />
+            </div>
+
+            {/* Due Date */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-due_date">Due Date *</Label>
+              <Controller
+                name="due_date"
+                control={control}
+                render={({ field }) => (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        disabled={isUpdating}
+                        className={cn(
+                          'w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm h-9',
+                          'hover:bg-accent hover:text-accent-foreground',
+                          'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                          'disabled:cursor-not-allowed disabled:opacity-50',
+                          !field.value && 'text-muted-foreground'
+                        )}
+                        aria-label="Select due date"
+                      >
+                        <span>
+                          {field.value ? format(new Date(field.value), 'PPP') : 'Pick a date'}
+                        </span>
+                        <CalendarIcon className="h-4 w-4 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
+                      <Calendar
+                        mode="single"
+                        selected={field.value ? new Date(field.value) : undefined}
+                        onSelect={(date) => {
+                          field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
+                        }}
+                        disabled={isUpdating}
+                        captionLayout="dropdown"
+                        startMonth={new Date(2020, 0)}
+                        endMonth={new Date(2100, 11)}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
+              />
+              {errors.due_date && (
+                <p className="text-sm text-destructive">{errors.due_date.message}</p>
+              )}
+            </div>
+
+            {/* Priority */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-priority">Priority</Label>
+              <Select
+                value={selectedPriority}
+                onValueChange={(value) => setValue('priority', value as TaskPriority)}
+              >
+                <SelectTrigger id="edit-priority" className="h-9">
+                  <SelectValue placeholder="Select priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Status */}
@@ -318,49 +439,6 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Due Date */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-due_date">Due Date *</Label>
-              <Input
-                id="edit-due_date"
-                type="date"
-                {...register('due_date')}
-                className="h-9"
-              />
-              {errors.due_date && (
-                <p className="text-sm text-destructive">{errors.due_date.message}</p>
-              )}
-            </div>
-
-            {/* Priority */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-priority">Priority</Label>
-              <Select
-                value={selectedPriority}
-                onValueChange={(value) => setValue('priority', value as TaskPriority)}
-              >
-                <SelectTrigger id="edit-priority" className="h-9">
-                  <SelectValue placeholder="Select priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Client Info (read-only) - only show in edit mode, not create mode */}
-            {showClientInfo && task && (
-              <div className="space-y-2">
-                <Label className="text-muted-foreground">Client</Label>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <UserIcon className="h-4 w-4" />
-                  <span>{task.client_name}</span>
-                </div>
-              </div>
-            )}
 
             {/* Actions */}
             <div className="flex justify-end gap-2 pt-4 border-t">

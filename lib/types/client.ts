@@ -262,6 +262,8 @@ export interface UpdateTaskInput {
   priority?: TaskPriority;
   /** Task status: todo, in_progress, closed */
   status?: TaskStatus;
+  /** Client ID to reassign the task to (optional) */
+  client_id?: string;
 }
 
 /**

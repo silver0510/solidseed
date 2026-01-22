@@ -109,6 +109,21 @@ export class TaskService {
       throw new Error('Client not found or access denied');
     }
 
+    // If client_id is being changed, verify the new client also belongs to this user
+    if (data.client_id && data.client_id !== clientId) {
+      const { data: newClient, error: newClientError } = await this.supabase
+        .from('clients')
+        .select('id')
+        .eq('id', data.client_id)
+        .eq('assigned_to', userId)
+        .eq('is_deleted', false)
+        .single();
+
+      if (newClientError || !newClient) {
+        throw new Error('New client not found or access denied');
+      }
+    }
+
     const updateData: Record<string, unknown> = {};
 
     if (data.title !== undefined) {
@@ -131,6 +146,9 @@ export class TaskService {
         // Clear completed_at when task is reopened (todo or in_progress)
         updateData.completed_at = null;
       }
+    }
+    if (data.client_id !== undefined) {
+      updateData.client_id = data.client_id;
     }
 
     const { data: task, error } = await this.supabase

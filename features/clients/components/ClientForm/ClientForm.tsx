@@ -29,6 +29,10 @@ import {
 import type { ClientWithCounts, ClientFormData } from '@/features/clients/types';
 import { StatusSelect } from '../StatusSelect/StatusSelect';
 import { TagSelect } from '../TagSelect/TagSelect';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
 
 // =============================================================================
 // TYPES
@@ -266,17 +270,56 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         </div>
 
         {/* Birthday Field - Optional */}
-        <FormInput
-          id="birthday"
-          label="Birthday"
-          type="date"
-          autoComplete="bday"
-          disabled={isLoading}
-          error={errors.birthday?.message}
-          aria-invalid={errors.birthday ? 'true' : 'false'}
-          aria-describedby={errors.birthday ? 'birthday-error' : undefined}
-          {...register('birthday')}
-        />
+        <div className="space-y-1.5">
+          <label htmlFor="birthday" className="block text-sm font-medium text-foreground">
+            Birthday
+          </label>
+          <Controller
+            name="birthday"
+            control={control}
+            render={({ field }) => (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    disabled={isLoading}
+                    className={cn(
+                      'w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm h-11',
+                      'hover:bg-accent hover:text-accent-foreground',
+                      'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                      'disabled:cursor-not-allowed disabled:opacity-50',
+                      !field.value && 'text-muted-foreground'
+                    )}
+                    aria-label="Select birthday"
+                  >
+                    <span>
+                      {field.value ? format(new Date(field.value), 'PPP') : 'Pick a date'}
+                    </span>
+                    <CalendarIcon className="h-4 w-4 opacity-50" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
+                  <Calendar
+                    mode="single"
+                    selected={field.value ? new Date(field.value) : undefined}
+                    onSelect={(date) => {
+                      field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
+                    }}
+                    disabled={isLoading}
+                    captionLayout="dropdown"
+                    startMonth={new Date(1900, 0)}
+                    endMonth={new Date(2100, 11)}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          />
+          {errors.birthday && (
+            <p id="birthday-error" className="text-sm text-destructive">
+              {errors.birthday.message}
+            </p>
+          )}
+        </div>
 
         {/* Address Field - Optional */}
         <FormInput

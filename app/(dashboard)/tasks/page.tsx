@@ -77,7 +77,7 @@ function MetricCard({
 
 export default function TasksPage() {
   const queryClient = useQueryClient();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskWithClient | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [shouldStartInEditMode, setShouldStartInEditMode] = useState(false);
@@ -110,11 +110,11 @@ export default function TasksPage() {
     return dueDate.toDateString() === today.toDateString();
   });
 
-  // Fetch clients for the dropdown
+  // Fetch clients for both create and edit dialogs
   const { data: clientsData, isLoading: isLoadingClients } = useQuery({
     queryKey: clientQueryKeys.list({ limit: 100 }),
     queryFn: () => clientApi.listClients({ limit: 100 }),
-    enabled: isDialogOpen,
+    enabled: isCreateDialogOpen || isDetailsDialogOpen,
   });
 
   const clients = (clientsData?.data ?? []) as ClientWithTags[];
@@ -125,7 +125,7 @@ export default function TasksPage() {
       taskApi.createTask(clientId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      setIsDialogOpen(false);
+      setIsCreateDialogOpen(false);
     },
   });
 
@@ -137,9 +137,17 @@ export default function TasksPage() {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       // Update the selected task with new data
       if (selectedTask) {
+        // If client changed, find the new client name
+        let clientName = selectedTask.client_name;
+        if (updatedTask.client_id !== selectedTask.client_id) {
+          const newClient = clients.find(c => c.id === updatedTask.client_id);
+          clientName = newClient?.name || 'Unknown Client';
+        }
+
         setSelectedTask({
           ...selectedTask,
           ...updatedTask,
+          client_name: clientName,
         });
       }
     },
@@ -199,7 +207,7 @@ export default function TasksPage() {
   };
 
   const handleAddTask = () => {
-    setIsDialogOpen(true);
+    setIsCreateDialogOpen(true);
   };
 
   const handleFormSubmit = async (clientId: string, data: CreateTaskInput) => {
@@ -207,7 +215,7 @@ export default function TasksPage() {
   };
 
   const handleFormCancel = () => {
-    setIsDialogOpen(false);
+    setIsCreateDialogOpen(false);
   };
 
   return (
@@ -273,8 +281,8 @@ export default function TasksPage() {
         </Suspense>
       </div>
 
-      {/* Add Task Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* Create Task Dialog - TaskForm with client selector */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="sm:max-w-125">
           <DialogHeader>
             <DialogTitle>Add New Task</DialogTitle>
@@ -292,7 +300,7 @@ export default function TasksPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Task Details Dialog */}
+      {/* Task Details Dialog - View and edit existing tasks */}
       <TaskDetailsDialog
         task={selectedTask}
         open={isDetailsDialogOpen}
@@ -305,6 +313,9 @@ export default function TasksPage() {
         onUpdate={handleTaskUpdate}
         isUpdating={updateTaskMutation.isPending}
         initialEditMode={shouldStartInEditMode}
+        allowClientChange={true}
+        clients={clients}
+        isLoadingClients={isLoadingClients}
       />
 
       {/* Delete Confirmation Dialog */}
