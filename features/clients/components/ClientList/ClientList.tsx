@@ -8,7 +8,7 @@
  * @module features/clients/components/ClientList/ClientList
  */
 
-import React, { useState, useCallback, useMemo, useRef, useEffect, Suspense } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useClientsInfinite, getTotalCount, flattenClientPages } from '../../hooks/useClientsInfinite';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -32,10 +32,11 @@ import {
 import {
   SearchIcon,
   XIcon,
-  ArrowUpDownIcon,
   PlusIcon,
   ChevronUpIcon,
   ChevronDownIcon,
+  PencilIcon,
+  Trash2Icon,
 } from 'lucide-react';
 import type { ClientWithTags, ClientSortField, SortDirection } from '../../types';
 
@@ -44,6 +45,14 @@ interface ClientStatus {
   name: string;
   color: string;
   order: number;
+}
+
+interface UserTag {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  created_at: string;
 }
 
 /**
@@ -58,6 +67,17 @@ async function fetchClientStatuses(): Promise<ClientStatus[]> {
 }
 
 /**
+ * Fetch all user tags
+ */
+async function fetchUserTags(): Promise<UserTag[]> {
+  const response = await fetch('/api/user-tags');
+  if (!response.ok) {
+    throw new Error('Failed to fetch user tags');
+  }
+  return response.json();
+}
+
+/**
  * Props for the ClientList component
  */
 export interface ClientListProps {
@@ -65,6 +85,10 @@ export interface ClientListProps {
   onClientClick?: (client: ClientWithTags) => void;
   /** Callback when Add Client button is clicked */
   onAddClient?: () => void;
+  /** Callback when Edit button is clicked */
+  onEditClient?: (client: ClientWithTags) => void;
+  /** Callback when Delete button is clicked */
+  onDeleteClient?: (client: ClientWithTags) => void;
   /** Initial search value */
   initialSearch?: string;
   /** Initial tag filter */
@@ -100,17 +124,14 @@ const SORT_OPTIONS: Array<{ value: ClientSortField; label: string }> = [
 ];
 
 /**
- * Available tag options for filtering (placeholder - should be fetched from API)
- */
-const TAG_OPTIONS = ['VIP', 'Buyer', 'Seller', 'First Home', 'Pre-Approved'];
-
-/**
  * ClientList displays a searchable, filterable, and sortable table of clients
  * with infinite scroll support.
  */
 export const ClientList: React.FC<ClientListProps> = ({
   onClientClick,
   onAddClient,
+  onEditClient,
+  onDeleteClient,
   initialSearch = '',
   initialTag = '',
 }) => {
@@ -118,6 +139,13 @@ export const ClientList: React.FC<ClientListProps> = ({
   const { data: statuses } = useSuspenseQuery({
     queryKey: ['client-statuses'],
     queryFn: fetchClientStatuses,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Fetch user tags for display
+  const { data: userTags } = useSuspenseQuery({
+    queryKey: ['user-tags'],
+    queryFn: fetchUserTags,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -213,6 +241,25 @@ export const ClientList: React.FC<ClientListProps> = ({
     onClientClick?.(client);
   }, [onClientClick]);
 
+  const handleEdit = useCallback((e: React.MouseEvent, client: ClientWithTags) => {
+    e.stopPropagation(); // Prevent row click
+    onEditClient?.(client);
+  }, [onEditClient]);
+
+  const handleDelete = useCallback((e: React.MouseEvent, client: ClientWithTags) => {
+    e.stopPropagation(); // Prevent row click
+    onDeleteClient?.(client);
+  }, [onDeleteClient]);
+
+  // Helper functions to get status and tag details
+  const getStatusById = useCallback((statusId: string) => {
+    return statuses.find((s) => s.id === statusId);
+  }, [statuses]);
+
+  const getTagsByNames = useCallback((tagNames: string[]) => {
+    return userTags.filter((tag) => tagNames.includes(tag.name));
+  }, [userTags]);
+
   // Error state
   if (error) {
     return (
@@ -262,9 +309,15 @@ export const ClientList: React.FC<ClientListProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Tags</SelectItem>
-            {TAG_OPTIONS.map((tag) => (
-              <SelectItem key={tag} value={tag}>
-                {tag}
+            {userTags.map((tag) => (
+              <SelectItem key={tag.id} value={tag.name}>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: tag.color }}
+                  />
+                  <span>{tag.name}</span>
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
@@ -361,53 +414,111 @@ export const ClientList: React.FC<ClientListProps> = ({
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow className="hover:bg-transparent">
-                <TableHead>Name</TableHead>
-                <TableHead className="hidden sm:table-cell">Email</TableHead>
-                <TableHead className="hidden md:table-cell">Phone</TableHead>
-                <TableHead className="hidden lg:table-cell">Tags</TableHead>
+                <TableHead>NAME</TableHead>
+                <TableHead className="hidden sm:table-cell">EMAIL</TableHead>
+                <TableHead className="hidden md:table-cell">PHONE</TableHead>
+                <TableHead className="hidden lg:table-cell">STATUS</TableHead>
+                <TableHead className="hidden xl:table-cell">TAGS</TableHead>
+                <TableHead className="w-[100px] text-right">ACTIONS</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clients.map((client) => (
-                <TableRow
-                  key={client.id}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => handleRowClick(client as ClientWithTags)}
-                >
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{client.name}</div>
-                      <div className="text-sm text-muted-foreground sm:hidden">
-                        {client.email}
+              {clients.map((client) => {
+                const status = client.status_id ? getStatusById(client.status_id) : null;
+                const clientTags = client.tags && client.tags.length > 0 ? getTagsByNames(client.tags) : [];
+
+                return (
+                  <TableRow
+                    key={client.id}
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => handleRowClick(client as ClientWithTags)}
+                  >
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{client.name}</div>
+                        <div className="text-sm text-muted-foreground sm:hidden">
+                          {client.email}
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <span className="text-muted-foreground">{client.email}</span>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <span className="text-muted-foreground">{client.phone || '—'}</span>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {client.tags && client.tags.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {client.tags.slice(0, 3).map((tag: string) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {client.tags.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{client.tags.length - 3}
-                          </Badge>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <span className="text-muted-foreground">{client.email}</span>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <span className="text-muted-foreground">{client.phone || '—'}</span>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {status ? (
+                        <Badge
+                          variant="secondary"
+                          className="font-medium"
+                          style={{
+                            backgroundColor: `${status.color}20`,
+                            color: status.color,
+                            borderColor: `${status.color}40`,
+                          }}
+                        >
+                          {status.name}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      {clientTags.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {clientTags.slice(0, 3).map((tag) => (
+                            <Badge
+                              key={tag.id}
+                              variant="secondary"
+                              className="flex items-center gap-1 text-xs"
+                            >
+                              <div
+                                className="h-2 w-2 rounded-full"
+                                style={{ backgroundColor: tag.color }}
+                              />
+                              <span>{tag.name}</span>
+                            </Badge>
+                          ))}
+                          {clientTags.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{clientTags.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {onEditClient && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => handleEdit(e, client as ClientWithTags)}
+                            aria-label="Edit client"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {onDeleteClient && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={(e) => handleDelete(e, client as ClientWithTags)}
+                            aria-label="Delete client"
+                          >
+                            <Trash2Icon className="h-4 w-4" />
+                          </Button>
                         )}
                       </div>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
 

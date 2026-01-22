@@ -14,6 +14,7 @@ import { ClientList } from '@/features/clients/components/ClientList';
 import { ClientForm } from '@/features/clients/components/ClientForm';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -70,11 +71,22 @@ export default function ClientsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [clientToDelete, setClientToDelete] = useState<ClientWithTags | null>(null);
 
   // Fetch client stats for metrics
   const { data: clientsData } = useQuery({
     queryKey: clientQueryKeys.list({ limit: 1 }),
     queryFn: () => clientApi.listClients({ limit: 1 }),
+  });
+
+  // Fetch full client data for editing
+  const { data: selectedClient, isLoading: isLoadingClient } = useQuery({
+    queryKey: clientQueryKeys.detail(selectedClientId!),
+    queryFn: () => clientApi.getClient(selectedClientId!),
+    enabled: !!selectedClientId && isEditDialogOpen,
   });
 
   const totalClients = clientsData?.total_count ?? 0;
@@ -87,6 +99,23 @@ export default function ClientsPage() {
     },
   });
 
+  const updateClientMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: ClientFormData }) =>
+      clientApi.updateClient(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
+      setIsEditDialogOpen(false);
+      setSelectedClientId(null);
+    },
+  });
+
+  const deleteClientMutation = useMutation({
+    mutationFn: (id: string) => clientApi.deleteClient(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
+    },
+  });
+
   const handleClientClick = (client: ClientWithTags) => {
     router.push(`/clients/${client.id}`);
   };
@@ -95,12 +124,50 @@ export default function ClientsPage() {
     setIsDialogOpen(true);
   };
 
+  const handleEditClient = (client: ClientWithTags) => {
+    setSelectedClientId(client.id);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteClient = (client: ClientWithTags) => {
+    setClientToDelete(client);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!clientToDelete) return;
+
+    try {
+      await deleteClientMutation.mutateAsync(clientToDelete.id);
+      setIsDeleteDialogOpen(false);
+      setClientToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete client:', error);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteDialogOpen(false);
+    setClientToDelete(null);
+  };
+
   const handleFormSubmit = async (data: ClientFormData) => {
     await createClientMutation.mutateAsync(data);
   };
 
+  const handleEditFormSubmit = async (data: ClientFormData) => {
+    if (selectedClientId) {
+      await updateClientMutation.mutateAsync({ id: selectedClientId, data });
+    }
+  };
+
   const handleFormCancel = () => {
     setIsDialogOpen(false);
+  };
+
+  const handleEditFormCancel = () => {
+    setIsEditDialogOpen(false);
+    setSelectedClientId(null);
   };
 
   return (
@@ -156,7 +223,12 @@ export default function ClientsPage() {
       <div>
         <h2 className="text-lg font-semibold mb-3">All Clients</h2>
         <Suspense fallback={<SectionLoader message="Loading clients..." />}>
-          <ClientList onClientClick={handleClientClick} onAddClient={handleAddClient} />
+          <ClientList
+            onClientClick={handleClientClick}
+            onAddClient={handleAddClient}
+            onEditClient={handleEditClient}
+            onDeleteClient={handleDeleteClient}
+          />
         </Suspense>
       </div>
 
@@ -174,6 +246,71 @@ export default function ClientsPage() {
             onCancel={handleFormCancel}
             isSubmitting={createClientMutation.isPending}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Client Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-125">
+          <DialogHeader>
+            <DialogTitle>Edit Client</DialogTitle>
+            <DialogDescription>
+              Update the client information below.
+            </DialogDescription>
+          </DialogHeader>
+          {isLoadingClient ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <p className="text-sm text-muted-foreground">Loading client data...</p>
+              </div>
+            </div>
+          ) : selectedClient ? (
+            <ClientForm
+              client={selectedClient}
+              onSubmit={handleEditFormSubmit}
+              onCancel={handleEditFormCancel}
+              isSubmitting={updateClientMutation.isPending}
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-106.25">
+          <DialogHeader>
+            <DialogTitle>Delete Client</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this client? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {clientToDelete && (
+              <div className="rounded-lg border border-border bg-muted/50 p-3">
+                <p className="text-sm font-medium text-foreground">{clientToDelete.name}</p>
+                <p className="text-xs text-muted-foreground mt-1">{clientToDelete.email}</p>
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancelDelete}
+                disabled={deleteClientMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={deleteClientMutation.isPending}
+              >
+                {deleteClientMutation.isPending ? 'Deleting...' : 'Delete Client'}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

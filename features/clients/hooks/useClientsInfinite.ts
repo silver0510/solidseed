@@ -89,9 +89,12 @@ export function useClientsInfinite(options: UseClientsInfiniteOptions = {}) {
       // The API returns PaginatedClients, we transform to PaginatedClientsWithTags
       // by extracting tags from the client_tags relation (if present)
       return {
-        data: result.data.map((client) => ({
+        data: result.data.map((client: any) => ({
           ...client,
-          tags: [], // Tags will be populated if included in the API response
+          // Extract tag names from client_tags array: [{ tag_name: "VIP" }] -> ["VIP"]
+          tags: client.client_tags
+            ? client.client_tags.map((t: { tag_name: string }) => t.tag_name)
+            : [],
         })),
         next_cursor: result.next_cursor,
         total_count: result.total_count,

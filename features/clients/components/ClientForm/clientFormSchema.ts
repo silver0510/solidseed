@@ -8,13 +8,37 @@
  */
 
 import { z } from 'zod';
-import { PHONE_FORMAT_REGEX } from '@/features/clients/types';
 
 /**
- * Phone number format regex for validation
- * Format: +1-XXX-XXX-XXXX
+ * Phone number regex pattern for US phone numbers
+ * Accepts 10 digits with optional formatting
+ * Examples: 5551234567, 555-123-4567, (555) 123-4567, +15551234567
  */
-const phoneFormatRegex = PHONE_FORMAT_REGEX;
+const phoneRegex = /^(\+?1)?[\s.-]?\(?(\d{3})\)?[\s.-]?(\d{3})[\s.-]?(\d{4})$/;
+
+/**
+ * Transform phone number to standard format: +1-XXX-XXX-XXXX
+ */
+const formatPhoneNumber = (phone: string): string => {
+  // Remove all non-digit characters except leading +
+  const cleaned = phone.replace(/[^\d+]/g, '');
+
+  // Extract digits only
+  const digits = cleaned.replace(/\D/g, '');
+
+  // If 10 digits, add country code
+  if (digits.length === 10) {
+    return `+1-${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+
+  // If 11 digits and starts with 1, format it
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `+1-${digits.slice(1, 4)}-${digits.slice(4, 7)}-${digits.slice(7)}`;
+  }
+
+  // Return original if doesn't match expected format
+  return phone;
+};
 
 /**
  * Validates that a date string represents a date in the past
@@ -33,7 +57,7 @@ const isPastDate = (dateString: string): boolean => {
  * Required fields:
  * - name: non-empty string
  * - email: valid email format
- * - phone: +1-XXX-XXX-XXXX format
+ * - phone: 10-digit US phone number (flexible formats, auto-formatted)
  *
  * Optional fields:
  * - status_id: UUID for client status
@@ -57,9 +81,11 @@ export const clientFormSchema = z.object({
   phone: z
     .string()
     .min(1, { message: 'Phone is required' })
-    .regex(phoneFormatRegex, {
-      message: 'Phone must be in format +1-XXX-XXX-XXXX',
-    }),
+    .refine(
+      (val) => phoneRegex.test(val),
+      { message: 'Phone must be a valid 10-digit US phone number' }
+    )
+    .transform(formatPhoneNumber),
 
   status_id: z.string().uuid().optional(),
 

@@ -208,9 +208,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
             type="tel"
             required
             autoComplete="tel"
-            inputMode="tel"
+            inputMode="numeric"
             disabled={isLoading}
-            placeholder="+1-XXX-XXX-XXXX"
+            placeholder="5551234567"
             error={errors.phone?.message}
             aria-invalid={errors.phone ? 'true' : 'false'}
             aria-describedby={errors.phone ? 'phone-error' : 'phone-hint'}
@@ -218,7 +218,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           />
           {!errors.phone && (
             <p id="phone-hint" className="text-xs text-gray-500">
-              Format: +1-XXX-XXX-XXXX
+              Enter 10-digit US phone number (will be formatted automatically)
             </p>
           )}
         </div>
