@@ -5,10 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   SettingsIcon,
-  HelpCircleIcon,
-  SearchIcon,
-  UserCircleIcon,
-  CreditCardIcon,
   BellIcon,
   LogOutIcon,
   MoreVerticalIcon,
@@ -177,20 +173,8 @@ function UserMenu({ onClose }: { onClose?: () => void }) {
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link href="/settings" onClick={onClose}>
-              <UserCircleIcon className="mr-2 h-4 w-4" />
-              Account
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/settings/billing" onClick={onClose}>
-              <CreditCardIcon className="mr-2 h-4 w-4" />
-              Billing
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/settings/notifications" onClick={onClose}>
-              <BellIcon className="mr-2 h-4 w-4" />
-              Notifications
+              <SettingsIcon className="mr-2 h-4 w-4" />
+              Settings
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
@@ -207,28 +191,98 @@ function UserMenu({ onClose }: { onClose?: () => void }) {
   );
 }
 
-interface SecondaryNavItem {
-  name: string;
-  href?: string;
-  icon: React.ReactNode;
-  onClick?: () => void;
+function NotificationsDropdown() {
+  const notifications = [
+    {
+      id: '1',
+      title: 'New client added',
+      description: 'John Smith was added to your client list',
+      time: '5 min ago',
+      read: false,
+    },
+    {
+      id: '2',
+      title: 'Task due soon',
+      description: 'Follow up with Sarah Johnson is due tomorrow',
+      time: '1 hour ago',
+      read: false,
+    },
+    {
+      id: '3',
+      title: 'Document uploaded',
+      description: 'Contract.pdf was uploaded to Mike Brown\'s profile',
+      time: '2 hours ago',
+      read: true,
+    },
+  ];
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+          <span className="relative text-muted-foreground">
+            <BellIcon className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                {unreadCount}
+              </span>
+            )}
+          </span>
+          Notifications
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-80 rounded-lg"
+        align="start"
+        side="right"
+        sideOffset={8}
+      >
+        <DropdownMenuLabel className="font-medium">
+          Notifications
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {notifications.length === 0 ? (
+          <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+            No notifications
+          </div>
+        ) : (
+          notifications.map((notification) => (
+            <DropdownMenuItem
+              key={notification.id}
+              className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+            >
+              <div className="flex w-full items-start justify-between gap-2">
+                <p className={cn(
+                  "text-sm font-medium leading-tight",
+                  !notification.read && "text-foreground"
+                )}>
+                  {notification.title}
+                </p>
+                {!notification.read && (
+                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {notification.description}
+              </p>
+              <p className="text-xs text-muted-foreground/70">
+                {notification.time}
+              </p>
+            </DropdownMenuItem>
+          ))
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="justify-center text-sm text-primary hover:text-primary cursor-pointer">
+          View all notifications
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
-const secondaryNavigation: SecondaryNavItem[] = [
-  {
-    name: 'Settings',
-    href: '/settings',
-    icon: <SettingsIcon className="h-5 w-5" />,
-  },
-  {
-    name: 'Get Help',
-    href: '/help',
-    icon: <HelpCircleIcon className="h-5 w-5" />,
-  },
-];
-
 function SidebarContent({ onClose }: { onClose?: () => void }) {
-  const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
@@ -261,32 +315,9 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         </nav>
       </ScrollArea>
 
-      {/* Secondary Navigation */}
+      {/* Notifications */}
       <div className="mt-auto px-4 pb-2">
-        <nav className="flex flex-col gap-1">
-          {secondaryNavigation.map((item) => {
-            const isActive = item.href ? (pathname === item.href || pathname.startsWith(`${item.href}/`)) : false;
-
-            return (
-              <Link
-                key={item.name}
-                href={item.href || '#'}
-                onClick={onClose}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                )}
-              >
-                <span className={cn(isActive ? 'text-primary' : 'text-muted-foreground')}>
-                  {item.icon}
-                </span>
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
+        <NotificationsDropdown />
       </div>
 
       {/* Theme toggle */}

@@ -40,6 +40,27 @@ export interface ChangePasswordData {
   newPassword: string;
 }
 
+export interface UpdateProfileData {
+  full_name?: string;
+  phone?: string;
+  image?: string;
+}
+
+export interface ProfileResponse {
+  success: boolean;
+  message?: string;
+  user?: {
+    id: string;
+    email: string;
+    full_name: string | null;
+    phone: string | null;
+    image: string | null;
+    subscription_tier: string;
+    trial_expires_at?: string;
+  };
+  error?: string;
+}
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 /**
@@ -229,5 +250,25 @@ export async function initiateOAuth(provider: 'google'): Promise<void> {
   await authClient.signIn.social({
     provider,
     callbackURL: '/dashboard',
+  });
+}
+
+/**
+ * Get user profile (authenticated)
+ */
+export async function getProfile(): Promise<ProfileResponse> {
+  return request<ProfileResponse>('/api/auth/profile', {
+    credentials: 'include',
+  });
+}
+
+/**
+ * Update user profile (authenticated)
+ */
+export async function updateProfile(data: UpdateProfileData): Promise<ProfileResponse> {
+  return request<ProfileResponse>('/api/auth/profile', {
+    method: 'PUT',
+    credentials: 'include',
+    body: JSON.stringify(data),
   });
 }

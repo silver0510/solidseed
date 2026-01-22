@@ -34,6 +34,9 @@ Table users {
   // OAuth profile image URL
   image varchar(500) [note: 'OAuth profile image URL']
 
+  // User profile phone number
+  phone varchar(50) [note: 'User phone number for profile (optional)']
+
   // Account status and subscription
   account_status varchar(50) [not null, default: 'pending', note: 'Account status: pending, active, suspended, deactivated']
   subscription_tier varchar(50) [not null, default: 'trial', note: 'Subscription level: trial, free, pro, enterprise']
@@ -61,6 +64,7 @@ Table users {
     email_verified [name: 'idx_users_email_verified']
     is_deleted [name: 'idx_users_is_deleted']
     (locked_until) [name: 'idx_users_locked_until', note: 'WHERE locked_until IS NOT NULL']
+    (phone) [name: 'idx_users_phone', note: 'WHERE phone IS NOT NULL']
   }
 
   note: 'Core user accounts for Korella CRM authentication'
