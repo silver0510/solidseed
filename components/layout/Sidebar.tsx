@@ -12,7 +12,7 @@ import {
   Sun,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
@@ -140,6 +140,7 @@ function UserMenu({ onClose }: { onClose?: () => void }) {
       <DropdownMenuTrigger asChild>
         <button className="flex w-full items-center gap-3 rounded-lg bg-muted/50 p-2 text-sm hover:bg-muted transition-colors">
           <Avatar className="h-8 w-8 rounded-lg">
+            {user?.image && <AvatarImage src={user.image} alt={displayName} />}
             <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-medium">
               {initials}
             </AvatarFallback>
@@ -160,6 +161,7 @@ function UserMenu({ onClose }: { onClose?: () => void }) {
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <Avatar className="h-8 w-8 rounded-lg">
+              {user?.image && <AvatarImage src={user.image} alt={displayName} />}
               <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-medium">
                 {initials}
               </AvatarFallback>

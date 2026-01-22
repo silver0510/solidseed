@@ -42,6 +42,8 @@ export async function POST(request: NextRequest) {
           id: result.user.id,
           email: result.user.email,
           full_name: result.user.name,
+          image: result.user.image,
+          phone: (result.user as any).phone,
           subscription_tier: result.user.subscription_tier || 'trial',
           trial_expires_at: result.user.trial_expires_at,
         },

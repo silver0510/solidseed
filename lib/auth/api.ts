@@ -12,6 +12,8 @@ export interface AuthResponse {
     id: string;
     email: string;
     full_name: string;
+    image?: string | null;
+    phone?: string | null;
     subscription_tier: string;
     trial_expires_at?: string;
   };

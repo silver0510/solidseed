@@ -30,8 +30,10 @@ export default function SettingsPage() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = React.useState(true);
+  const [isUploadingAvatar, setIsUploadingAvatar] = React.useState(false);
   const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
   const [currentImage, setCurrentImage] = React.useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = React.useState({
@@ -67,27 +69,63 @@ export default function SettingsPage() {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select an image file');
-        return;
-      }
+    if (!file) return;
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Image must be less than 5MB');
-        return;
-      }
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Please select an image file (JPEG, PNG, WebP, or GIF)');
+      return;
+    }
 
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    setSelectedFile(file);
+
+    // Upload immediately
+    setIsUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Profile photo uploaded successfully');
+        setCurrentImage(result.url);
+        setAvatarPreview(null);
+        setSelectedFile(null);
+        // Refresh user data
+        refreshUser?.();
+      } else {
+        toast.error(result.error || 'Failed to upload photo');
+        setAvatarPreview(null);
+        setSelectedFile(null);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload photo');
+      setAvatarPreview(null);
+      setSelectedFile(null);
+    } finally {
+      setIsUploadingAvatar(false);
     }
   };
 
@@ -107,18 +145,11 @@ export default function SettingsPage() {
       const response = await updateProfile({
         full_name: formData.fullName,
         phone: formData.phone,
-        // Note: Avatar upload would need a separate file upload endpoint
-        // For now, we'll store the base64 image (not recommended for production)
-        image: avatarPreview || undefined,
+        // Avatar is uploaded separately via /api/upload/avatar
       });
 
       if (response.success) {
         toast.success('Profile updated successfully');
-        // Update the current image if we uploaded a new one
-        if (avatarPreview) {
-          setCurrentImage(avatarPreview);
-          setAvatarPreview(null);
-        }
         // Refresh the user data in auth context
         refreshUser?.();
       } else {
@@ -171,25 +202,32 @@ export default function SettingsPage() {
                     {initials}
                   </AvatarFallback>
                 </Avatar>
+                {isUploadingAvatar && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                    <Loader2 className="h-6 w-6 animate-spin text-white" />
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={handleAvatarClick}
-                  className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+                  disabled={isUploadingAvatar}
+                  className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Camera className="h-4 w-4" />
                 </button>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
                   onChange={handleFileChange}
+                  disabled={isUploadingAvatar}
                   className="hidden"
                 />
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium">Profile Photo</p>
                 <p className="text-sm text-muted-foreground">
-                  Click the camera icon to upload a new photo
+                  {isUploadingAvatar ? 'Uploading...' : 'Click the camera icon to upload a new photo (max 5MB)'}
                 </p>
               </div>
             </div>
@@ -237,7 +275,7 @@ export default function SettingsPage() {
         </Card>
 
         <div className="flex justify-end mt-6">
-          <Button type="submit" variant="outline" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save Changes
           </Button>

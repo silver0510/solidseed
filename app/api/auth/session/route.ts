@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
         id: session.user.id,
         email: session.user.email,
         full_name: session.user.name,
+        image: session.user.image,
+        phone: (session.user as any).phone,
         subscription_tier: (session.user as any).subscription_tier || 'free',
         trial_expires_at: (session.user as any).trial_expires_at,
       },
