@@ -237,7 +237,7 @@ export default function SettingsPage() {
         </Card>
 
         <div className="flex justify-end mt-6">
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" variant="outline" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save Changes
           </Button>
