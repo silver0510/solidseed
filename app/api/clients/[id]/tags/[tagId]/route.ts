@@ -8,6 +8,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { TagService } from '@/services/TagService';
+import { getSessionUser } from '@/lib/auth/session';
+import { logActivityAsync } from '@/services/ActivityLogService';
 
 // Initialize TagService
 const tagService = new TagService();
@@ -51,8 +53,24 @@ export async function DELETE(
       );
     }
 
+    // Get user for activity logging
+    const { user } = await getSessionUser();
+
     // Remove tag using TagService
     await tagService.removeTag(clientId, tagId);
+
+    // Log activity (fire-and-forget)
+    if (user) {
+      logActivityAsync(
+        {
+          activity_type: 'tag.removed',
+          entity_type: 'tag',
+          entity_id: tagId,
+          client_id: clientId,
+        },
+        user.id
+      );
+    }
 
     // Return success response
     return NextResponse.json(

@@ -37,6 +37,7 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ReactNode;
+  children?: NavItem[];
 }
 
 const navigation: NavItem[] = [

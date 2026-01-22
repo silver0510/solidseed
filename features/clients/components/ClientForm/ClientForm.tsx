@@ -15,9 +15,9 @@
  * @module features/clients/components/ClientForm/ClientForm
  */
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, Suspense } from 'react';
 import { FormInput } from '@/components/auth/FormInput';
 import { Button } from '@/components/auth/Button';
 import { cn } from '@/lib/utils/cn';
@@ -26,7 +26,9 @@ import {
   defaultClientFormValues,
   type ClientFormSchemaType,
 } from './clientFormSchema';
-import type { Client, ClientFormData } from '@/features/clients/types';
+import type { ClientWithCounts, ClientFormData } from '@/features/clients/types';
+import { StatusSelect } from '../StatusSelect/StatusSelect';
+import { TagSelect } from '../TagSelect/TagSelect';
 
 // =============================================================================
 // TYPES
@@ -34,7 +36,7 @@ import type { Client, ClientFormData } from '@/features/clients/types';
 
 export interface ClientFormProps {
   /** Existing client data for edit mode */
-  client?: Client;
+  client?: ClientWithCounts;
   /** Callback when form is submitted with valid data */
   onSubmit: (data: ClientFormData) => Promise<void>;
   /** Callback when cancel button is clicked */
@@ -73,6 +75,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isSubmitting: formIsSubmitting },
   } = useForm<ClientFormSchemaType>({
     resolver: zodResolver(clientFormSchema),
@@ -81,6 +84,8 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           name: client.name,
           email: client.email,
           phone: client.phone ?? '',
+          status_id: client.status_id ?? undefined,
+          tags: client.tags ?? [],
           birthday: client.birthday ?? '',
           address: client.address ?? '',
         }
@@ -106,6 +111,8 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         name: client.name,
         email: client.email,
         phone: client.phone ?? '',
+        status_id: client.status_id ?? undefined,
+        tags: client.tags ?? [],
         birthday: client.birthday ?? '',
         address: client.address ?? '',
       });
@@ -123,6 +130,8 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         name: data.name,
         email: data.email,
         phone: data.phone,
+        status_id: data.status_id,
+        tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
         birthday: data.birthday || undefined,
         address: data.address || undefined,
       };
@@ -147,9 +156,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
       onSubmit={handleSubmit(handleFormSubmit)}
       className={cn(
         // Base layout - mobile-first
-        'flex flex-col space-y-4',
-        // Min height to ensure proper layout on mobile
-        'min-h-0',
+        'space-y-4',
         // Padding for mobile edge spacing
         'px-1',
         // Custom className override
@@ -158,9 +165,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
       noValidate
       aria-label={isEditMode ? 'Edit client form' : 'Create client form'}
     >
-      {/* Form Fields Container - scrollable on mobile with keyboard */}
+      {/* Form Fields Container */}
       <div
-        className="flex-1 space-y-5 overflow-y-auto pb-4"
+        className="space-y-5"
         role="group"
         aria-label="Client information"
       >
@@ -216,6 +223,48 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           )}
         </div>
 
+        {/* Status Field - Optional */}
+        <div className="space-y-1.5">
+          <label htmlFor="status" className="block text-sm font-medium text-foreground">
+            Status
+          </label>
+          <Suspense fallback={<div className="h-10 bg-muted animate-pulse rounded-md" />}>
+            <Controller
+              name="status_id"
+              control={control}
+              render={({ field }) => (
+                <StatusSelect
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isLoading}
+                  placeholder="Select status (optional)"
+                />
+              )}
+            />
+          </Suspense>
+        </div>
+
+        {/* Tags Field - Optional */}
+        <div className="space-y-1.5">
+          <label htmlFor="tags" className="block text-sm font-medium text-foreground">
+            Tags
+          </label>
+          <Suspense fallback={<div className="h-10 bg-muted animate-pulse rounded-md" />}>
+            <Controller
+              name="tags"
+              control={control}
+              render={({ field }) => (
+                <TagSelect
+                  value={field.value || []}
+                  onValueChange={field.onChange}
+                  disabled={isLoading}
+                  placeholder="Select tags (optional)"
+                />
+              )}
+            />
+          </Suspense>
+        </div>
+
         {/* Birthday Field - Optional */}
         <FormInput
           id="birthday"
@@ -243,19 +292,13 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         />
       </div>
 
-      {/* Form Actions - Sticky on mobile for keyboard-aware positioning */}
+      {/* Form Actions */}
       <div
         className={cn(
           // Flex layout for buttons
           'flex gap-3 pt-4',
           // Border top for visual separation
           'border-t border-border',
-          // Sticky positioning for mobile keyboard
-          'sticky bottom-0',
-          // Background to prevent content showing through
-          'bg-background',
-          // Safe area padding for iOS
-          'pb-safe',
           // Button alignment
           onCancel ? 'justify-between' : 'justify-end'
         )}

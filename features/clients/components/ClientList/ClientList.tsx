@@ -2,14 +2,15 @@
  * ClientList Component
  *
  * Displays a list of clients in a table format with search, tag filtering,
- * and sorting capabilities. Built with useSuspenseInfiniteQuery for
+ * status filtering, and sorting capabilities. Built with useSuspenseInfiniteQuery for
  * Suspense-compatible data fetching.
  *
  * @module features/clients/components/ClientList/ClientList
  */
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect, Suspense } from 'react';
 import { useClientsInfinite, getTotalCount, flattenClientPages } from '../../hooks/useClientsInfinite';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +38,24 @@ import {
   ChevronDownIcon,
 } from 'lucide-react';
 import type { ClientWithTags, ClientSortField, SortDirection } from '../../types';
+
+interface ClientStatus {
+  id: string;
+  name: string;
+  color: string;
+  order: number;
+}
+
+/**
+ * Fetch client statuses
+ */
+async function fetchClientStatuses(): Promise<ClientStatus[]> {
+  const response = await fetch('/api/client-statuses');
+  if (!response.ok) {
+    throw new Error('Failed to fetch client statuses');
+  }
+  return response.json();
+}
 
 /**
  * Props for the ClientList component
@@ -95,9 +114,17 @@ export const ClientList: React.FC<ClientListProps> = ({
   initialSearch = '',
   initialTag = '',
 }) => {
+  // Fetch client statuses for filter
+  const { data: statuses } = useSuspenseQuery({
+    queryKey: ['client-statuses'],
+    queryFn: fetchClientStatuses,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
   // State for search, filter, and sort
   const [searchInput, setSearchInput] = useState(initialSearch);
   const [tagFilter, setTagFilter] = useState(initialTag);
+  const [statusFilter, setStatusFilter] = useState('');
   const [sortBy, setSortBy] = useState<ClientSortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
@@ -118,6 +145,7 @@ export const ClientList: React.FC<ClientListProps> = ({
   } = useClientsInfinite({
     search: debouncedSearch || undefined,
     tag: tagFilter || undefined,
+    status: statusFilter || undefined,
     sortBy,
     sortDirection,
     limit: 20,
@@ -165,6 +193,10 @@ export const ClientList: React.FC<ClientListProps> = ({
     setTagFilter(value === 'all' ? '' : value);
   }, []);
 
+  const handleStatusChange = useCallback((value: string) => {
+    setStatusFilter(value === 'all' ? '' : value);
+  }, []);
+
   const handleSortChange = useCallback((value: string) => {
     setSortBy(value as ClientSortField);
   }, []);
@@ -197,7 +229,7 @@ export const ClientList: React.FC<ClientListProps> = ({
 
   // Empty state
   const isEmpty = clients.length === 0;
-  const hasActiveFilters = !!debouncedSearch || !!tagFilter;
+  const hasActiveFilters = !!debouncedSearch || !!tagFilter || !!statusFilter;
 
   return (
     <div className="space-y-4">
@@ -233,6 +265,27 @@ export const ClientList: React.FC<ClientListProps> = ({
             {TAG_OPTIONS.map((tag) => (
               <SelectItem key={tag} value={tag}>
                 {tag}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Status Filter */}
+        <Select value={statusFilter || 'all'} onValueChange={handleStatusChange}>
+          <SelectTrigger className="w-full sm:w-[160px] h-9">
+            <SelectValue placeholder="All Statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            {statuses.map((status) => (
+              <SelectItem key={status.id} value={status.id}>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: status.color }}
+                  />
+                  <span>{status.name}</span>
+                </div>
               </SelectItem>
             ))}
           </SelectContent>

@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DocumentService } from '@/services/DocumentService';
 import { getSessionUser } from '@/lib/auth/session';
+import { logActivityAsync } from '@/services/ActivityLogService';
 import {
   validateFileType,
   validateFileSize,
@@ -126,6 +127,18 @@ export async function POST(
       uploadFile,
       user.id,
       description || undefined
+    );
+
+    // Log activity (fire-and-forget)
+    logActivityAsync(
+      {
+        activity_type: 'document.uploaded',
+        entity_type: 'document',
+        entity_id: document.id,
+        client_id: clientId,
+        metadata: { file_name: document.file_name },
+      },
+      user.id
     );
 
     return NextResponse.json(document, { status: 201 });

@@ -122,6 +122,8 @@ export interface ListClientsOptions {
   search?: string;
   /** Filter by tag name */
   tag?: string;
+  /** Filter by status ID */
+  status?: string;
   /** Sort field */
   sortBy?: ClientSortField;
   /** Sort direction */
@@ -139,6 +141,10 @@ export interface ClientFormData {
   email: string;
   /** Client's phone number in +1-XXX-XXX-XXXX format */
   phone: string;
+  /** Client's status ID (optional) */
+  status_id?: string;
+  /** Array of tag names (optional) */
+  tags?: string[];
   /** Client's birthday (optional) */
   birthday?: string;
   /** Client's address (optional) */

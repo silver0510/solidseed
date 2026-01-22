@@ -14,6 +14,8 @@ export interface Client {
   birthday?: string;
   /** Client's address (optional) */
   address?: string;
+  /** Reference to client status (optional) */
+  status_id?: string;
   /** User ID who created this client */
   created_by: string;
   /** User ID who this client is assigned to */
@@ -37,6 +39,8 @@ export interface ClientWithCounts extends Client {
   notes_count: number;
   /** Number of tasks associated with this client */
   tasks_count: number;
+  /** Array of tag names associated with this client */
+  tags?: string[];
 }
 
 /**
@@ -53,6 +57,10 @@ export interface CreateClientInput {
   birthday?: string;
   /** Client's address (optional) */
   address?: string;
+  /** Reference to client status (optional) */
+  status_id?: string;
+  /** Array of tag names (optional) */
+  tags?: string[];
 }
 
 /**
@@ -70,6 +78,10 @@ export interface UpdateClientInput {
   birthday?: string;
   /** Client's address */
   address?: string;
+  /** Reference to client status */
+  status_id?: string;
+  /** Array of tag names */
+  tags?: string[];
 }
 
 /**
@@ -84,6 +96,8 @@ export interface ListClientsParams {
   search?: string;
   /** Filter by tag name */
   tag?: string;
+  /** Filter by status ID */
+  status?: string;
   /** Sort order */
   sort?: 'created_at' | 'name' | 'updated_at';
 }
@@ -320,4 +334,186 @@ export interface DocumentDownloadResponse {
   url: string;
   /** URL expiration time in seconds */
   expires_in: number;
+}
+
+// =============================================================================
+// CLIENT STATUSES
+// =============================================================================
+
+/**
+ * Client status record from the database
+ */
+export interface ClientStatus {
+  /** Unique identifier (UUID) */
+  id: string;
+  /** User ID who owns this status */
+  user_id: string;
+  /** Status name/label */
+  name: string;
+  /** Status color (from preset palette) */
+  color: string;
+  /** Display order position */
+  position: number;
+  /** Whether this is a default status (cannot be deleted) */
+  is_default: boolean;
+  /** Record creation timestamp (ISO 8601) */
+  created_at: string;
+  /** Record last update timestamp (ISO 8601) */
+  updated_at: string;
+}
+
+/**
+ * Input data for creating a new client status
+ */
+export interface CreateClientStatusInput {
+  /** Status name/label */
+  name: string;
+  /** Status color (from preset palette) */
+  color: string;
+  /** Display order position (optional, defaults to last) */
+  position?: number;
+}
+
+/**
+ * Input data for updating an existing client status
+ */
+export interface UpdateClientStatusInput {
+  /** Status name/label */
+  name?: string;
+  /** Status color (from preset palette) */
+  color?: string;
+  /** Display order position */
+  position?: number;
+}
+
+// =============================================================================
+// USER TAGS (Tag Templates)
+// =============================================================================
+
+/**
+ * User tag template record from the database
+ */
+export interface UserTag {
+  /** Unique identifier (UUID) */
+  id: string;
+  /** User ID who owns this tag */
+  user_id: string;
+  /** Tag name/label */
+  name: string;
+  /** Tag color (from preset palette) */
+  color: string;
+  /** Record creation timestamp (ISO 8601) */
+  created_at: string;
+}
+
+/**
+ * Input data for creating a new user tag
+ */
+export interface CreateUserTagInput {
+  /** Tag name/label */
+  name: string;
+  /** Tag color (from preset palette) */
+  color: string;
+}
+
+/**
+ * Input data for updating an existing user tag
+ */
+export interface UpdateUserTagInput {
+  /** Tag name/label */
+  name?: string;
+  /** Tag color (from preset palette) */
+  color?: string;
+}
+
+// =============================================================================
+// ACTIVITY LOGS
+// =============================================================================
+
+/** Valid activity types */
+export type ActivityType =
+  | 'client.created'
+  | 'client.updated'
+  | 'client.status_changed'
+  | 'task.created'
+  | 'task.completed'
+  | 'note.created'
+  | 'document.uploaded'
+  | 'document.downloaded'
+  | 'tag.added'
+  | 'tag.removed';
+
+/** Valid entity types for activity logs */
+export type EntityType = 'client' | 'task' | 'note' | 'document' | 'tag';
+
+/**
+ * Activity log record from the database
+ */
+export interface ActivityLog {
+  /** Unique identifier (UUID) */
+  id: string;
+  /** User ID who performed the activity */
+  user_id: string;
+  /** Type of activity performed */
+  activity_type: ActivityType;
+  /** Type of entity affected */
+  entity_type: EntityType;
+  /** ID of the affected entity */
+  entity_id: string;
+  /** Associated client ID (for context) */
+  client_id?: string;
+  /** Additional metadata (old_status, new_status, client_name, etc.) */
+  metadata?: Record<string, unknown>;
+  /** Record creation timestamp (ISO 8601) */
+  created_at: string;
+}
+
+/**
+ * Activity log with client info for display
+ */
+export interface ActivityLogWithClient extends ActivityLog {
+  /** Client name for display */
+  client_name?: string;
+}
+
+/**
+ * Input data for creating an activity log
+ */
+export interface CreateActivityLogInput {
+  /** Type of activity performed */
+  activity_type: ActivityType;
+  /** Type of entity affected */
+  entity_type: EntityType;
+  /** ID of the affected entity */
+  entity_id: string;
+  /** Associated client ID (for context) */
+  client_id?: string;
+  /** Additional metadata */
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Parameters for listing activity logs
+ */
+export interface ListActivityLogsParams {
+  /** Filter by client ID */
+  client_id?: string;
+  /** Filter by activity type */
+  activity_type?: ActivityType;
+  /** Limit number of results (default: 10, max: 100) */
+  limit?: number;
+  /** Cursor for pagination */
+  cursor?: string;
+}
+
+/**
+ * Paginated response for activity log list queries
+ */
+export interface PaginatedActivityLogs {
+  /** Array of activity log records */
+  data: ActivityLogWithClient[];
+  /** Cursor for next page (undefined if no more pages) */
+  next_cursor?: string;
+  /** Total count of activities matching the query */
+  total_count: number;
 }

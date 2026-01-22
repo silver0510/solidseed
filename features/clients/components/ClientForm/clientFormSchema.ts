@@ -36,6 +36,8 @@ const isPastDate = (dateString: string): boolean => {
  * - phone: +1-XXX-XXX-XXXX format
  *
  * Optional fields:
+ * - status_id: UUID for client status
+ * - tags: array of tag names
  * - birthday: must be in the past if provided
  * - address: any string
  */
@@ -59,6 +61,10 @@ export const clientFormSchema = z.object({
       message: 'Phone must be in format +1-XXX-XXX-XXXX',
     }),
 
+  status_id: z.string().uuid().optional(),
+
+  tags: z.array(z.string()).optional(),
+
   birthday: z
     .string()
     .optional()
@@ -81,6 +87,8 @@ export const defaultClientFormValues: ClientFormSchemaType = {
   name: '',
   email: '',
   phone: '',
+  status_id: undefined,
+  tags: [],
   birthday: '',
   address: '',
 };

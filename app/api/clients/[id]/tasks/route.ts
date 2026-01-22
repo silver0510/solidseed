@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { TaskService } from '@/services/TaskService';
 import { createTaskSchema } from '@/lib/validation/task';
 import { getSessionUser } from '@/lib/auth/session';
+import { logActivityAsync } from '@/services/ActivityLogService';
 import { z } from 'zod';
 
 // Initialize TaskService
@@ -89,6 +90,18 @@ export async function POST(
     const validatedData = createTaskSchema.parse(body);
 
     const task = await taskService.addTask(clientId, validatedData, user.id);
+
+    // Log activity (fire-and-forget)
+    logActivityAsync(
+      {
+        activity_type: 'task.created',
+        entity_type: 'task',
+        entity_id: task.id,
+        client_id: clientId,
+        metadata: { task_title: task.title },
+      },
+      user.id
+    );
 
     return NextResponse.json(task, { status: 201 });
   } catch (error) {

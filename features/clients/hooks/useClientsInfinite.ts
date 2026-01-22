@@ -24,6 +24,8 @@ export interface UseClientsInfiniteOptions {
   search?: string;
   /** Filter by tag name */
   tag?: string;
+  /** Filter by status ID */
+  status?: string;
   /** Sort field */
   sortBy?: ClientSortField;
   /** Sort direction */
@@ -59,12 +61,13 @@ export interface UseClientsInfiniteOptions {
  * ```
  */
 export function useClientsInfinite(options: UseClientsInfiniteOptions = {}) {
-  const { search, tag, sortBy = 'created_at', sortDirection = 'desc', limit = 20 } = options;
+  const { search, tag, status, sortBy = 'created_at', sortDirection = 'desc', limit = 20 } = options;
 
   return useSuspenseInfiniteQuery({
     queryKey: clientQueryKeys.list({
       search,
       tag,
+      status,
       sortBy,
       sortDirection,
       limit,
@@ -75,6 +78,7 @@ export function useClientsInfinite(options: UseClientsInfiniteOptions = {}) {
         limit,
         search: search || undefined,
         tag: tag || undefined,
+        status: status || undefined,
         sortBy,
         sortDirection,
       };

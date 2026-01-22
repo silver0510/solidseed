@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ClientService } from '@/services/ClientService';
 import { updateClientSchema } from '@/lib/validation/client';
 import { getSessionUser } from '@/lib/auth/session';
+import { logActivityAsync } from '@/services/ActivityLogService';
 import { z } from 'zod';
 
 // Initialize ClientService (uses service role key)
@@ -114,6 +115,32 @@ export async function PATCH(
       return NextResponse.json(
         { error: 'Client not found' },
         { status: 404 }
+      );
+    }
+
+    // Log activity (fire-and-forget)
+    // Check if status was changed
+    if (validatedData.status_id !== undefined) {
+      logActivityAsync(
+        {
+          activity_type: 'client.status_changed',
+          entity_type: 'client',
+          entity_id: client.id,
+          client_id: client.id,
+          metadata: { client_name: client.name },
+        },
+        user.id
+      );
+    } else {
+      logActivityAsync(
+        {
+          activity_type: 'client.updated',
+          entity_type: 'client',
+          entity_id: client.id,
+          client_id: client.id,
+          metadata: { client_name: client.name },
+        },
+        user.id
       );
     }
 

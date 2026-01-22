@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ClientService } from '@/services/ClientService';
 import { createClientSchema } from '@/lib/validation/client';
 import { getSessionUser } from '@/lib/auth/session';
+import { logActivityAsync } from '@/services/ActivityLogService';
 import type { ListClientsParams } from '@/lib/types/client';
 import { z } from 'zod';
 
@@ -28,6 +29,7 @@ const clientService = new ClientService();
  * - limit: number (optional) - Items per page (default: 20, max: 100)
  * - search: string (optional) - Search by name or email
  * - tag: string (optional) - Filter by tag name
+ * - status: string (optional) - Filter by status ID
  * - sort: 'created_at' | 'name' (optional) - Sort field (default: created_at)
  *
  * Response:
@@ -91,6 +93,7 @@ export async function GET(request: NextRequest) {
       limit,
       search: searchParams.get('search') || undefined,
       tag: searchParams.get('tag') || undefined,
+      status: searchParams.get('status') || undefined,
       sort: sortParam as 'created_at' | 'name' | undefined,
     };
 
@@ -163,6 +166,18 @@ export async function POST(request: NextRequest) {
 
     // Create client for the authenticated user
     const client = await clientService.createClient(validatedData, user.id);
+
+    // Log activity (fire-and-forget)
+    logActivityAsync(
+      {
+        activity_type: 'client.created',
+        entity_type: 'client',
+        entity_id: client.id,
+        client_id: client.id,
+        metadata: { client_name: client.name },
+      },
+      user.id
+    );
 
     // Return created client with 201 status
     return NextResponse.json(client, { status: 201 });

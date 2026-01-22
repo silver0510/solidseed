@@ -1,7 +1,8 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { PanelLeftIcon } from 'lucide-react';
+import Link from 'next/link';
+import { PanelLeftIcon, SettingsIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
@@ -35,6 +36,7 @@ function getPageTitle(pathname: string): string {
 export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
   const pageTitle = getPageTitle(pathname);
+  const isClientsPage = pathname === '/clients' || pathname.startsWith('/clients/');
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4 lg:px-6">
@@ -53,6 +55,18 @@ export function Header({ onMenuClick }: HeaderProps) {
 
       {/* Page title */}
       <h1 className="text-base font-medium">{pageTitle}</h1>
+
+      {/* Client Settings button - shown only on clients page */}
+      {isClientsPage && (
+        <div className="ml-auto">
+          <Link href="/settings/clients">
+            <Button variant="outline" size="sm" className="h-8">
+              <SettingsIcon className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Client Settings</span>
+            </Button>
+          </Link>
+        </div>
+      )}
     </header>
   );
 }

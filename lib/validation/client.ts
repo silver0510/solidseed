@@ -23,6 +23,8 @@ const phoneRegex = /^\+1-\d{3}-\d{3}-\d{4}$/;
  *
  * Optional fields:
  * - phone: US phone number in format +1-XXX-XXX-XXXX
+ * - status_id: UUID for client status
+ * - tags: Array of tag names
  * - birthday: ISO date string
  * - address: Free-form text address
  */
@@ -33,6 +35,8 @@ export const createClientSchema = z.object({
     .string()
     .regex(phoneRegex, 'Phone must be in format +1-XXX-XXX-XXXX')
     .optional(),
+  status_id: z.string().uuid().optional(),
+  tags: z.array(z.string()).optional(),
   birthday: z.string().optional(),
   address: z.string().optional(),
 });

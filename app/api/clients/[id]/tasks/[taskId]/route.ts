@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { TaskService } from '@/services/TaskService';
 import { updateTaskSchema } from '@/lib/validation/task';
 import { getSessionUser } from '@/lib/auth/session';
+import { logActivityAsync } from '@/services/ActivityLogService';
 import { z } from 'zod';
 
 // Initialize TaskService
@@ -56,6 +57,20 @@ export async function PATCH(
     const validatedData = updateTaskSchema.parse(body);
 
     const task = await taskService.updateTask(clientId, taskId, validatedData, user.id);
+
+    // Log activity for task completion
+    if (validatedData.status === 'closed') {
+      logActivityAsync(
+        {
+          activity_type: 'task.completed',
+          entity_type: 'task',
+          entity_id: task.id,
+          client_id: clientId,
+          metadata: { task_title: task.title },
+        },
+        user.id
+      );
+    }
 
     return NextResponse.json(task, { status: 200 });
   } catch (error) {

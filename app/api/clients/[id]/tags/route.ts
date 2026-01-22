@@ -9,6 +9,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TagService } from '@/services/TagService';
 import { createTagSchema } from '@/lib/validation/tag';
+import { getSessionUser } from '@/lib/auth/session';
+import { logActivityAsync } from '@/services/ActivityLogService';
 import { z } from 'zod';
 
 // Initialize TagService
@@ -58,8 +60,25 @@ export async function POST(
     // Validate input using Zod schema
     const validatedData = createTagSchema.parse(body);
 
+    // Get user for activity logging
+    const { user } = await getSessionUser();
+
     // Create tag using TagService
     const tag = await tagService.addTag(clientId, validatedData);
+
+    // Log activity (fire-and-forget)
+    if (user) {
+      logActivityAsync(
+        {
+          activity_type: 'tag.added',
+          entity_type: 'tag',
+          entity_id: tag.id,
+          client_id: clientId,
+          metadata: { tag_name: tag.tag_name },
+        },
+        user.id
+      );
+    }
 
     // Return created tag with 201 status
     return NextResponse.json(tag, { status: 201 });

@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { NoteService } from '@/services/NoteService';
 import { createNoteSchema } from '@/lib/validation/note';
 import { getSessionUser } from '@/lib/auth/session';
+import { logActivityAsync } from '@/services/ActivityLogService';
 import { z } from 'zod';
 
 // Initialize NoteService
@@ -89,6 +90,17 @@ export async function POST(
     const validatedData = createNoteSchema.parse(body);
 
     const note = await noteService.addNote(clientId, validatedData, user.id);
+
+    // Log activity (fire-and-forget)
+    logActivityAsync(
+      {
+        activity_type: 'note.created',
+        entity_type: 'note',
+        entity_id: note.id,
+        client_id: clientId,
+      },
+      user.id
+    );
 
     return NextResponse.json(note, { status: 201 });
   } catch (error) {
