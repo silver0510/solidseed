@@ -78,5 +78,5 @@ export function getColorBadgeClasses(colorName: string): string {
     purple: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
     pink: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300',
   };
-  return colorMap[colorName] || colorMap.gray;
+  return colorMap[colorName] || 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
 }

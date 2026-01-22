@@ -130,7 +130,7 @@ export class ActivityLogService {
     // Calculate next cursor
     const next_cursor =
       activities.length === limit
-        ? activities[activities.length - 1].created_at
+        ? activities[activities.length - 1]?.created_at
         : undefined;
 
     return {

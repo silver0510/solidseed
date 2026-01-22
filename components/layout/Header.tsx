@@ -2,12 +2,14 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { PanelLeftIcon, SettingsIcon } from 'lucide-react';
+import { PanelLeftIcon, PanelLeftCloseIcon, SettingsIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
 interface HeaderProps {
   onMenuClick: () => void;
+  onToggleCollapse: () => void;
+  isCollapsed: boolean;
 }
 
 function getPageTitle(pathname: string): string {
@@ -33,7 +35,7 @@ function getPageTitle(pathname: string): string {
   return 'Dashboard';
 }
 
-export function Header({ onMenuClick }: HeaderProps) {
+export function Header({ onMenuClick, onToggleCollapse, isCollapsed }: HeaderProps) {
   const pathname = usePathname();
   const pageTitle = getPageTitle(pathname);
   const isClientsPage = pathname === '/clients' || pathname.startsWith('/clients/');
@@ -51,7 +53,22 @@ export function Header({ onMenuClick }: HeaderProps) {
         <PanelLeftIcon className="h-5 w-5" />
       </Button>
 
-      <Separator orientation="vertical" className="h-4 lg:hidden" />
+      {/* Sidebar collapse toggle - desktop only */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onToggleCollapse}
+        className="hidden lg:flex h-8 w-8"
+        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        {isCollapsed ? (
+          <PanelLeftIcon className="h-5 w-5" />
+        ) : (
+          <PanelLeftCloseIcon className="h-5 w-5" />
+        )}
+      </Button>
+
+      <Separator orientation="vertical" className="h-4" />
 
       {/* Page title */}
       <h1 className="text-base font-medium">{pageTitle}</h1>

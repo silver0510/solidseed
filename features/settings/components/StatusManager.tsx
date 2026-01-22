@@ -136,9 +136,11 @@ export function StatusManager() {
 
     const newStatuses = [...statuses];
     const [draggedItem] = newStatuses.splice(draggedIndex, 1);
-    newStatuses.splice(index, 0, draggedItem);
-    setStatuses(newStatuses);
-    setDraggedIndex(index);
+    if (draggedItem) {
+      newStatuses.splice(index, 0, draggedItem);
+      setStatuses(newStatuses);
+      setDraggedIndex(index);
+    }
   };
 
   const handleDragEnd = async () => {

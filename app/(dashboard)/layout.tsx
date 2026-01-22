@@ -5,6 +5,7 @@ import { QueryProvider } from '@/lib/query/QueryProvider';
 import { AuthProvider } from '@/lib/auth/useAuth';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Sidebar, Header, BottomNav } from '@/components/layout';
+import { cn } from '@/lib/utils';
 
 export default function DashboardLayout({
   children,
@@ -12,6 +13,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <AuthProvider>
@@ -19,12 +21,23 @@ export default function DashboardLayout({
         <QueryProvider>
           <div className="min-h-screen bg-background">
             {/* Sidebar */}
-            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <Sidebar
+              isOpen={sidebarOpen}
+              onClose={() => setSidebarOpen(false)}
+              isCollapsed={sidebarCollapsed}
+            />
 
             {/* Main content area */}
-            <div className="lg:pl-64">
+            <div className={cn(
+              "transition-all duration-300",
+              sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'
+            )}>
               {/* Header */}
-              <Header onMenuClick={() => setSidebarOpen(true)} />
+              <Header
+                onMenuClick={() => setSidebarOpen(true)}
+                onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+                isCollapsed={sidebarCollapsed}
+              />
 
               {/* Page content */}
               <main className="pb-20 lg:pb-6">

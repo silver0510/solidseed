@@ -70,7 +70,7 @@ const navigation: NavItem[] = [
   },
 ];
 
-function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
+function NavLink({ item, onClick, isCollapsed }: { item: NavItem; onClick?: () => void; isCollapsed?: boolean }) {
   const pathname = usePathname();
   const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
@@ -82,7 +82,8 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
             href={item.href}
             onClick={onClick}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors min-h-11',
+              'flex items-center rounded-lg text-sm font-medium transition-colors min-h-11',
+              isCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5',
               isActive
                 ? 'bg-accent text-accent-foreground'
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -91,12 +92,14 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
             <span className={cn(isActive ? 'text-primary' : 'text-muted-foreground')}>
               {item.icon}
             </span>
-            {item.name}
+            {!isCollapsed && item.name}
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="right" className="lg:hidden">
-          {item.name}
-        </TooltipContent>
+        {isCollapsed && (
+          <TooltipContent side="right">
+            {item.name}
+          </TooltipContent>
+        )}
       </Tooltip>
     </TooltipProvider>
   );
@@ -116,7 +119,7 @@ function getInitials(name: string | undefined, email: string | undefined): strin
   return 'U';
 }
 
-function UserMenu({ onClose }: { onClose?: () => void }) {
+function UserMenu({ onClose, isCollapsed }: { onClose?: () => void; isCollapsed?: boolean }) {
   const { user, logout, isLoading } = useAuth();
 
   const displayName = user?.full_name || user?.email || 'User';
@@ -125,12 +128,17 @@ function UserMenu({ onClose }: { onClose?: () => void }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-2 animate-pulse">
+      <div className={cn(
+        "flex items-center rounded-lg bg-muted/50 p-2 animate-pulse",
+        isCollapsed ? "justify-center" : "gap-3"
+      )}>
         <div className="h-8 w-8 rounded-lg bg-muted" />
-        <div className="flex-1 space-y-1">
-          <div className="h-4 w-20 rounded bg-muted" />
-          <div className="h-3 w-28 rounded bg-muted" />
-        </div>
+        {!isCollapsed && (
+          <div className="flex-1 space-y-1">
+            <div className="h-4 w-20 rounded bg-muted" />
+            <div className="h-3 w-28 rounded bg-muted" />
+          </div>
+        )}
       </div>
     );
   }
@@ -138,18 +146,25 @@ function UserMenu({ onClose }: { onClose?: () => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex w-full items-center gap-3 rounded-lg bg-muted/50 p-2 text-sm hover:bg-muted transition-colors">
+        <button className={cn(
+          "flex w-full items-center rounded-lg bg-muted/50 p-2 text-sm hover:bg-muted transition-colors",
+          isCollapsed ? "justify-center" : "gap-3"
+        )}>
           <Avatar className="h-8 w-8 rounded-lg">
             {user?.image && <AvatarImage src={user.image} alt={displayName} />}
             <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-medium">
               {initials}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 text-left leading-tight">
-            <p className="truncate font-medium text-sm">{displayName}</p>
-            <p className="truncate text-xs text-muted-foreground">{displayEmail}</p>
-          </div>
-          <MoreVerticalIcon className="h-4 w-4 text-muted-foreground" />
+          {!isCollapsed && (
+            <>
+              <div className="flex-1 text-left leading-tight">
+                <p className="truncate font-medium text-sm">{displayName}</p>
+                <p className="truncate text-xs text-muted-foreground">{displayEmail}</p>
+              </div>
+              <MoreVerticalIcon className="h-4 w-4 text-muted-foreground" />
+            </>
+          )}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -194,7 +209,7 @@ function UserMenu({ onClose }: { onClose?: () => void }) {
   );
 }
 
-function NotificationsDropdown() {
+function NotificationsDropdown({ isCollapsed }: { isCollapsed?: boolean }) {
   const notifications = [
     {
       id: '1',
@@ -224,7 +239,10 @@ function NotificationsDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+        <button className={cn(
+          "flex w-full items-center rounded-lg text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+          isCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5"
+        )}>
           <span className="relative text-muted-foreground">
             <BellIcon className="h-5 w-5" />
             {unreadCount > 0 && (
@@ -233,7 +251,7 @@ function NotificationsDropdown() {
               </span>
             )}
           </span>
-          Notifications
+          {!isCollapsed && 'Notifications'}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -285,7 +303,7 @@ function NotificationsDropdown() {
   );
 }
 
-function SidebarContent({ onClose }: { onClose?: () => void }) {
+function SidebarContent({ onClose, isCollapsed }: { onClose?: () => void; isCollapsed?: boolean }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
@@ -302,43 +320,49 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 px-6">
+      <div className={cn(
+        "flex h-16 items-center",
+        isCollapsed ? "justify-center px-2" : "gap-3 px-6"
+      )}>
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold">
           K
         </div>
-        <span className="font-semibold text-lg">Korella</span>
+        {!isCollapsed && <span className="font-semibold text-lg">Korella</span>}
       </div>
 
       {/* Main Navigation */}
       <ScrollArea className="flex-1 px-4 py-4">
         <nav className="flex flex-col gap-1">
           {navigation.map((item) => (
-            <NavLink key={item.name} item={item} onClick={onClose} />
+            <NavLink key={item.name} item={item} onClick={onClose} isCollapsed={isCollapsed} />
           ))}
         </nav>
       </ScrollArea>
 
       {/* Notifications */}
       <div className="mt-auto px-4 pb-2">
-        <NotificationsDropdown />
+        <NotificationsDropdown isCollapsed={isCollapsed} />
       </div>
 
       {/* Theme toggle */}
       <div className="px-4 pb-2">
         <button
           onClick={toggleTheme}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className={cn(
+            "flex w-full items-center rounded-lg text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+            isCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5"
+          )}
         >
           <span className="text-muted-foreground">
             {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </span>
-          {isDark ? 'Light Mode' : 'Dark Mode'}
+          {!isCollapsed && (isDark ? 'Light Mode' : 'Dark Mode')}
         </button>
       </div>
 
       {/* User menu */}
       <div className="p-4">
-        <UserMenu onClose={onClose} />
+        <UserMenu onClose={onClose} isCollapsed={isCollapsed} />
       </div>
     </div>
   );
@@ -347,9 +371,10 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  isCollapsed?: boolean;
 }
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, isCollapsed }: SidebarProps) {
   return (
     <>
       {/* Mobile sidebar using Sheet */}
@@ -363,8 +388,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       </Sheet>
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-64 lg:border-r lg:border-border lg:bg-card">
-        <SidebarContent />
+      <aside className={cn(
+        "hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:border-r lg:border-border lg:bg-card transition-all duration-300",
+        isCollapsed ? "lg:w-16" : "lg:w-64"
+      )}>
+        <SidebarContent isCollapsed={isCollapsed} />
       </aside>
     </>
   );
