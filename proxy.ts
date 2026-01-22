@@ -22,7 +22,7 @@ const PUBLIC_ROUTES = [
   '/verify-email',
 ];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if the current path is protected
