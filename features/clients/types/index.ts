@@ -74,6 +74,8 @@ export interface ClientWithTags {
   birthday?: string;
   /** Client's address */
   address?: string;
+  /** Reference to client status (optional) */
+  status_id?: string;
   /** User ID who created this client */
   created_by: string;
   /** User ID who this client is assigned to */

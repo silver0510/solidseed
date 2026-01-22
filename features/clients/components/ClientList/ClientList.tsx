@@ -14,6 +14,8 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { QuickStatusDialog } from '../QuickStatusDialog';
+import { QuickTagsDialog } from '../QuickTagsDialog';
 import {
   Select,
   SelectContent,
@@ -156,6 +158,11 @@ export const ClientList: React.FC<ClientListProps> = ({
   const [sortBy, setSortBy] = useState<ClientSortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
+  // State for quick edit dialogs
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [isTagsDialogOpen, setIsTagsDialogOpen] = useState(false);
+  const [selectedClientForQuickEdit, setSelectedClientForQuickEdit] = useState<ClientWithTags | null>(null);
+
   // Debounce search input by 300ms
   const debouncedSearch = useDebouncedValue(searchInput, 300);
 
@@ -250,6 +257,18 @@ export const ClientList: React.FC<ClientListProps> = ({
     e.stopPropagation(); // Prevent row click
     onDeleteClient?.(client);
   }, [onDeleteClient]);
+
+  const handleStatusClick = useCallback((e: React.MouseEvent, client: ClientWithTags) => {
+    e.stopPropagation(); // Prevent row click
+    setSelectedClientForQuickEdit(client);
+    setIsStatusDialogOpen(true);
+  }, []);
+
+  const handleTagsClick = useCallback((e: React.MouseEvent, client: ClientWithTags) => {
+    e.stopPropagation(); // Prevent row click
+    setSelectedClientForQuickEdit(client);
+    setIsTagsDialogOpen(true);
+  }, []);
 
   // Helper functions to get status and tag details
   const getStatusById = useCallback((statusId: string) => {
@@ -451,27 +470,36 @@ export const ClientList: React.FC<ClientListProps> = ({
                       {status ? (
                         <Badge
                           variant="secondary"
-                          className="font-medium"
+                          className="font-medium cursor-pointer hover:opacity-80 transition-opacity"
                           style={{
                             backgroundColor: `${status.color}20`,
                             color: status.color,
                             borderColor: `${status.color}40`,
                           }}
+                          onClick={(e) => handleStatusClick(e, client as ClientWithTags)}
                         >
                           {status.name}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <button
+                          onClick={(e) => handleStatusClick(e, client as ClientWithTags)}
+                          className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          Set status
+                        </button>
                       )}
                     </TableCell>
                     <TableCell className="hidden xl:table-cell">
                       {clientTags.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
+                        <div
+                          className="flex flex-wrap gap-1 cursor-pointer"
+                          onClick={(e) => handleTagsClick(e, client as ClientWithTags)}
+                        >
                           {clientTags.slice(0, 3).map((tag) => (
                             <Badge
                               key={tag.id}
                               variant="secondary"
-                              className="flex items-center gap-1 text-xs"
+                              className="flex items-center gap-1 text-xs hover:opacity-80 transition-opacity"
                             >
                               <div
                                 className="h-2 w-2 rounded-full"
@@ -481,13 +509,18 @@ export const ClientList: React.FC<ClientListProps> = ({
                             </Badge>
                           ))}
                           {clientTags.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs hover:opacity-80 transition-opacity">
                               +{clientTags.length - 3}
                             </Badge>
                           )}
                         </div>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <button
+                          onClick={(e) => handleTagsClick(e, client as ClientWithTags)}
+                          className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          Add tags
+                        </button>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -537,6 +570,18 @@ export const ClientList: React.FC<ClientListProps> = ({
           )}
         </div>
       )}
+
+      {/* Quick Edit Dialogs */}
+      <QuickStatusDialog
+        open={isStatusDialogOpen}
+        onOpenChange={setIsStatusDialogOpen}
+        client={selectedClientForQuickEdit}
+      />
+      <QuickTagsDialog
+        open={isTagsDialogOpen}
+        onOpenChange={setIsTagsDialogOpen}
+        client={selectedClientForQuickEdit}
+      />
     </div>
   );
 };

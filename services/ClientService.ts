@@ -283,21 +283,49 @@ export class ClientService {
     // Extract tags from data (they're not part of the clients table)
     const { tags, ...clientData } = data;
 
-    const { data: client, error } = await this.supabase
-      .from('clients')
-      .update(clientData)
-      .eq('id', id)
-      .eq('assigned_to', userId)
-      .eq('is_deleted', false)
-      .select()
-      .single();
+    // Check if there are any client fields to update
+    const hasClientDataToUpdate = Object.keys(clientData).length > 0;
 
-    if (error) {
-      // PGRST116 is PostgREST's "row not found" error
-      if (error.code === 'PGRST116') {
-        return null;
+    let client: Client | null = null;
+
+    if (hasClientDataToUpdate) {
+      // Update client table fields if provided
+      const { data: updatedClient, error } = await this.supabase
+        .from('clients')
+        .update(clientData)
+        .eq('id', id)
+        .eq('assigned_to', userId)
+        .eq('is_deleted', false)
+        .select()
+        .single();
+
+      if (error) {
+        // PGRST116 is PostgREST's "row not found" error
+        if (error.code === 'PGRST116') {
+          return null;
+        }
+        throw new Error(error.message);
       }
-      throw new Error(error.message);
+
+      client = updatedClient;
+    } else {
+      // If only tags are being updated, fetch the client to verify ownership
+      const { data: existingClient, error } = await this.supabase
+        .from('clients')
+        .select()
+        .eq('id', id)
+        .eq('assigned_to', userId)
+        .eq('is_deleted', false)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null;
+        }
+        throw new Error(error.message);
+      }
+
+      client = existingClient;
     }
 
     // Handle tags if provided
