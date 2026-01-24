@@ -301,6 +301,55 @@ export class DealService {
   }
 
   /**
+   * Get deals with optional filtering
+   *
+   * @param filters - Filter options (client_id, status, deal_type_id, limit)
+   * @param userId - The authenticated user's ID
+   * @returns Promise<Deal[]> Array of deals
+   * @throws {Error} If query fails
+   */
+  async getDeals(
+    filters: {
+      client_id?: string;
+      status?: string;
+      deal_type_id?: string;
+      limit?: number;
+    },
+    userId: string
+  ): Promise<Deal[]> {
+    let query = this.supabase
+      .from('deals')
+      .select(`
+        *,
+        deal_type:deal_types(*),
+        client:clients(id, full_name, email, phone)
+      `)
+      .eq('assigned_to', userId)
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: false })
+      .limit(Math.min(filters.limit || 20, 100));
+
+    // Apply filters
+    if (filters.client_id) {
+      query = query.eq('client_id', filters.client_id);
+    }
+    if (filters.status) {
+      query = query.eq('status', filters.status);
+    }
+    if (filters.deal_type_id) {
+      query = query.eq('deal_type_id', filters.deal_type_id);
+    }
+
+    const { data: deals, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch deals: ${error.message}`);
+    }
+
+    return (deals || []) as Deal[];
+  }
+
+  /**
    * Update a deal
    *
    * @param dealId - The deal ID

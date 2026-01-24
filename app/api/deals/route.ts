@@ -61,45 +61,26 @@ export async function GET(request: NextRequest) {
 
     // Get query parameters
     const searchParams = request.nextUrl.searchParams;
-    const clientId = searchParams.get('client_id');
-    const status = searchParams.get('status');
-    const dealTypeId = searchParams.get('deal_type_id');
+    const clientId = searchParams.get('client_id') || undefined;
+    const status = searchParams.get('status') || undefined;
+    const dealTypeId = searchParams.get('deal_type_id') || undefined;
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    // Build filter query
-    let query = dealService.supabase
-      .from('deals')
-      .select(`
-        *,
-        deal_type:deal_types(*),
-        client:clients(id, full_name, email, phone)
-      `)
-      .eq('assigned_to', user.id)
-      .eq('is_deleted', false)
-      .order('created_at', { ascending: false })
-      .limit(Math.min(limit, 100));
-
-    // Apply filters
-    if (clientId) {
-      query = query.eq('client_id', clientId);
-    }
-    if (status) {
-      query = query.eq('status', status);
-    }
-    if (dealTypeId) {
-      query = query.eq('deal_type_id', dealTypeId);
-    }
-
-    const { data: deals, error } = await query;
-
-    if (error) {
-      throw new Error(`Failed to fetch deals: ${error.message}`);
-    }
+    // Fetch deals using DealService
+    const deals = await dealService.getDeals(
+      {
+        client_id: clientId,
+        status,
+        deal_type_id: dealTypeId,
+        limit,
+      },
+      user.id
+    );
 
     return NextResponse.json({
       success: true,
-      data: deals || [],
-      count: deals?.length || 0,
+      data: deals,
+      count: deals.length,
     });
   } catch (error) {
     if (error instanceof Error) {
