@@ -4,6 +4,7 @@
  * Handles deal management operations.
  * All routes require Better Auth session authentication.
  *
+ * GET - List deals with optional filtering
  * POST - Create a new deal
  */
 
@@ -30,6 +31,90 @@ const createDealSchema = z.object({
   notes: z.string().optional(),
   referral_source: z.string().optional(),
 });
+
+/**
+ * GET /api/deals
+ *
+ * List deals with optional filtering
+ *
+ * Query parameters:
+ * - client_id: string (optional) - Filter deals by client ID
+ * - status: string (optional) - Filter by status (active, pending, closed_won, closed_lost, cancelled)
+ * - deal_type_id: string (optional) - Filter by deal type
+ * - limit: number (optional) - Number of deals to return (default: 20, max: 100)
+ *
+ * Response:
+ * - 200: List of deals
+ * - 401: Not authenticated
+ * - 500: Internal server error
+ */
+export async function GET(request: NextRequest) {
+  try {
+    // Validate session
+    const { user, error: authError } = await getSessionUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: authError || 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Get query parameters
+    const searchParams = request.nextUrl.searchParams;
+    const clientId = searchParams.get('client_id');
+    const status = searchParams.get('status');
+    const dealTypeId = searchParams.get('deal_type_id');
+    const limit = parseInt(searchParams.get('limit') || '20');
+
+    // Build filter query
+    let query = dealService.supabase
+      .from('deals')
+      .select(`
+        *,
+        deal_type:deal_types(*),
+        client:clients(id, full_name, email, phone)
+      `)
+      .eq('assigned_to', user.id)
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: false })
+      .limit(Math.min(limit, 100));
+
+    // Apply filters
+    if (clientId) {
+      query = query.eq('client_id', clientId);
+    }
+    if (status) {
+      query = query.eq('status', status);
+    }
+    if (dealTypeId) {
+      query = query.eq('deal_type_id', dealTypeId);
+    }
+
+    const { data: deals, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch deals: ${error.message}`);
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: deals || [],
+      count: deals?.length || 0,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message || 'Internal server error' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
 
 /**
  * POST /api/deals
