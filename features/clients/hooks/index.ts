@@ -30,3 +30,11 @@ export {
   type UseAllTasksOptions,
   type UseAllTasksReturn,
 } from './useAllTasks';
+
+export {
+  useClientDeals,
+  type UseClientDealsOptions,
+  type UseClientDealsReturn,
+  type ClientDeal,
+  type DealStatus,
+} from './useClientDeals';

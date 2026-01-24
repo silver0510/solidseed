@@ -191,6 +191,14 @@ export type { TaskCardProps, TaskListProps } from './components/TaskCard';
 export { TaskDashboard, TaskGroup } from './components/TaskDashboard';
 export type { TaskDashboardProps, TaskGroupProps } from './components/TaskDashboard';
 
+// Client Deals Widget
+export { ClientDealsWidget } from './components/ClientDealsWidget';
+export type { ClientDealsWidgetProps } from './components/ClientDealsWidget';
+
+// Deal Badge
+export { DealBadge } from './components/DealBadge';
+export type { DealBadgeProps } from './components/DealBadge';
+
 // =============================================================================
 // HOOK EXPORTS
 // =============================================================================
@@ -199,3 +207,5 @@ export { useClient } from './hooks/useClient';
 export { useClientsInfinite } from './hooks/useClientsInfinite';
 export { useDocumentUpload } from './hooks/useDocumentUpload';
 export { useAllTasks } from './hooks/useAllTasks';
+export { useClientDeals } from './hooks/useClientDeals';
+export type { UseClientDealsOptions, UseClientDealsReturn, ClientDeal, DealStatus } from './hooks/useClientDeals';
