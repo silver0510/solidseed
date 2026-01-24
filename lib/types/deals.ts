@@ -149,7 +149,7 @@ export interface DealDocument {
   file_name: string;
   file_path: string;
   file_size: number;
-  mime_type: string;
+  file_type: string;
   description: string | null;
   uploaded_by: string;
   uploaded_at: string;
