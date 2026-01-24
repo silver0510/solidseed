@@ -12,6 +12,7 @@ import React, { useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils/cn';
+import { DealBadge } from '../DealBadge';
 import type { ClientWithTags } from '../../types';
 
 /**
@@ -22,6 +23,8 @@ export interface ClientCardProps {
   client: ClientWithTags;
   /** Optional click handler - makes the card interactive */
   onClick?: (client: ClientWithTags) => void;
+  /** Optional deal count to display badge */
+  dealCount?: number;
 }
 
 /**
@@ -45,7 +48,7 @@ export interface ClientCardProps {
  * />
  * ```
  */
-export const ClientCard: React.FC<ClientCardProps> = ({ client, onClick }) => {
+export const ClientCard: React.FC<ClientCardProps> = ({ client, onClick, dealCount }) => {
   const isClickable = !!onClick;
 
   const handleClick = useCallback(() => {
@@ -70,7 +73,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onClick }) => {
   return (
     <Card
       className={cn(
-        'min-h-[44px] transition-all duration-200',
+        'min-h-[44px] transition-all duration-200 relative',
         isClickable && 'cursor-pointer hover:bg-accent hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
       )}
       onClick={isClickable ? handleClick : undefined}
@@ -80,6 +83,13 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onClick }) => {
       aria-label={`Client: ${client.name}`}
     >
       <CardContent className="p-4">
+        {/* Deal Count Badge - Top Right */}
+        {dealCount !== undefined && dealCount > 0 && (
+          <div className="absolute top-3 right-3">
+            <DealBadge dealCount={dealCount} />
+          </div>
+        )}
+
         {/* Client Name */}
         <h3 className="text-lg font-semibold text-foreground mb-1">{client.name}</h3>
 

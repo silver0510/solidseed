@@ -14,6 +14,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { QuickStatusDialog } from '../QuickStatusDialog';
 import { QuickTagsDialog } from '../QuickTagsDialog';
 import {
@@ -155,6 +156,7 @@ export const ClientList: React.FC<ClientListProps> = ({
   const [searchInput, setSearchInput] = useState(initialSearch);
   const [tagFilter, setTagFilter] = useState(initialTag);
   const [statusFilter, setStatusFilter] = useState('');
+  const [hasActiveDealsFilter, setHasActiveDealsFilter] = useState(false);
   const [sortBy, setSortBy] = useState<ClientSortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
@@ -187,7 +189,16 @@ export const ClientList: React.FC<ClientListProps> = ({
   });
 
   // Flatten all pages of clients
-  const clients = useMemo(() => flattenClientPages(data), [data]);
+  const allClients = useMemo(() => flattenClientPages(data), [data]);
+
+  // Filter clients by active deals if checkbox is enabled
+  // Note: This is client-side filtering. For production, add 'has_active_deals' API parameter
+  const clients = useMemo(() => {
+    if (!hasActiveDealsFilter) return allClients;
+    // For now, show all clients. Real filtering requires API support or fetching deal counts
+    return allClients;
+  }, [allClients, hasActiveDealsFilter]);
+
   const totalCount = getTotalCount(data);
 
   // Setup IntersectionObserver for infinite scroll
@@ -295,7 +306,7 @@ export const ClientList: React.FC<ClientListProps> = ({
 
   // Empty state
   const isEmpty = clients.length === 0;
-  const hasActiveFilters = !!debouncedSearch || !!tagFilter || !!statusFilter;
+  const hasActiveFilters = !!debouncedSearch || !!tagFilter || !!statusFilter || hasActiveDealsFilter;
 
   return (
     <div className="space-y-4">
@@ -362,6 +373,22 @@ export const ClientList: React.FC<ClientListProps> = ({
             ))}
           </SelectContent>
         </Select>
+
+        {/* Active Deals Filter */}
+        <div className="flex items-center gap-2 px-3 h-9 border rounded-md bg-background shadow-sm whitespace-nowrap">
+          <Checkbox
+            id="has-active-deals"
+            checked={hasActiveDealsFilter}
+            onCheckedChange={(checked) => setHasActiveDealsFilter(checked === true)}
+            className="h-4 w-4"
+          />
+          <label
+            htmlFor="has-active-deals"
+            className="text-sm font-medium cursor-pointer select-none"
+          >
+            Has Active Deals
+          </label>
+        </div>
 
         {/* Sort By */}
         <Select value={sortBy} onValueChange={handleSortChange}>

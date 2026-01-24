@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils/cn';
+import { ClientDealsWidget } from '../ClientDealsWidget';
 import type { ClientWithCounts } from '../../types';
 
 // =============================================================================
@@ -213,6 +214,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           )}
         </div>
       </div>
+
+      {/* Active Deals Widget */}
+      <ClientDealsWidget clientId={client.id} />
     </div>
   );
 };
