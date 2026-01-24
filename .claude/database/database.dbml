@@ -444,6 +444,170 @@ TableGroup client_hub {
 }
 
 // =============================================================================
+// DEAL MANAGEMENT TABLES
+// =============================================================================
+
+// Deal type configuration templates
+Table deal_types {
+  id uuid [pk, default: `gen_random_uuid()`, note: 'UUID primary key']
+
+  type_code varchar(50) [not null, unique, note: 'Unique identifier (kebab-case)']
+  type_name varchar(100) [not null, note: 'Display name']
+  icon varchar(50) [note: 'Icon identifier for UI']
+  color varchar(7) [note: 'Hex color code (#RRGGBB)']
+
+  pipeline_stages jsonb [not null, default: '[]', note: 'Array of stage objects with code, name, order']
+  enabled_fields jsonb [not null, default: '{}', note: 'Field configuration: required, optional, enums']
+  default_milestones jsonb [default: '[]', note: 'Milestone templates with type, name, days_offset']
+
+  is_system boolean [not null, default: true, note: 'System-managed type (cannot be deleted)']
+  is_active boolean [not null, default: true, note: 'Active status']
+
+  created_by uuid [ref: > users.id, note: 'Creator user ID']
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    type_code [unique, name: 'idx_deal_types_type_code']
+    is_active [name: 'idx_deal_types_is_active']
+  }
+
+  note: 'Deal type configuration templates with pipeline stages and field definitions'
+}
+
+// Core deal/transaction records
+Table deals {
+  id uuid [pk, default: `gen_random_uuid()`, note: 'UUID primary key']
+
+  deal_name varchar(255) [not null, note: 'Deal display name']
+  deal_type_id uuid [not null, ref: > deal_types.id, note: 'Reference to deal type']
+
+  client_id uuid [not null, ref: > clients.id, note: 'Primary client']
+  secondary_client_ids uuid[] [default: '{}', note: 'Additional clients (co-buyers)']
+
+  current_stage varchar(50) [not null, note: 'Current pipeline stage code']
+  status varchar(50) [not null, default: 'active', note: 'active, pending, closed_won, closed_lost, cancelled']
+
+  deal_value decimal(12,2) [note: 'Transaction amount']
+  commission_rate decimal(5,2) [note: 'Commission percentage (0-100)']
+  commission_amount decimal(12,2) [note: 'Calculated: deal_value * rate']
+  commission_split_percent decimal(5,2) [note: 'Agent split percentage (0-100)']
+  agent_commission decimal(12,2) [note: 'Calculated: commission * split']
+
+  expected_close_date date [note: 'Expected closing date']
+  actual_close_date date [note: 'Actual closing date (<= today)']
+  days_in_pipeline integer [note: 'Days from creation (auto-calculated)']
+  closed_at timestamptz [note: 'Close timestamp']
+
+  deal_data jsonb [not null, default: '{}', note: 'Type-specific fields']
+
+  notes text [note: 'General notes']
+  lost_reason text [note: 'Required if status=closed_lost']
+  referral_source varchar(255) [note: 'How deal was sourced']
+
+  created_by uuid [not null, ref: > users.id, note: 'Creator user ID']
+  assigned_to uuid [not null, ref: > users.id, note: 'Owner user ID']
+
+  is_deleted boolean [not null, default: false, note: 'Soft delete flag']
+
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    client_id [name: 'idx_deals_client_id']
+    deal_type_id [name: 'idx_deals_deal_type_id']
+    (assigned_to, status) [name: 'idx_deals_assigned_status']
+    current_stage [name: 'idx_deals_current_stage']
+    expected_close_date [name: 'idx_deals_expected_close']
+    is_deleted [name: 'idx_deals_is_deleted']
+    created_at [name: 'idx_deals_created_at']
+  }
+
+  note: 'Core deal/transaction records for real estate and mortgage tracking'
+}
+
+// Deal milestones for tracking key dates
+Table deal_milestones {
+  id uuid [pk, default: `gen_random_uuid()`, note: 'UUID primary key']
+
+  deal_id uuid [not null, ref: > deals.id, note: 'Parent deal (CASCADE delete)']
+
+  milestone_type varchar(50) [not null, note: 'Milestone category']
+  milestone_name varchar(255) [not null, note: 'Display name']
+  scheduled_date date [note: 'Target date']
+  completed_date date [note: 'Actual completion date']
+  status varchar(20) [not null, default: 'pending', note: 'pending, completed, cancelled']
+  notes text [note: 'Additional notes']
+
+  created_by uuid [not null, ref: > users.id, note: 'Creator user ID']
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (deal_id, scheduled_date) [name: 'idx_deal_milestones_deal_scheduled']
+    (scheduled_date, status) [name: 'idx_deal_milestones_status_date']
+  }
+
+  note: 'Deal milestones for tracking key dates and events'
+}
+
+// Deal document metadata
+Table deal_documents {
+  id uuid [pk, default: `gen_random_uuid()`, note: 'UUID primary key']
+
+  deal_id uuid [not null, ref: > deals.id, note: 'Parent deal (CASCADE delete)']
+
+  document_type varchar(50) [not null, note: 'contract, disclosure, inspection_report, appraisal, closing_statement, other']
+  file_name varchar(255) [not null, note: 'Original filename']
+  file_path text [not null, unique, note: 'Supabase storage path']
+  file_size integer [not null, note: 'Size in bytes (max 25MB)']
+  file_type varchar(50) [not null, note: 'MIME type']
+  description text [note: 'User description']
+
+  uploaded_by uuid [not null, ref: > users.id, note: 'Uploader user ID']
+  uploaded_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (deal_id, document_type) [name: 'idx_deal_documents_deal_type']
+    uploaded_at [name: 'idx_deal_documents_uploaded_at']
+  }
+
+  note: 'Deal document metadata for uploaded files'
+}
+
+// Deal activity audit log
+Table deal_activities {
+  id uuid [pk, default: `gen_random_uuid()`, note: 'UUID primary key']
+
+  deal_id uuid [not null, ref: > deals.id, note: 'Parent deal (CASCADE delete)']
+
+  activity_type varchar(50) [not null, note: 'stage_change, note, call, email, meeting, showing, document_upload, etc.']
+  title varchar(255) [not null, note: 'Activity summary']
+  description text [note: 'Detailed description (max 2000 chars)']
+
+  old_stage varchar(50) [note: 'Previous stage (for stage_change)']
+  new_stage varchar(50) [note: 'New stage (for stage_change)']
+
+  created_by uuid [not null, ref: > users.id, note: 'User who created activity']
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (deal_id, created_at) [name: 'idx_deal_activities_deal_created']
+    activity_type [name: 'idx_deal_activities_type']
+  }
+
+  note: 'Immutable audit log of all deal changes and interactions'
+}
+
+TableGroup deal_management {
+  deal_types
+  deals
+  deal_milestones
+  deal_documents
+  deal_activities
+}
+
+// =============================================================================
 // ENUMS (Represented as CHECK constraints in PostgreSQL)
 // =============================================================================
 
@@ -457,3 +621,10 @@ TableGroup client_hub {
 //             email_verification_resend, account_lockout, account_unlock,
 //             oauth_login, oauth_link, oauth_unlink, registration,
 //             account_deactivate, account_reactivate
+//
+// Deal Management Enums:
+// deal_status: active, pending, closed_won, closed_lost, cancelled
+// milestone_status: pending, completed, cancelled
+// document_type: contract, disclosure, inspection_report, appraisal, closing_statement, other
+// activity_type: stage_change, note, call, email, meeting, showing, document_upload,
+//                document_delete, milestone_complete, field_update, other
