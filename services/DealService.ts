@@ -322,7 +322,7 @@ export class DealService {
       .select(`
         *,
         deal_type:deal_types(*),
-        client:clients(id, full_name, email, phone)
+        client:clients(id, name, email, phone)
       `)
       .eq('assigned_to', userId)
       .eq('is_deleted', false)
