@@ -83,6 +83,7 @@ export async function GET(request: NextRequest) {
       count: deals.length,
     });
   } catch (error) {
+    console.error('GET /api/deals error:', error);
     if (error instanceof Error) {
       return NextResponse.json(
         { error: error.message || 'Internal server error' },
