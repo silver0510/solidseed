@@ -5,15 +5,17 @@
  * Displays comprehensive deal information across 5 tabs.
  */
 
-import { Suspense } from 'react';
+import { Suspense, use } from 'react';
 import { DealDetailPage } from '@/features/deals/components/DealDetailPage';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
 
-export default function DealPage({ params }: { params: { id: string } }) {
+export default function DealPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+
   return (
     <div className="p-4 lg:p-6">
       <Suspense fallback={<SectionLoader message="Loading deal details..." />}>
-        <DealDetailPage dealId={params.id} />
+        <DealDetailPage dealId={id} />
       </Suspense>
     </div>
   );

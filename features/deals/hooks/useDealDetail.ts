@@ -13,10 +13,12 @@ async function fetchDealDetail(dealId: string): Promise<DealWithRelations> {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Failed to fetch deal' }));
-    throw new Error(error.message || 'Failed to fetch deal');
+    throw new Error(error.message || error.error || 'Failed to fetch deal');
   }
 
-  return response.json();
+  const result = await response.json();
+  // API returns { success: true, data: deal }
+  return result.data;
 }
 
 export function useDealDetail(dealId: string) {

@@ -39,9 +39,15 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
   });
   const { toggleMilestone, addMilestone } = useDealMutations(deal.id);
 
-  const sortedMilestones = [...deal.milestones].sort(
-    (a, b) => a.display_order - b.display_order
-  );
+  // Sort by scheduled_date (nulls last), then by created_at
+  const sortedMilestones = [...(deal.milestones || [])].sort((a, b) => {
+    if (a.scheduled_date && b.scheduled_date) {
+      return new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime();
+    }
+    if (a.scheduled_date) return -1;
+    if (b.scheduled_date) return 1;
+    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  });
 
   const handleToggleComplete = async (milestoneId: string, currentStatus: string) => {
     await toggleMilestone.mutateAsync({
@@ -71,9 +77,9 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
     });
   };
 
-  const isPastDue = (dueDate: string | null, status: string) => {
-    if (!dueDate || status === 'completed') return false;
-    return new Date(dueDate) < new Date();
+  const isPastDue = (scheduledDate: string | null, status: string) => {
+    if (!scheduledDate || status === 'completed') return false;
+    return new Date(scheduledDate) < new Date();
   };
 
   return (
@@ -125,7 +131,7 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                   className={`absolute left-0 top-4 h-8 w-8 rounded-full border-2 flex items-center justify-center ${
                     milestone.status === 'completed'
                       ? 'bg-green-500 border-green-500 text-white'
-                      : isPastDue(milestone.due_date, milestone.status)
+                      : isPastDue(milestone.scheduled_date, milestone.status)
                       ? 'bg-red-100 border-red-500 text-red-500 dark:bg-red-900/30'
                       : 'bg-background border-border'
                   }`}
@@ -171,10 +177,10 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                               : ''
                           }`}
                         >
-                          {milestone.name}
+                          {milestone.milestone_name}
                         </label>
                         <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
-                          {milestone.due_date && (
+                          {milestone.scheduled_date && (
                             <div className="flex items-center gap-1">
                               <svg
                                 className="h-4 w-4"
@@ -191,12 +197,12 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                               </svg>
                               <span
                                 className={
-                                  isPastDue(milestone.due_date, milestone.status)
+                                  isPastDue(milestone.scheduled_date, milestone.status)
                                     ? 'text-destructive font-medium'
                                     : ''
                                 }
                               >
-                                Due {formatDate(milestone.due_date)}
+                                Due {formatDate(milestone.scheduled_date)}
                               </span>
                             </div>
                           )}

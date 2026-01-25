@@ -33,9 +33,9 @@ export function DealDetailPage({ dealId }: DealDetailPageProps) {
       {/* Page Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-semibold truncate">{deal.name}</h1>
+          <h1 className="text-2xl font-semibold truncate">{deal.deal_name}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {deal.client.name} • {deal.deal_type.name}
+            {deal.client.name} • {deal.deal_type.type_name}
           </p>
         </div>
       </div>

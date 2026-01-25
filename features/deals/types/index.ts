@@ -10,13 +10,30 @@
 
 export interface DealType {
   id: string;
-  name: string;
-  description: string | null;
+  type_code: string;
+  type_name: string;
+  icon: string | null;
   color: string;
+  pipeline_stages: PipelineStage[];
   enabled_fields: DealTypeEnabledFields;
+  default_milestones: DefaultMilestone[];
+  is_system: boolean;
   is_active: boolean;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface PipelineStage {
+  code: string;
+  name: string;
+  order: number;
+}
+
+export interface DefaultMilestone {
+  type: string;
+  name: string;
+  days_offset: number;
 }
 
 export interface DealTypeEnabledFields {
@@ -48,18 +65,27 @@ export interface DealFieldConfig {
 
 export interface Deal {
   id: string;
-  user_id: string;
+  deal_name: string;
   deal_type_id: string;
   client_id: string;
-  name: string;
-  stage: DealStage;
-  value: number;
-  commission_rate: number;
-  commission_amount: number;
-  agent_commission: number;
+  secondary_client_ids: string[];
+  current_stage: string;
+  status: 'active' | 'pending' | 'closed_won' | 'closed_lost' | 'cancelled';
+  deal_value: number | null;
+  commission_rate: number | null;
+  commission_amount: number | null;
+  commission_split_percent: number | null;
+  agent_commission: number | null;
   expected_close_date: string | null;
   actual_close_date: string | null;
-  custom_fields: Record<string, any>;
+  days_in_pipeline: number | null;
+  closed_at: string | null;
+  deal_data: Record<string, any>;
+  notes: string | null;
+  lost_reason: string | null;
+  referral_source: string | null;
+  created_by: string;
+  assigned_to: string;
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
@@ -90,11 +116,13 @@ export type DealStage =
 export interface DealMilestone {
   id: string;
   deal_id: string;
-  name: string;
-  due_date: string | null;
+  milestone_type: string;
+  milestone_name: string;
+  scheduled_date: string | null;
   completed_date: string | null;
-  status: 'pending' | 'completed';
-  display_order: number;
+  status: 'pending' | 'completed' | 'cancelled';
+  notes: string | null;
+  created_by: string;
   created_at: string;
   updated_at: string;
 }
@@ -135,26 +163,32 @@ export type DealActivityType =
 export interface CreateDealInput {
   deal_type_id: string;
   client_id: string;
-  name: string;
-  value: number;
-  commission_rate: number;
+  deal_name?: string;
+  secondary_client_ids?: string[];
+  deal_value?: number;
+  commission_rate?: number;
+  commission_split_percent?: number;
   expected_close_date?: string;
-  custom_fields?: Record<string, any>;
+  deal_data: Record<string, unknown>;
+  notes?: string;
+  referral_source?: string;
 }
 
 export interface UpdateDealInput {
-  name?: string;
-  stage?: DealStage;
-  value?: number;
+  deal_name?: string;
+  deal_value?: number;
   commission_rate?: number;
+  commission_split_percent?: number;
   expected_close_date?: string;
   actual_close_date?: string;
-  custom_fields?: Record<string, any>;
+  deal_data?: Record<string, any>;
+  notes?: string;
+  referral_source?: string;
 }
 
 export interface UpdateDealStageInput {
-  stage: DealStage;
-  notes?: string;
+  new_stage: string;
+  lost_reason?: string;
 }
 
 export interface CreateMilestoneInput {

@@ -44,7 +44,7 @@ const updateDealSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate session
@@ -56,8 +56,11 @@ export async function GET(
       );
     }
 
+    // Get deal ID from params
+    const { id } = await params;
+
     // Get deal
-    const deal = await dealService.getDeal(params.id, user.id);
+    const deal = await dealService.getDeal(id, user.id);
 
     return NextResponse.json(
       {
@@ -114,7 +117,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate session
@@ -126,6 +129,9 @@ export async function PATCH(
       );
     }
 
+    // Get deal ID from params
+    const { id } = await params;
+
     // Parse request body
     const body = await request.json();
 
@@ -133,7 +139,7 @@ export async function PATCH(
     const validatedData = updateDealSchema.parse(body);
 
     // Update deal
-    const deal = await dealService.updateDeal(params.id, validatedData as UpdateDealInput, user.id);
+    const deal = await dealService.updateDeal(id, validatedData as UpdateDealInput, user.id);
 
     return NextResponse.json(
       {
@@ -189,7 +195,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate session
@@ -201,8 +207,11 @@ export async function DELETE(
       );
     }
 
+    // Get deal ID from params
+    const { id } = await params;
+
     // Delete deal
-    await dealService.deleteDeal(params.id, user.id);
+    await dealService.deleteDeal(id, user.id);
 
     return NextResponse.json(
       {

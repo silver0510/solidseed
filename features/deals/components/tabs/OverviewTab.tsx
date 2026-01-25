@@ -30,30 +30,26 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useDealMutations } from '../../hooks/useDealMutations';
-import { DEAL_STAGES } from '../../types';
-import type { DealWithRelations, DealStage } from '../../types';
+import type { DealWithRelations } from '../../types';
 
 export interface OverviewTabProps {
   deal: DealWithRelations;
 }
 
-const STAGE_ORDER: DealStage[] = [
-  'lead',
-  'qualified',
-  'contract_sent',
-  'contract_signed',
-  'pending',
-  'closed_won',
-  'closed_lost',
-];
-
 export function OverviewTab({ deal }: OverviewTabProps) {
   const [isChangeStageOpen, setIsChangeStageOpen] = useState(false);
-  const [selectedStage, setSelectedStage] = useState<DealStage>(deal.stage);
+  const [selectedStage, setSelectedStage] = useState<string>(deal.current_stage);
   const { changeStage } = useDealMutations(deal.id);
 
-  const currentStageIndex = STAGE_ORDER.indexOf(deal.stage);
-  const progressPercentage = ((currentStageIndex + 1) / STAGE_ORDER.length) * 100;
+  // Use pipeline stages from deal type if available
+  const pipelineStages = deal.deal_type?.pipeline_stages || [];
+  const currentStageIndex = pipelineStages.findIndex(s => s.code === deal.current_stage);
+  const progressPercentage = pipelineStages.length > 0
+    ? ((currentStageIndex + 1) / pipelineStages.length) * 100
+    : 0;
+
+  // Get current stage info
+  const currentStageInfo = pipelineStages.find(s => s.code === deal.current_stage);
 
   const daysInPipeline = deal.created_at
     ? Math.floor((Date.now() - new Date(deal.created_at).getTime()) / (1000 * 60 * 60 * 24))
@@ -61,21 +57,30 @@ export function OverviewTab({ deal }: OverviewTabProps) {
 
   const handleChangeStage = async () => {
     await changeStage.mutateAsync({
-      stage: selectedStage,
+      new_stage: selectedStage,
     });
     setIsChangeStageOpen(false);
   };
 
+  // Find terminal stages (closed/funded/lost) from pipeline
+  const closedStage = pipelineStages.find(s => s.code === 'closed' || s.code === 'funded');
+  const lostStage = pipelineStages.find(s => s.code === 'lost');
+
   const handleMarkWon = async () => {
-    await changeStage.mutateAsync({
-      stage: 'closed_won',
-    });
+    if (closedStage) {
+      await changeStage.mutateAsync({
+        new_stage: closedStage.code,
+      });
+    }
   };
 
   const handleMarkLost = async () => {
-    await changeStage.mutateAsync({
-      stage: 'closed_lost',
-    });
+    if (lostStage) {
+      await changeStage.mutateAsync({
+        new_stage: lostStage.code,
+        lost_reason: 'Marked as lost from deal detail page',
+      });
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -111,15 +116,15 @@ export function OverviewTab({ deal }: OverviewTabProps) {
                 variant="secondary"
                 className="text-sm font-medium"
                 style={{
-                  backgroundColor: `${DEAL_STAGES[deal.stage].color}20`,
-                  color: DEAL_STAGES[deal.stage].color,
-                  borderColor: `${DEAL_STAGES[deal.stage].color}40`,
+                  backgroundColor: `${deal.deal_type?.color || '#3b82f6'}20`,
+                  color: deal.deal_type?.color || '#3b82f6',
+                  borderColor: `${deal.deal_type?.color || '#3b82f6'}40`,
                 }}
               >
-                {DEAL_STAGES[deal.stage].name}
+                {currentStageInfo?.name || deal.current_stage}
               </Badge>
               <p className="text-sm text-muted-foreground mt-1">
-                {DEAL_STAGES[deal.stage].description}
+                {deal.deal_type?.type_name || 'Deal'}
               </p>
             </div>
             <Button
@@ -140,19 +145,19 @@ export function OverviewTab({ deal }: OverviewTabProps) {
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Lead</span>
-              <span>Closed</span>
+              <span>{pipelineStages[0]?.name || 'Start'}</span>
+              <span>{pipelineStages[pipelineStages.length - 1]?.name || 'End'}</span>
             </div>
           </div>
 
           {/* Stage Timeline */}
-          <div className="grid grid-cols-3 md:grid-cols-7 gap-2 mt-4">
-            {STAGE_ORDER.slice(0, -2).map((stage, index) => {
+          <div className={`grid grid-cols-3 md:grid-cols-${Math.min(pipelineStages.length, 7)} gap-2 mt-4`}>
+            {pipelineStages.map((stage, index) => {
               const isPast = index <= currentStageIndex;
               const isCurrent = index === currentStageIndex;
               return (
                 <div
-                  key={stage}
+                  key={stage.code}
                   className={`text-center p-2 rounded-lg text-xs ${
                     isCurrent
                       ? 'bg-primary text-primary-foreground font-medium'
@@ -161,7 +166,7 @@ export function OverviewTab({ deal }: OverviewTabProps) {
                       : 'bg-muted text-muted-foreground'
                   }`}
                 >
-                  {DEAL_STAGES[stage].name}
+                  {stage.name}
                 </div>
               );
             })}
@@ -178,22 +183,22 @@ export function OverviewTab({ deal }: OverviewTabProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Deal Value</p>
-              <p className="text-2xl font-semibold mt-1">{formatCurrency(deal.value)}</p>
+              <p className="text-2xl font-semibold mt-1">{formatCurrency(deal.deal_value || 0)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Commission Rate</p>
-              <p className="text-2xl font-semibold mt-1">{deal.commission_rate}%</p>
+              <p className="text-2xl font-semibold mt-1">{deal.commission_rate || 0}%</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Commission</p>
               <p className="text-2xl font-semibold mt-1">
-                {formatCurrency(deal.commission_amount)}
+                {formatCurrency(deal.commission_amount || 0)}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Agent Commission</p>
               <p className="text-2xl font-semibold mt-1">
-                {formatCurrency(deal.agent_commission)}
+                {formatCurrency(deal.agent_commission || 0)}
               </p>
             </div>
           </div>
@@ -235,7 +240,7 @@ export function OverviewTab({ deal }: OverviewTabProps) {
             <Button
               variant="default"
               onClick={handleMarkWon}
-              disabled={deal.stage === 'closed_won' || changeStage.isPending}
+              disabled={deal.status === 'closed_won' || changeStage.isPending}
               className="flex-1"
             >
               <svg
@@ -256,7 +261,7 @@ export function OverviewTab({ deal }: OverviewTabProps) {
             <Button
               variant="destructive"
               onClick={handleMarkLost}
-              disabled={deal.stage === 'closed_lost' || changeStage.isPending}
+              disabled={deal.status === 'closed_lost' || changeStage.isPending}
               className="flex-1"
             >
               <svg
@@ -292,15 +297,15 @@ export function OverviewTab({ deal }: OverviewTabProps) {
               <label className="text-sm font-medium">New Stage</label>
               <Select
                 value={selectedStage}
-                onValueChange={(value) => setSelectedStage(value as DealStage)}
+                onValueChange={(value) => setSelectedStage(value)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {STAGE_ORDER.map((stage) => (
-                    <SelectItem key={stage} value={stage}>
-                      {DEAL_STAGES[stage].name}
+                  {pipelineStages.map((stage) => (
+                    <SelectItem key={stage.code} value={stage.code}>
+                      {stage.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -317,7 +322,7 @@ export function OverviewTab({ deal }: OverviewTabProps) {
             </Button>
             <Button
               onClick={handleChangeStage}
-              disabled={changeStage.isPending || selectedStage === deal.stage}
+              disabled={changeStage.isPending || selectedStage === deal.current_stage}
             >
               {changeStage.isPending ? 'Updating...' : 'Update Stage'}
             </Button>

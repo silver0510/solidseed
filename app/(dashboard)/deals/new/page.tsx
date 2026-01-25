@@ -59,8 +59,8 @@ function NewDealContent() {
 
       return response.json();
     },
-    onSuccess: (data) => {
-      router.push(`/deals/${data.id}`);
+    onSuccess: (response) => {
+      router.push(`/deals/${response.data.id}`);
     },
   });
 
@@ -75,17 +75,8 @@ function NewDealContent() {
   };
 
   const handleFormSubmit = async (formData: DealFormData) => {
-    const input: CreateDealInput = {
-      deal_type_id: formData.deal_type_id,
-      client_id: formData.client_id,
-      name: formData.name,
-      value: formData.value,
-      commission_rate: formData.commission_rate,
-      expected_close_date: formData.expected_close_date || undefined,
-      custom_fields: {},
-    };
-
-    // Extract custom fields
+    // Build deal_data from custom fields
+    const deal_data: Record<string, unknown> = {};
     Object.keys(formData).forEach((key) => {
       if (
         key !== 'deal_type_id' &&
@@ -95,9 +86,19 @@ function NewDealContent() {
         key !== 'commission_rate' &&
         key !== 'expected_close_date'
       ) {
-        input.custom_fields![key] = formData[key];
+        deal_data[key] = formData[key];
       }
     });
+
+    const input: CreateDealInput = {
+      deal_type_id: formData.deal_type_id,
+      client_id: formData.client_id,
+      deal_name: formData.name,
+      deal_value: formData.value,
+      commission_rate: formData.commission_rate,
+      expected_close_date: formData.expected_close_date || undefined,
+      deal_data,
+    };
 
     await createDealMutation.mutateAsync(input);
   };
@@ -174,10 +175,7 @@ function NewDealContent() {
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <CardTitle className="text-base">{dealType.name}</CardTitle>
-                      {dealType.description && (
-                        <CardDescription className="mt-1">{dealType.description}</CardDescription>
-                      )}
+                      <CardTitle className="text-base">{dealType.type_name}</CardTitle>
                     </div>
                     <div
                       className="h-3 w-3 rounded-full shrink-0"
@@ -187,16 +185,24 @@ function NewDealContent() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {Object.keys(dealType.enabled_fields).slice(0, 3).map((field) => (
-                      <Badge key={field} variant="secondary" className="text-xs">
-                        {field.replace(/_/g, ' ')}
-                      </Badge>
-                    ))}
-                    {Object.keys(dealType.enabled_fields).length > 3 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{Object.keys(dealType.enabled_fields).length - 3} more
-                      </Badge>
-                    )}
+                    {(() => {
+                      const fields = dealType.enabled_fields as { required?: string[]; optional?: string[] };
+                      const allFields = [...(fields.required || []), ...(fields.optional || [])];
+                      return (
+                        <>
+                          {allFields.slice(0, 3).map((field) => (
+                            <Badge key={field} variant="secondary" className="text-xs">
+                              {field.replace(/_/g, ' ')}
+                            </Badge>
+                          ))}
+                          {allFields.length > 3 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{allFields.length - 3} more
+                            </Badge>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </CardContent>
               </Card>
@@ -224,7 +230,7 @@ function NewDealContent() {
                     <SelectValue placeholder="Select a client" />
                   </SelectTrigger>
                   <SelectContent>
-                    {clientsData?.clients.map((client) => (
+                    {clientsData?.data.map((client) => (
                       <SelectItem key={client.id} value={client.id}>
                         {client.name} - {client.email}
                       </SelectItem>

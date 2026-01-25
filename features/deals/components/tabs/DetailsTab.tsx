@@ -34,13 +34,13 @@ export interface DetailsTabProps {
 export function DetailsTab({ deal }: DetailsTabProps) {
   const { updateDeal } = useDealMutations(deal.id);
   const [formData, setFormData] = useState({
-    name: deal.name,
-    value: deal.value,
-    commission_rate: deal.commission_rate,
+    deal_name: deal.deal_name,
+    deal_value: deal.deal_value || 0,
+    commission_rate: deal.commission_rate || 0,
     expected_close_date: deal.expected_close_date
       ? new Date(deal.expected_close_date).toISOString().split('T')[0]
       : '',
-    ...deal.custom_fields,
+    ...(deal.deal_data || {}),
   });
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -61,27 +61,24 @@ export function DetailsTab({ deal }: DetailsTabProps) {
         const updateData: any = {};
 
         // Core fields
-        if (field === 'name') updateData.name = value;
-        if (field === 'value') {
-          updateData.value = parseFloat(value) || 0;
-          // Recalculate commission
-          const commissionAmount = (parseFloat(value) || 0) * (formData.commission_rate / 100);
-          const agentCommission = commissionAmount * 0.7; // Assuming 70% split
+        if (field === 'deal_name') updateData.deal_name = value;
+        if (field === 'deal_value') {
+          updateData.deal_value = parseFloat(value) || 0;
         }
         if (field === 'commission_rate') {
           updateData.commission_rate = parseFloat(value) || 0;
         }
         if (field === 'expected_close_date') updateData.expected_close_date = value;
 
-        // Custom fields
+        // Deal data fields (custom fields)
         if (
-          field !== 'name' &&
-          field !== 'value' &&
+          field !== 'deal_name' &&
+          field !== 'deal_value' &&
           field !== 'commission_rate' &&
           field !== 'expected_close_date'
         ) {
-          updateData.custom_fields = {
-            ...deal.custom_fields,
+          updateData.deal_data = {
+            ...(deal.deal_data || {}),
             [field]: value,
           };
         }
@@ -111,121 +108,103 @@ export function DetailsTab({ deal }: DetailsTabProps) {
       .join(' ');
   };
 
-  const renderField = (fieldName: string) => {
-    const fieldConfig = deal.deal_type.enabled_fields[fieldName];
-    if (!fieldConfig) return null;
+  // Get enabled fields from deal type
+  const enabledFields = deal.deal_type?.enabled_fields as {
+    required?: string[];
+    optional?: string[];
+    enums?: Record<string, string[] | number[]>;
+  } || { required: [], optional: [], enums: {} };
 
+  const requiredFields = enabledFields.required || [];
+  const optionalFields = enabledFields.optional || [];
+  const enumValues = enabledFields.enums || {};
+
+  const renderField = (fieldName: string, isRequired: boolean) => {
     const label = formatFieldLabel(fieldName);
     const value = formData[fieldName] ?? '';
+    const enumOptions = enumValues[fieldName];
 
-    switch (fieldConfig.type) {
-      case 'text':
-        return (
-          <div key={fieldName} className="space-y-2">
-            <Label htmlFor={fieldName}>
-              {label}
-              {fieldConfig.required && <span className="text-destructive ml-1">*</span>}
-            </Label>
-            <Input
-              id={fieldName}
-              type="text"
-              value={value}
-              onChange={(e) => handleFieldChange(fieldName, e.target.value)}
-              required={fieldConfig.required}
-            />
-          </div>
-        );
-
-      case 'textarea':
-        return (
-          <div key={fieldName} className="space-y-2">
-            <Label htmlFor={fieldName}>
-              {label}
-              {fieldConfig.required && <span className="text-destructive ml-1">*</span>}
-            </Label>
-            <Textarea
-              id={fieldName}
-              value={value}
-              onChange={(e) => handleFieldChange(fieldName, e.target.value)}
-              required={fieldConfig.required}
-              rows={3}
-            />
-          </div>
-        );
-
-      case 'number':
-        return (
-          <div key={fieldName} className="space-y-2">
-            <Label htmlFor={fieldName}>
-              {label}
-              {fieldConfig.required && <span className="text-destructive ml-1">*</span>}
-            </Label>
-            <Input
-              id={fieldName}
-              type="number"
-              value={value}
-              onChange={(e) => handleFieldChange(fieldName, e.target.value)}
-              required={fieldConfig.required}
-            />
-          </div>
-        );
-
-      case 'date':
-        return (
-          <div key={fieldName} className="space-y-2">
-            <Label htmlFor={fieldName}>
-              {label}
-              {fieldConfig.required && <span className="text-destructive ml-1">*</span>}
-            </Label>
-            <Input
-              id={fieldName}
-              type="date"
-              value={value}
-              onChange={(e) => handleFieldChange(fieldName, e.target.value)}
-              required={fieldConfig.required}
-            />
-          </div>
-        );
-
-      case 'enum':
-        return (
-          <div key={fieldName} className="space-y-2">
-            <Label htmlFor={fieldName}>
-              {label}
-              {fieldConfig.required && <span className="text-destructive ml-1">*</span>}
-            </Label>
-            <Select value={value} onValueChange={(val) => handleFieldChange(fieldName, val)}>
-              <SelectTrigger>
-                <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
-              </SelectTrigger>
-              <SelectContent>
-                {fieldConfig.enum_values?.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        );
-
-      case 'boolean':
-        return (
-          <div key={fieldName} className="flex items-center space-x-2 py-2">
-            <Checkbox
-              id={fieldName}
-              checked={value === true || value === 'true'}
-              onCheckedChange={(checked) => handleFieldChange(fieldName, checked)}
-            />
-            <Label htmlFor={fieldName} className="cursor-pointer">
-              {label}
-            </Label>
-          </div>
-        );
-
-      default:
-        return null;
+    // If field has enum values, render as select
+    if (enumOptions && enumOptions.length > 0) {
+      return (
+        <div key={fieldName} className="space-y-2">
+          <Label htmlFor={fieldName}>
+            {label}
+            {isRequired && <span className="text-destructive ml-1">*</span>}
+          </Label>
+          <Select value={String(value)} onValueChange={(val) => handleFieldChange(fieldName, val)}>
+            <SelectTrigger>
+              <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+            </SelectTrigger>
+            <SelectContent>
+              {enumOptions.map((option) => (
+                <SelectItem key={String(option)} value={String(option)}>
+                  {String(option).replace(/_/g, ' ')}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      );
     }
+
+    // For numeric fields (detect by common patterns)
+    const numericFields = ['price', 'amount', 'value', 'rate', 'bedrooms', 'bathrooms', 'square_feet', 'square_footage', 'lot_size', 'year_built', 'down_payment', 'interest_rate', 'loan_amount'];
+    if (numericFields.some(f => fieldName.includes(f))) {
+      return (
+        <div key={fieldName} className="space-y-2">
+          <Label htmlFor={fieldName}>
+            {label}
+            {isRequired && <span className="text-destructive ml-1">*</span>}
+          </Label>
+          <Input
+            id={fieldName}
+            type="number"
+            step={fieldName.includes('rate') ? '0.01' : '1'}
+            value={value}
+            onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+            required={isRequired}
+          />
+        </div>
+      );
+    }
+
+    // For date fields
+    const dateFields = ['date', 'closing', 'inspection'];
+    if (dateFields.some(f => fieldName.includes(f))) {
+      return (
+        <div key={fieldName} className="space-y-2">
+          <Label htmlFor={fieldName}>
+            {label}
+            {isRequired && <span className="text-destructive ml-1">*</span>}
+          </Label>
+          <Input
+            id={fieldName}
+            type="date"
+            value={value}
+            onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+            required={isRequired}
+          />
+        </div>
+      );
+    }
+
+    // Default to text input
+    return (
+      <div key={fieldName} className="space-y-2">
+        <Label htmlFor={fieldName}>
+          {label}
+          {isRequired && <span className="text-destructive ml-1">*</span>}
+        </Label>
+        <Input
+          id={fieldName}
+          type="text"
+          value={value}
+          onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+          required={isRequired}
+        />
+      </div>
+    );
   };
 
   return (
@@ -245,31 +224,31 @@ export function DetailsTab({ deal }: DetailsTabProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">
+            <Label htmlFor="deal_name">
               Deal Name
               <span className="text-destructive ml-1">*</span>
             </Label>
             <Input
-              id="name"
+              id="deal_name"
               type="text"
-              value={formData.name}
-              onChange={(e) => handleFieldChange('name', e.target.value)}
+              value={formData.deal_name}
+              onChange={(e) => handleFieldChange('deal_name', e.target.value)}
               required
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="value">
+              <Label htmlFor="deal_value">
                 Deal Value
                 <span className="text-destructive ml-1">*</span>
               </Label>
               <Input
-                id="value"
+                id="deal_value"
                 type="number"
                 step="0.01"
-                value={formData.value}
-                onChange={(e) => handleFieldChange('value', e.target.value)}
+                value={formData.deal_value}
+                onChange={(e) => handleFieldChange('deal_value', e.target.value)}
                 required
               />
             </div>
@@ -303,17 +282,28 @@ export function DetailsTab({ deal }: DetailsTabProps) {
       </Card>
 
       {/* Custom Fields */}
-      {Object.keys(deal.deal_type.enabled_fields).length > 0 && (
+      {(requiredFields.length > 0 || optionalFields.length > 0) && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Additional Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.keys(deal.deal_type.enabled_fields).map((fieldName) =>
-                renderField(fieldName)
-              )}
-            </div>
+            {requiredFields.length > 0 && (
+              <>
+                <p className="text-sm font-medium text-muted-foreground">Required Fields</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {requiredFields.map((fieldName) => renderField(fieldName, true))}
+                </div>
+              </>
+            )}
+            {optionalFields.length > 0 && (
+              <>
+                <p className="text-sm font-medium text-muted-foreground mt-4">Optional Fields</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {optionalFields.map((fieldName) => renderField(fieldName, false))}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
