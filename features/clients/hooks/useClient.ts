@@ -7,13 +7,14 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { clientApi, documentApi, noteApi, taskApi } from '../api/clientApi';
+import { clientApi, documentApi, noteApi, taskApi, dealApi } from '../api/clientApi';
 import type {
   ClientWithCounts,
   ClientDocument,
   ClientNote,
   ClientTask,
 } from '../types';
+import type { Deal } from '@/features/deals/types';
 
 // =============================================================================
 // TYPES
@@ -39,6 +40,8 @@ export interface UseClientReturn {
   notes: ClientNote[];
   /** Array of client tasks */
   tasks: ClientTask[];
+  /** Array of client deals */
+  deals: Deal[];
   /** Whether any data is currently loading */
   isLoading: boolean;
   /** Error message if fetch failed */
@@ -51,6 +54,8 @@ export interface UseClientReturn {
   refetchNotes: () => Promise<void>;
   /** Refetch only tasks */
   refetchTasks: () => Promise<void>;
+  /** Refetch only deals */
+  refetchDeals: () => Promise<void>;
 }
 
 // =============================================================================
@@ -78,6 +83,7 @@ export function useClient({ clientId }: UseClientOptions): UseClientReturn {
   const [documents, setDocuments] = useState<ClientDocument[]>([]);
   const [notes, setNotes] = useState<ClientNote[]>([]);
   const [tasks, setTasks] = useState<ClientTask[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -128,6 +134,17 @@ export function useClient({ clientId }: UseClientOptions): UseClientReturn {
     }
   }, [clientId]);
 
+  // Fetch deals
+  const fetchDeals = useCallback(async () => {
+    try {
+      const data = await dealApi.getClientDeals(clientId);
+      setDeals(data);
+    } catch (err) {
+      console.error('Failed to fetch deals:', err);
+      setDeals([]);
+    }
+  }, [clientId]);
+
   // Fetch all data
   const fetchAll = useCallback(async () => {
     setIsLoading(true);
@@ -138,10 +155,11 @@ export function useClient({ clientId }: UseClientOptions): UseClientReturn {
       fetchDocuments(),
       fetchNotes(),
       fetchTasks(),
+      fetchDeals(),
     ]);
 
     setIsLoading(false);
-  }, [fetchClient, fetchDocuments, fetchNotes, fetchTasks]);
+  }, [fetchClient, fetchDocuments, fetchNotes, fetchTasks, fetchDeals]);
 
   // Initial fetch on mount and when clientId changes
   useEffect(() => {
@@ -153,12 +171,14 @@ export function useClient({ clientId }: UseClientOptions): UseClientReturn {
     documents,
     notes,
     tasks,
+    deals,
     isLoading,
     error,
     refetch: fetchAll,
     refetchDocuments: fetchDocuments,
     refetchNotes: fetchNotes,
     refetchTasks: fetchTasks,
+    refetchDeals: fetchDeals,
   };
 }
 

@@ -23,7 +23,7 @@ async function fetchDealDetail(dealId: string): Promise<DealWithRelations> {
 
 export function useDealDetail(dealId: string) {
   return useSuspenseQuery({
-    queryKey: ['deals', dealId],
+    queryKey: dealQueryKeys.detail(dealId),
     queryFn: () => fetchDealDetail(dealId),
     staleTime: 30 * 1000, // 30 seconds
   });

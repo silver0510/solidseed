@@ -67,7 +67,7 @@ const changeStageSchema = z.object({
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate session
@@ -78,6 +78,9 @@ export async function PATCH(
         { status: 401 }
       );
     }
+
+    // Get deal ID from params
+    const { id } = await params;
 
     // Parse request body
     const body = await request.json();
@@ -97,7 +100,7 @@ export async function PATCH(
 
     // Change stage
     const result = await dealService.changeDealStage(
-      params.id,
+      id,
       validatedData as ChangeDealStageInput,
       user.id
     );

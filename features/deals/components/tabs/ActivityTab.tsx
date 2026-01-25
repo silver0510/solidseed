@@ -41,7 +41,7 @@ const ACTIVITY_COLORS: Record<DealActivityType, string> = {
 export function ActivityTab({ deal }: ActivityTabProps) {
   const [filterType, setFilterType] = useState<DealActivityType | 'all'>('all');
 
-  const sortedActivities = [...deal.activities].sort(
+  const sortedActivities = [...(deal.activities || [])].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 

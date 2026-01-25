@@ -239,7 +239,7 @@ export interface TaskWithDisplayInfo extends TaskDisplayInfo {
 /**
  * Client profile tab values
  */
-export type ClientProfileTab = 'overview' | 'documents' | 'notes' | 'tasks';
+export type ClientProfileTab = 'overview' | 'documents' | 'notes' | 'tasks' | 'deals';
 
 /**
  * API error response structure

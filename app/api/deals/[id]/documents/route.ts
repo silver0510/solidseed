@@ -46,7 +46,7 @@ const VALID_DOCUMENT_TYPES: DocumentType[] = [
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate session
@@ -58,7 +58,8 @@ export async function POST(
       );
     }
 
-    const dealId = params.id;
+    // Get deal ID from params
+    const { id: dealId } = await params;
 
     // Parse form data
     const formData = await request.formData();
@@ -143,7 +144,7 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate session
@@ -155,7 +156,8 @@ export async function GET(
       );
     }
 
-    const dealId = params.id;
+    // Get deal ID from params
+    const { id: dealId } = await params;
 
     // Get documents
     const documents = await documentService.getDealDocuments(dealId, user.id);

@@ -286,7 +286,10 @@ export class DealService {
       .select(`
         *,
         deal_type:deal_types(*),
-        client:clients(id, name, email)
+        client:clients(id, name, email),
+        milestones:deal_milestones(*),
+        documents:deal_documents(*),
+        activities:deal_activities(*)
       `)
       .eq('id', dealId)
       .eq('assigned_to', userId)

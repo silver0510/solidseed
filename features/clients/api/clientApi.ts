@@ -27,6 +27,7 @@ import type {
   ClientDocument,
   DocumentDownloadResponse,
 } from '../types';
+import type { Deal } from '@/features/deals/types';
 
 // =============================================================================
 // API HELPERS
@@ -537,4 +538,36 @@ export const documentQueryKeys = {
   /** Key for single document by ID */
   detail: (clientId: string, documentId: string) =>
     [...documentQueryKeys.all, 'detail', clientId, documentId] as const,
+};
+
+// =============================================================================
+// DEAL API
+// =============================================================================
+
+/**
+ * Deal API methods for managing client deals
+ */
+export const dealApi = {
+  /**
+   * Get all deals for a client (all statuses, not just active)
+   */
+  getClientDeals: async (clientId: string): Promise<Deal[]> => {
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/deals?client_id=${clientId}`, {
+      credentials: 'include',
+    });
+    const result = await handleResponse<{ success: boolean; data: { deals: Deal[] } }>(response);
+    return result.data.deals;
+  },
+};
+
+/**
+ * Query keys for deal queries
+ */
+export const dealQueryKeys = {
+  /** Base key for all deal queries */
+  all: ['deals'] as const,
+
+  /** Key for client deals */
+  byClient: (clientId: string) => [...dealQueryKeys.all, 'client', clientId] as const,
 };

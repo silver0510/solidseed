@@ -79,8 +79,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: deals,
-      count: deals.length,
+      data: {
+        deals,
+        total: deals.length,
+      },
     });
   } catch (error) {
     console.error('GET /api/deals error:', error);

@@ -14,6 +14,7 @@ import { OverviewTab } from './OverviewTab';
 import { DocumentsTab } from './DocumentsTab';
 import { NotesTab } from './NotesTab';
 import { TasksTab } from './TasksTab';
+import { DealsTab } from './DealsTab';
 import type { ClientProfileTab, ClientWithCounts } from '../../types';
 
 // =============================================================================
@@ -138,6 +139,25 @@ const CheckSquareIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const BriefcaseIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden="true"
+  >
+    <rect width="20" height="14" x="2" y="7" rx="2" ry="2" />
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+  </svg>
+);
+
 const LoadingSpinner = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -172,6 +192,7 @@ const tabs: TabDefinition[] = [
   { id: 'documents', label: 'Documents', icon: FileTextIcon },
   { id: 'notes', label: 'Notes', icon: StickyNoteIcon },
   { id: 'tasks', label: 'Tasks', icon: CheckSquareIcon },
+  { id: 'deals', label: 'Deals', icon: BriefcaseIcon },
 ];
 
 // =============================================================================
@@ -204,11 +225,13 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
     documents,
     notes,
     tasks,
+    deals,
     isLoading,
     error,
     refetchDocuments,
     refetchNotes,
     refetchTasks,
+    refetchDeals,
   } = useClient({ clientId });
 
   // Loading state
@@ -321,6 +344,14 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
             clientName={client.name}
             tasks={tasks}
             onTaskChanged={refetchTasks}
+          />
+        )}
+
+        {activeTab === 'deals' && (
+          <DealsTab
+            clientId={clientId}
+            deals={deals}
+            onDealChanged={refetchDeals}
           />
         )}
       </div>

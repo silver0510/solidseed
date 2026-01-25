@@ -71,7 +71,7 @@ const createActivitySchema = z.object({
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate session
@@ -83,6 +83,9 @@ export async function POST(
       );
     }
 
+    // Get deal ID from params
+    const { id } = await params;
+
     // Parse request body
     const body = await request.json();
 
@@ -91,7 +94,7 @@ export async function POST(
 
     // Create activity
     const activity = await dealService.createActivity(
-      params.id,
+      id,
       validatedData as CreateActivityInput,
       user.id
     );

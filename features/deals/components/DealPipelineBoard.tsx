@@ -33,6 +33,7 @@ import {
 import { Loader2, TrendingUp } from 'lucide-react';
 import { StageColumn } from './StageColumn';
 import { DealCard } from './DealCard';
+import { SwipeableDealCard } from './SwipeableDealCard';
 import { usePipelineDeals } from '../hooks/usePipelineDeals';
 import { useDealDragDrop } from '../hooks/useDealDragDrop';
 import type { Deal } from '@/lib/types/deals';
@@ -210,13 +211,19 @@ export function DealPipelineBoard({ dealTypeId, userId }: DealPipelineBoardProps
                       No deals in this stage
                     </p>
                   ) : (
-                    stage.deals.map((deal) => (
-                      <DealCard
-                        key={deal.id}
-                        deal={deal}
-                        onClick={() => handleDealClick(deal.id)}
-                      />
-                    ))
+                    stage.deals.map((deal) => {
+                      const stageIndex = data.stages.findIndex((s) => s.code === stage.code);
+                      const allStages = data.stages.map((s) => s.code);
+                      return (
+                        <SwipeableDealCard
+                          key={deal.id}
+                          deal={deal}
+                          onClick={() => handleDealClick(deal.id)}
+                          stages={allStages}
+                          currentStageIndex={stageIndex}
+                        />
+                      );
+                    })
                   )}
                 </div>
               </AccordionContent>
