@@ -32,9 +32,10 @@ const VALID_ACTIVITY_TYPES: ActivityType[] = [
 
 // Validation schema for creating activities
 const createActivitySchema = z.object({
-  activity_type: z.enum(VALID_ACTIVITY_TYPES as [ActivityType, ...ActivityType[]], {
-    errorMap: () => ({ message: `Activity type must be one of: ${VALID_ACTIVITY_TYPES.join(', ')}` }),
-  }),
+  activity_type: z.enum(VALID_ACTIVITY_TYPES as [ActivityType, ...ActivityType[]]).refine(
+    (val) => VALID_ACTIVITY_TYPES.includes(val),
+    { message: `Activity type must be one of: ${VALID_ACTIVITY_TYPES.join(', ')}` }
+  ),
   title: z.string().min(1, 'Title is required').max(255, 'Title must be less than 255 characters'),
   description: z.string().max(2000, 'Description must be less than 2000 characters').optional(),
 });

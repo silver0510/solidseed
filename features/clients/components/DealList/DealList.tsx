@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
 import type { Deal } from '@/features/deals/types';
@@ -51,26 +51,6 @@ const BriefcaseIcon = ({ className }: { className?: string }) => (
   >
     <rect width="20" height="14" x="2" y="7" rx="2" ry="2" />
     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-  </svg>
-);
-
-const ExternalLinkIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-    <polyline points="15 3 21 3 21 9" />
-    <line x1="10" x2="21" y1="14" y2="3" />
   </svg>
 );
 
@@ -163,8 +143,15 @@ export const DealList: React.FC<DealListProps> = ({
   onDealChanged,
   className,
 }) => {
+  const router = useRouter();
+
   // Sort deals
   const sortedDeals = sortDeals(deals);
+
+  // Handle deal click - navigate to deal detail
+  const handleDealClick = (dealId: string) => {
+    router.push(`/deals/${dealId}`);
+  };
 
   // Empty state
   if (deals.length === 0) {
@@ -205,9 +192,6 @@ export const DealList: React.FC<DealListProps> = ({
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-32">
                 Created
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-20">
-
-              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -220,9 +204,10 @@ export const DealList: React.FC<DealListProps> = ({
                   data-testid="deal-item"
                   role="article"
                   className={cn(
-                    'transition-opacity duration-200 hover:bg-muted/30',
+                    'transition-opacity duration-200 hover:bg-muted/30 cursor-pointer',
                     isInactive && 'opacity-60'
                   )}
+                  onClick={() => handleDealClick(deal.id)}
                 >
                   {/* Deal Name */}
                   <td className="px-4 py-3">
@@ -275,20 +260,6 @@ export const DealList: React.FC<DealListProps> = ({
                     >
                       {formatDate(deal.created_at)}
                     </time>
-                  </td>
-
-                  {/* View Link */}
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/deals/${deal.id}`}
-                      className={cn(
-                        'inline-flex items-center gap-1 text-sm text-primary hover:underline'
-                      )}
-                      aria-label={`View ${deal.deal_name}`}
-                    >
-                      <span className="sr-only">View</span>
-                      <ExternalLinkIcon />
-                    </Link>
                   </td>
                 </tr>
               );

@@ -83,7 +83,7 @@ export function DocumentsTab({ deal }: DocumentsTabProps) {
     setIsDragging(false);
 
     const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
+    if (files && files.length > 0 && files[0]) {
       handleFileSelect(files[0]);
     }
   }, []);
@@ -216,7 +216,7 @@ export function DocumentsTab({ deal }: DocumentsTabProps) {
                 <p className="text-xs text-muted-foreground">Maximum file size: 25MB</p>
                 <input
                   type="file"
-                  onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])}
+                  onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
                   className="hidden"
                   id="file-upload"
                 />

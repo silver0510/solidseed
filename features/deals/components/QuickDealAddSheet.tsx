@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Client } from '@/features/clients/types';
 import { DealType } from '@/features/deals/types';
 import { CreateDealInput } from '@/features/deals/types';
@@ -25,7 +25,6 @@ interface QuickDealAddSheetProps {
 }
 
 export function QuickDealAddSheet({ open, onOpenChange }: QuickDealAddSheetProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,19 +78,12 @@ export function QuickDealAddSheet({ open, onOpenChange }: QuickDealAddSheetProps
       }
 
       queryClient.invalidateQueries({ queryKey: ['deals'] });
-      toast({
-        title: 'Deal created',
-        description: 'Your deal has been created successfully.',
-      });
+      toast.success('Deal created successfully');
       onOpenChange(false);
       resetForm();
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Failed to create deal');
     },
   });
 
@@ -113,11 +105,7 @@ export function QuickDealAddSheet({ open, onOpenChange }: QuickDealAddSheetProps
   // Voice-to-text functionality
   const startVoiceInput = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      toast({
-        title: 'Not supported',
-        description: 'Speech recognition is not supported in your browser.',
-        variant: 'destructive',
-      });
+      toast.error('Speech recognition is not supported in your browser');
       return;
     }
 
@@ -140,11 +128,7 @@ export function QuickDealAddSheet({ open, onOpenChange }: QuickDealAddSheetProps
     recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error);
       setIsListening(false);
-      toast({
-        title: 'Error',
-        description: 'Failed to recognize speech. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error('Failed to recognize speech. Please try again.');
     };
 
     recognition.onend = () => {
@@ -189,11 +173,7 @@ export function QuickDealAddSheet({ open, onOpenChange }: QuickDealAddSheetProps
     e.preventDefault();
 
     if (!clientId || !dealTypeId) {
-      toast({
-        title: 'Missing fields',
-        description: 'Please select a client and deal type.',
-        variant: 'destructive',
-      });
+      toast.error('Please select a client and deal type');
       return;
     }
 
@@ -214,9 +194,7 @@ export function QuickDealAddSheet({ open, onOpenChange }: QuickDealAddSheetProps
       deal_name: dealName,
       deal_type_id: dealTypeId,
       client_id: clientId,
-      current_stage: firstStage,
-      status: 'active',
-      deal_value: dealValue ? parseFloat(dealValue) : null,
+      deal_value: dealValue ? parseFloat(dealValue) : undefined,
       expected_close_date: expectedCloseDate.toISOString().split('T')[0],
       deal_data: address ? { property_address: address } : {},
     };

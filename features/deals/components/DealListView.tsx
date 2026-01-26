@@ -7,6 +7,8 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   flexRender,
   getCoreRowModel,
@@ -16,7 +18,7 @@ import {
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table';
-import { ArrowUpDown, ChevronLeft, ChevronRight, Download, Loader2 } from 'lucide-react';
+import { ArrowUpDown, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -35,29 +37,66 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { formatCurrency, formatDate, getDaysInPipeline } from '@/lib/utils/formatters';
-import type { Deal, DealType } from '@/lib/types/deals';
+import type { Deal } from '@/lib/types/deals';
 import { exportDealsToCSV } from '../utils/exportDealsToCSV';
 import { toast } from 'sonner';
+import { usePipelineDeals, pipelineKeys } from '../hooks/usePipelineDeals';
 
-interface DealListViewProps {
-  deals: Deal[];
-  dealTypes: DealType[];
-  isLoading?: boolean;
-  onStageChange?: (dealId: string, newStage: string) => Promise<void>;
-  onDealClick?: (dealId: string) => void;
-}
+export function DealListView() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
-export function DealListView({
-  deals,
-  dealTypes,
-  isLoading = false,
-  onStageChange,
-  onDealClick,
-}: DealListViewProps) {
+  // Fetch deals data
+  const { data } = usePipelineDeals();
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [changingStage, setChangingStage] = React.useState<string | null>(null);
+
+  // Flatten deals from all stages
+  const deals = React.useMemo(() => {
+    if (!data?.stages) return [];
+    return data.stages.flatMap(stage => stage.deals);
+  }, [data?.stages]);
+
+  // Handle deal click - navigate to deal detail
+  const handleDealClick = (dealId: string) => {
+    router.push(`/deals/${dealId}`);
+  };
+
+  // Stage change mutation
+  const stageChangeMutation = useMutation({
+    mutationFn: async ({ dealId, newStage }: { dealId: string; newStage: string }) => {
+      const response = await fetch(`/api/deals/${dealId}/stage`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ new_stage: newStage }),
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(error.error || `HTTP ${response.status}`);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success('Stage updated');
+      queryClient.invalidateQueries({ queryKey: pipelineKeys.all });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update stage');
+    },
+  });
+
+  // Handle stage change
+  const handleStageChange = async (dealId: string, newStage: string) => {
+    setChangingStage(dealId);
+    try {
+      await stageChangeMutation.mutateAsync({ dealId, newStage });
+    } finally {
+      setChangingStage(null);
+    }
+  };
 
   // Define table columns
   const columns: ColumnDef<Deal>[] = React.useMemo(
@@ -75,12 +114,9 @@ export function DealListView({
           </Button>
         ),
         cell: ({ row }) => (
-          <button
-            onClick={() => onDealClick?.(row.original.id)}
-            className="font-medium text-left hover:underline"
-          >
+          <span className="font-medium">
             {row.original.deal_name}
-          </button>
+          </span>
         ),
       },
       {
@@ -101,7 +137,7 @@ export function DealListView({
           const stages = deal.deal_type?.pipeline_stages || [];
           const currentStage = stages.find((s) => s.code === deal.current_stage);
 
-          if (!onStageChange || stages.length === 0) {
+          if (stages.length === 0) {
             return (
               <Badge variant="outline" className="capitalize">
                 {currentStage?.name || deal.current_stage}
@@ -110,33 +146,24 @@ export function DealListView({
           }
 
           return (
-            <Select
-              value={deal.current_stage}
-              onValueChange={async (value) => {
-                setChangingStage(deal.id);
-                try {
-                  await onStageChange(deal.id, value);
-                  toast.success('Stage updated');
-                } catch (error) {
-                  toast.error('Failed to update stage');
-                  console.error(error);
-                } finally {
-                  setChangingStage(null);
-                }
-              }}
-              disabled={changingStage === deal.id}
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {stages.map((stage) => (
-                  <SelectItem key={stage.code} value={stage.code}>
-                    {stage.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div onClick={(e) => e.stopPropagation()}>
+              <Select
+                value={deal.current_stage}
+                onValueChange={(value) => handleStageChange(deal.id, value)}
+                disabled={changingStage === deal.id}
+              >
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {stages.map((stage) => (
+                    <SelectItem key={stage.code} value={stage.code}>
+                      {stage.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           );
         },
       },
@@ -186,7 +213,7 @@ export function DealListView({
         },
       },
     ],
-    [onStageChange, onDealClick, changingStage]
+    [changingStage]
   );
 
   const table = useReactTable({
@@ -215,14 +242,6 @@ export function DealListView({
       console.error(error);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
 
   if (deals.length === 0) {
     return (
@@ -264,7 +283,12 @@ export function DealListView({
           <TableBody>
             {table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                  className="cursor-pointer hover:bg-accent/50"
+                  onClick={() => handleDealClick(row.original.id)}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -295,7 +319,7 @@ export function DealListView({
             <Card
               key={deal.id}
               className="cursor-pointer hover:bg-accent/50 transition-colors"
-              onClick={() => onDealClick?.(deal.id)}
+              onClick={() => handleDealClick(deal.id)}
             >
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-start justify-between">
@@ -330,22 +354,11 @@ export function DealListView({
                 </div>
 
                 {/* Stage selector for mobile */}
-                {onStageChange && deal.deal_type?.pipeline_stages && (
+                {deal.deal_type?.pipeline_stages && (
                   <div className="pt-2 border-t" onClick={(e) => e.stopPropagation()}>
                     <Select
                       value={deal.current_stage}
-                      onValueChange={async (value) => {
-                        setChangingStage(deal.id);
-                        try {
-                          await onStageChange(deal.id, value);
-                          toast.success('Stage updated');
-                        } catch (error) {
-                          toast.error('Failed to update stage');
-                          console.error(error);
-                        } finally {
-                          setChangingStage(null);
-                        }
-                      }}
+                      onValueChange={(value) => handleStageChange(deal.id, value)}
                       disabled={changingStage === deal.id}
                     >
                       <SelectTrigger className="w-full">

@@ -9,7 +9,7 @@ import type { Deal } from '@/lib/types/deals';
 import { cn } from '@/lib/utils';
 import { useSwipe } from '@/hooks/use-swipe';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface SwipeableDealCardProps {
   deal: Deal;
@@ -24,7 +24,6 @@ export function SwipeableDealCard({
   stages,
   currentStageIndex,
 }: SwipeableDealCardProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [swipeOffset, setSwipeOffset] = React.useState(0);
   const [isSwiping, setIsSwiping] = React.useState(false);
@@ -48,17 +47,10 @@ export function SwipeableDealCard({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pipeline-deals'] });
-      toast({
-        title: 'Stage updated',
-        description: `Deal moved to ${stages[currentStageIndex]}`,
-      });
+      toast.success(`Deal moved to ${stages[currentStageIndex]}`);
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Failed to update stage');
     },
   });
 
@@ -66,13 +58,13 @@ export function SwipeableDealCard({
     onSwipeLeft: () => {
       if (canSwipeLeft && !changeStage.isPending) {
         const nextStage = stages[currentStageIndex + 1];
-        changeStage.mutate(nextStage);
+        if (nextStage) changeStage.mutate(nextStage);
       }
     },
     onSwipeRight: () => {
       if (canSwipeRight && !changeStage.isPending) {
         const prevStage = stages[currentStageIndex - 1];
-        changeStage.mutate(prevStage);
+        if (prevStage) changeStage.mutate(prevStage);
       }
     },
     minSwipeDistance: 80,
@@ -87,9 +79,11 @@ export function SwipeableDealCard({
   const handleTouchMove = (e: React.TouchEvent) => {
     if (isSwiping) {
       const touch = e.touches[0];
-      const startX = (e.currentTarget as HTMLElement).getBoundingClientRect().left;
-      const offset = touch.clientX - startX - (e.currentTarget as HTMLElement).offsetWidth / 2;
-      setSwipeOffset(Math.min(100, Math.max(-100, offset / 2)));
+      if (touch) {
+        const startX = (e.currentTarget as HTMLElement).getBoundingClientRect().left;
+        const offset = touch.clientX - startX - (e.currentTarget as HTMLElement).offsetWidth / 2;
+        setSwipeOffset(Math.min(100, Math.max(-100, offset / 2)));
+      }
     }
     swipeHandlers.onTouchMove(e);
   };

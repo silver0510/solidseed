@@ -66,7 +66,7 @@ export function DealForm({
 
     // Validate required custom fields
     Object.entries(dealType.enabled_fields).forEach(([fieldName, config]) => {
-      if (config.required && !formData[fieldName]) {
+      if (config?.required && !formData[fieldName]) {
         newErrors[fieldName] = `${formatFieldLabel(fieldName)} is required`;
       }
     });

@@ -148,13 +148,17 @@ export function useDealDragDrop(options: UseDealDragDropOptions = {}) {
               (s) => s.code === data.new_stage
             );
             if (targetStageIndex !== -1) {
-              newStages[targetStageIndex] = {
-                ...newStages[targetStageIndex],
-                deals: [...newStages[targetStageIndex].deals, movedDeal],
-                count: newStages[targetStageIndex].deals.length + 1,
-                total_value:
-                  newStages[targetStageIndex].total_value + (movedDeal.deal_value || 0),
-              };
+              const targetStage = newStages[targetStageIndex];
+              if (targetStage) {
+                newStages[targetStageIndex] = {
+                  ...targetStage,
+                  code: targetStage.code || '',
+                  name: targetStage.name || '',
+                  deals: [...targetStage.deals, movedDeal],
+                  count: targetStage.deals.length + 1,
+                  total_value: targetStage.total_value + (movedDeal.deal_value || 0),
+                };
+              }
             }
           }
 

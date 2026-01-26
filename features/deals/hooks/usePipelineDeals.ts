@@ -57,7 +57,7 @@ function buildQueryString(params: Record<string, unknown>): string {
  */
 async function fetchPipelineDeals(params: GetPipelineParams = {}): Promise<PipelineResponse> {
   const baseUrl = getBaseUrl();
-  const queryString = buildQueryString(params);
+  const queryString = buildQueryString(params as Record<string, unknown>);
   const response = await fetch(`${baseUrl}/api/deals/pipeline${queryString}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },

@@ -121,7 +121,7 @@ export function DetailsTab({ deal }: DetailsTabProps) {
 
   const renderField = (fieldName: string, isRequired: boolean) => {
     const label = formatFieldLabel(fieldName);
-    const value = formData[fieldName] ?? '';
+    const value = (formData as Record<string, any>)[fieldName] ?? '';
     const enumOptions = enumValues[fieldName];
 
     // If field has enum values, render as select
