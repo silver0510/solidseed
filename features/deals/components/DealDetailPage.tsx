@@ -12,7 +12,9 @@
 'use client';
 
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
 import { useDealDetail } from '../hooks/useDealDetail';
 import { OverviewTab } from './tabs/OverviewTab';
@@ -28,16 +30,44 @@ export interface DealDetailPageProps {
 export function DealDetailPage({ dealId }: DealDetailPageProps) {
   const { data: deal } = useDealDetail(dealId);
 
+  // Status badge color
+  const getStatusBadge = () => {
+    if (deal.status === 'closed_won') {
+      return <Badge className="bg-green-500 text-white">Won</Badge>;
+    }
+    if (deal.status === 'closed_lost') {
+      return <Badge variant="destructive">Lost</Badge>;
+    }
+    return null;
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
           <h1 className="text-2xl font-semibold truncate">{deal.deal_name}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {deal.client.name} • {deal.deal_type.type_name}
-          </p>
+          <Badge
+            variant="secondary"
+            className="text-xs font-medium shrink-0"
+            style={{
+              backgroundColor: `${deal.deal_type?.color || '#3b82f6'}15`,
+              color: deal.deal_type?.color || '#3b82f6',
+              borderColor: `${deal.deal_type?.color || '#3b82f6'}30`,
+            }}
+          >
+            {deal.deal_type.type_name}
+          </Badge>
+          {getStatusBadge()}
         </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          <Link
+            href={`/clients/${deal.client_id}`}
+            className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+          >
+            {deal.client.name}
+          </Link>
+        </p>
       </div>
 
       {/* Tabs */}

@@ -83,12 +83,12 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Add Milestone Button */}
       <div className="flex justify-end">
-        <Button onClick={() => setIsAddDialogOpen(true)}>
+        <Button size="sm" onClick={() => setIsAddDialogOpen(true)}>
           <svg
-            className="h-4 w-4 mr-2"
+            className="h-3.5 w-3.5 mr-1.5"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
@@ -103,8 +103,8 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
       {/* Milestones Timeline */}
       {sortedMilestones.length === 0 ? (
         <Card>
-          <CardContent className="p-8 text-center text-muted-foreground">
-            <div className="mx-auto h-12 w-12 mb-4 text-muted-foreground/40">
+          <CardContent className="p-6 text-center text-muted-foreground">
+            <div className="mx-auto h-10 w-10 mb-3 text-muted-foreground/40">
               <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -113,22 +113,22 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                 />
               </svg>
             </div>
-            <p className="font-medium">No milestones yet</p>
-            <p className="text-sm mt-1">Add milestones to track progress on this deal</p>
+            <p className="text-sm font-medium">No milestones yet</p>
+            <p className="text-xs mt-1">Add milestones to track progress</p>
           </CardContent>
         </Card>
       ) : (
         <div className="relative">
           {/* Timeline Line */}
-          <div className="absolute left-4 top-6 bottom-6 w-0.5 bg-border" />
+          <div className="absolute left-3 top-4 bottom-4 w-0.5 bg-border" />
 
           {/* Milestone Cards */}
-          <div className="space-y-4">
-            {sortedMilestones.map((milestone, index) => (
-              <div key={milestone.id} className="relative pl-12">
+          <div className="space-y-2">
+            {sortedMilestones.map((milestone) => (
+              <div key={milestone.id} className="relative pl-9">
                 {/* Timeline Dot */}
                 <div
-                  className={`absolute left-0 top-4 h-8 w-8 rounded-full border-2 flex items-center justify-center ${
+                  className={`absolute left-0 top-2.5 h-6 w-6 rounded-full border-2 flex items-center justify-center ${
                     milestone.status === 'completed'
                       ? 'bg-green-500 border-green-500 text-white'
                       : isPastDue(milestone.scheduled_date, milestone.status)
@@ -138,7 +138,7 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                 >
                   {milestone.status === 'completed' ? (
                     <svg
-                      className="h-5 w-5"
+                      className="h-3.5 w-3.5"
                       fill="none"
                       viewBox="0 0 24 24"
                       strokeWidth={2.5}
@@ -147,7 +147,7 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
-                    <div className="h-3 w-3 rounded-full bg-muted" />
+                    <div className="h-2 w-2 rounded-full bg-muted" />
                   )}
                 </div>
 
@@ -157,8 +157,8 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                     milestone.status === 'completed' ? 'opacity-75' : ''
                   }`}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
+                  <CardContent className="p-2.5">
+                    <div className="flex items-center gap-2">
                       <Checkbox
                         id={`milestone-${milestone.id}`}
                         checked={milestone.status === 'completed'}
@@ -166,35 +166,22 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                           handleToggleComplete(milestone.id, milestone.status)
                         }
                         disabled={toggleMilestone.isPending}
-                        className="mt-1"
+                        className="h-4 w-4"
                       />
                       <div className="flex-1 min-w-0">
-                        <label
-                          htmlFor={`milestone-${milestone.id}`}
-                          className={`block font-medium cursor-pointer ${
-                            milestone.status === 'completed'
-                              ? 'line-through text-muted-foreground'
-                              : ''
-                          }`}
-                        >
-                          {milestone.milestone_name}
-                        </label>
-                        <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
-                          {milestone.scheduled_date && (
-                            <div className="flex items-center gap-1">
-                              <svg
-                                className="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
-                                />
-                              </svg>
+                        <div className="flex items-center justify-between gap-2">
+                          <label
+                            htmlFor={`milestone-${milestone.id}`}
+                            className={`text-sm font-medium cursor-pointer truncate ${
+                              milestone.status === 'completed'
+                                ? 'line-through text-muted-foreground'
+                                : ''
+                            }`}
+                          >
+                            {milestone.milestone_name}
+                          </label>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+                            {milestone.scheduled_date && (
                               <span
                                 className={
                                   isPastDue(milestone.scheduled_date, milestone.status)
@@ -202,28 +189,15 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                                     : ''
                                 }
                               >
-                                Due {formatDate(milestone.scheduled_date)}
+                                {formatDate(milestone.scheduled_date)}
                               </span>
-                            </div>
-                          )}
-                          {milestone.completed_date && (
-                            <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                              <svg
-                                className="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                              <span>Completed {formatDate(milestone.completed_date)}</span>
-                            </div>
-                          )}
+                            )}
+                            {milestone.completed_date && (
+                              <span className="text-green-600 dark:text-green-400">
+                                Done
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
