@@ -16,6 +16,7 @@ function getPageTitle(pathname: string): string {
   const routes: Record<string, string> = {
     '/dashboard': 'Dashboard',
     '/clients': 'Clients',
+    '/deals': 'Deals',
     '/tasks': 'Tasks',
     '/settings': 'Settings',
   };

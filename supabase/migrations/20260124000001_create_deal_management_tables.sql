@@ -228,7 +228,7 @@ VALUES (
     "enums": {
       "deal_side": ["buyer_side", "seller_side", "dual_agency"],
       "property_type": ["single_family", "condo", "townhouse", "multi_family", "land"],
-      "financing_type": ["conventional", "fha", "va", "cash", "other"]
+      "financing_type": ["conventional", "fha", "va", "usda", "jumbo", "heloc", "other"]
     }
   }'::jsonb,
   '[

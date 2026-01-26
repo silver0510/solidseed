@@ -350,6 +350,7 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
         {activeTab === 'deals' && (
           <DealsTab
             clientId={clientId}
+            clientName={client.name}
             deals={deals}
             onDealChanged={refetchDeals}
           />

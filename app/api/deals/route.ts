@@ -26,8 +26,8 @@ const createDealSchema = z.object({
   deal_value: z.number().min(0, 'Deal value must be non-negative').optional(),
   commission_rate: z.number().min(0).max(100, 'Commission rate must be between 0 and 100').optional(),
   commission_split_percent: z.number().min(0).max(100, 'Commission split must be between 0 and 100').optional(),
-  expected_close_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (use YYYY-MM-DD)').optional(),
-  deal_data: z.record(z.unknown()),
+  expected_close_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (use YYYY-MM-DD)').optional().or(z.literal('')),
+  deal_data: z.object({}).passthrough(),
   notes: z.string().optional(),
   referral_source: z.string().optional(),
 });

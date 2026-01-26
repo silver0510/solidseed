@@ -8,7 +8,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
 import { DealList } from '../DealList';
@@ -24,6 +24,8 @@ import type { Deal } from '@/features/deals/types';
 export interface DealsTabProps {
   /** Client ID */
   clientId: string;
+  /** Client name (for display) */
+  clientName: string;
   /** Array of deals to display */
   deals: Deal[];
   /** Callback when a deal is created or modified */
@@ -43,6 +45,7 @@ export interface DealsTabProps {
  * ```tsx
  * <DealsTab
  *   clientId="cl123"
+ *   clientName="John Doe"
  *   deals={deals}
  *   onDealChanged={refetchDeals}
  * />
@@ -50,6 +53,7 @@ export interface DealsTabProps {
  */
 export const DealsTab: React.FC<DealsTabProps> = ({
   clientId,
+  clientName,
   deals,
   onDealChanged,
   className,
@@ -57,7 +61,6 @@ export const DealsTab: React.FC<DealsTabProps> = ({
   const router = useRouter();
 
   const handleAddDeal = () => {
-    // Navigate to deals page with client pre-selected
     router.push(`/deals/new?client_id=${clientId}`);
   };
 

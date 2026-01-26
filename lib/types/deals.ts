@@ -39,6 +39,12 @@ export interface MilestoneTemplate {
   days_offset: number;
 }
 
+// Enum option with value and display
+export interface EnumOption {
+  value: string | number;
+  display: string;
+}
+
 // Deal type configuration
 export interface DealType {
   id: string;
@@ -48,9 +54,11 @@ export interface DealType {
   color: string | null;
   pipeline_stages: PipelineStage[];
   enabled_fields: {
-    required: string[];
-    optional: string[];
-    enums: Record<string, string[] | number[]>;
+    [fieldName: string]: {
+      required: boolean;
+      type: 'text' | 'number' | 'date' | 'textarea' | 'boolean' | 'enum';
+      enum_values?: EnumOption[];
+    };
   };
   default_milestones: MilestoneTemplate[];
   is_system: boolean;

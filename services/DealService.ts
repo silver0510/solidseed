@@ -85,7 +85,104 @@ export class DealService {
       throw new Error(`Failed to fetch deal types: ${error.message}`);
     }
 
-    return data || [];
+    // Transform enabled_fields from database format to frontend format
+    const transformedData = (data || []).map((dealType) => {
+      const dbFields = dealType.enabled_fields as any;
+      const frontendFields: any = {};
+
+      // Process required fields
+      if (dbFields.required && Array.isArray(dbFields.required)) {
+        dbFields.required.forEach((fieldName: string) => {
+          const enumValues = dbFields.enums?.[fieldName];
+          frontendFields[fieldName] = {
+            required: true,
+            type: enumValues ? 'enum' : this.inferFieldType(fieldName),
+            enum_values: enumValues ? this.formatEnumValues(enumValues) : undefined,
+          };
+        });
+      }
+
+      // Process optional fields
+      if (dbFields.optional && Array.isArray(dbFields.optional)) {
+        dbFields.optional.forEach((fieldName: string) => {
+          const enumValues = dbFields.enums?.[fieldName];
+          frontendFields[fieldName] = {
+            required: false,
+            type: enumValues ? 'enum' : this.inferFieldType(fieldName),
+            enum_values: enumValues ? this.formatEnumValues(enumValues) : undefined,
+          };
+        });
+      }
+
+      return {
+        ...dealType,
+        enabled_fields: frontendFields,
+      };
+    });
+
+    return transformedData;
+  }
+
+  /**
+   * Format enum values from database format to frontend format
+   * Supports both dictionary format {value, display} and legacy string format
+   */
+  private formatEnumValues(enumValues: any[]): Array<{value: string | number; display: string}> {
+    return enumValues.map((item) => {
+      // New dictionary format: {value: "fha", display: "FHA"}
+      if (typeof item === 'object' && item !== null && 'value' in item && 'display' in item) {
+        return {
+          value: item.value,
+          display: item.display
+        };
+      }
+
+      // Legacy format fallback: simple string or number
+      if (typeof item === 'number') {
+        return {
+          value: item,
+          display: item.toString()
+        };
+      }
+
+      // Legacy string format: convert to dictionary
+      return {
+        value: item,
+        display: String(item)
+      };
+    });
+  }
+
+  /**
+   * Infer field type from field name
+   */
+  private inferFieldType(fieldName: string): 'text' | 'number' | 'date' | 'textarea' | 'boolean' {
+    const lowerName = fieldName.toLowerCase();
+
+    if (lowerName.includes('date') || lowerName.includes('_at')) {
+      return 'date';
+    }
+    if (
+      lowerName.includes('amount') ||
+      lowerName.includes('price') ||
+      lowerName.includes('percent') ||
+      lowerName.includes('rate') ||
+      lowerName.includes('score') ||
+      lowerName.includes('ratio') ||
+      lowerName.includes('bedrooms') ||
+      lowerName.includes('bathrooms') ||
+      lowerName.includes('square') ||
+      lowerName.includes('year') ||
+      lowerName.includes('term') ||
+      lowerName.includes('payment')
+    ) {
+      return 'number';
+    }
+    if (lowerName.includes('notes') || lowerName.includes('description')) {
+      return 'textarea';
+    }
+
+    return 'text';
   }
 
   /**
