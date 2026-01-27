@@ -41,20 +41,31 @@ export interface DocumentsTabProps {
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
 
-const DOCUMENT_TYPES = [
-  'Contract',
-  'Addendum',
-  'Inspection Report',
-  'Appraisal',
-  'Title Document',
-  'Disclosure',
-  'Other',
+const ALLOWED_FILE_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 ];
+
+const ALLOWED_FILE_EXTENSIONS = 'PDF, JPEG, PNG, DOC, DOCX, XLS, XLSX';
+
+const DOCUMENT_TYPES = [
+  { label: 'Contract', value: 'contract' },
+  { label: 'Disclosure', value: 'disclosure' },
+  { label: 'Inspection Report', value: 'inspection_report' },
+  { label: 'Appraisal', value: 'appraisal' },
+  { label: 'Closing Statement', value: 'closing_statement' },
+  { label: 'Other', value: 'other' },
+] as const;
 
 export function DocumentsTab({ deal }: DocumentsTabProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [documentType, setDocumentType] = useState('Contract');
+  const [documentType, setDocumentType] = useState('contract');
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
@@ -96,6 +107,11 @@ export function DocumentsTab({ deal }: DocumentsTabProps) {
       return;
     }
 
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      setUploadError(`File type not allowed. Allowed types: ${ALLOWED_FILE_EXTENSIONS}`);
+      return;
+    }
+
     setSelectedFile(file);
   };
 
@@ -103,15 +119,22 @@ export function DocumentsTab({ deal }: DocumentsTabProps) {
     if (!selectedFile) return;
 
     try {
+      setUploadError(null); // Clear any previous errors
+
       await uploadDocument.mutateAsync({
         file: selectedFile,
         document_type: documentType,
       });
       setSelectedFile(null);
-      setDocumentType('Contract');
+      setDocumentType('contract');
     } catch (error: any) {
       setUploadError(error.message || 'Failed to upload document');
     }
+  };
+
+  const handleCancelUpload = () => {
+    setSelectedFile(null);
+    setUploadError(null); // Clear error when canceling
   };
 
   const handleDeleteClick = (documentId: string) => {
@@ -144,6 +167,11 @@ export function DocumentsTab({ deal }: DocumentsTabProps) {
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const formatDocumentType = (type: string) => {
+    const documentType = DOCUMENT_TYPES.find(t => t.value === type);
+    return documentType?.label || type;
   };
 
   return (
@@ -186,8 +214,8 @@ export function DocumentsTab({ deal }: DocumentsTabProps) {
                     </SelectTrigger>
                     <SelectContent>
                       {DOCUMENT_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -203,7 +231,7 @@ export function DocumentsTab({ deal }: DocumentsTabProps) {
 
                   <Button
                     variant="ghost"
-                    onClick={() => setSelectedFile(null)}
+                    onClick={handleCancelUpload}
                     disabled={uploadDocument.isPending}
                   >
                     Cancel
@@ -214,11 +242,13 @@ export function DocumentsTab({ deal }: DocumentsTabProps) {
               <div className="space-y-2">
                 <p className="text-sm font-medium">Drag and drop a file here, or click to browse</p>
                 <p className="text-xs text-muted-foreground">Maximum file size: 25MB</p>
+                <p className="text-xs text-muted-foreground">Allowed types: {ALLOWED_FILE_EXTENSIONS}</p>
                 <input
                   type="file"
                   onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
                   className="hidden"
                   id="file-upload"
+                  accept={ALLOWED_FILE_TYPES.join(',')}
                 />
                 <Button
                   variant="outline"
@@ -265,7 +295,7 @@ export function DocumentsTab({ deal }: DocumentsTabProps) {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{document.file_name}</p>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <Badge variant="secondary">{document.document_type}</Badge>
+                          <Badge variant="secondary">{formatDocumentType(document.document_type)}</Badge>
                           <span className="text-xs text-muted-foreground">
                             {formatFileSize(document.file_size)}
                           </span>

@@ -190,8 +190,8 @@ export function useDealMutations(dealId: string) {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to upload document' }));
-        throw new Error(error.message || 'Failed to upload document');
+        const error = await response.json().catch(() => ({ error: 'Failed to upload document' }));
+        throw new Error(error.error || error.message || 'Failed to upload document');
       }
 
       return response.json();
