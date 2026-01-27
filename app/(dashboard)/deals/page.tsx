@@ -7,14 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DealPipelineBoard } from '@/features/deals/components/DealPipelineBoard';
 import { DealListView } from '@/features/deals/components/DealListView';
+import { LostDealsView } from '@/features/deals/components/LostDealsView';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { QuickDealAddSheet } from '@/features/deals/components/QuickDealAddSheet';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
-import { Home, DollarSign, TrendingUp, LayoutGrid, LayoutList, Loader2 } from 'lucide-react';
+import { Home, DollarSign, TrendingUp, LayoutGrid, LayoutList, Loader2, XCircle } from 'lucide-react';
 import { useDealTypes } from '@/features/deals/hooks/useDealTypes';
 import { usePipelineDeals } from '@/features/deals/hooks/usePipelineDeals';
 
-type ViewMode = 'pipeline' | 'list';
+type ViewMode = 'pipeline' | 'list' | 'lost';
 
 // Format currency helper
 const formatCurrency = (value: number) => {
@@ -124,6 +125,15 @@ function DealViewWrapper({
             <LayoutList className="h-4 w-4" />
           </Button>
         </div>
+        <Button
+          variant={viewMode === 'lost' ? 'default' : 'outline'}
+          size="sm"
+          className="h-9"
+          onClick={() => onViewModeChange('lost')}
+        >
+          <XCircle className="h-4 w-4 mr-2" />
+          Lost Deals
+        </Button>
         <Button variant="outline" size="sm" className="h-9" onClick={() => router.push('/deals/new')}>
           <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -194,9 +204,13 @@ function DealsContent() {
               <Suspense fallback={<SectionLoader message="Loading pipeline..." />}>
                 <DealPipelineBoard dealTypeId={dealTypeMap.residential_sale.id} />
               </Suspense>
-            ) : (
+            ) : viewMode === 'list' ? (
               <Suspense fallback={<SectionLoader message="Loading deals..." />}>
                 <DealListView dealTypeId={dealTypeMap.residential_sale.id} />
+              </Suspense>
+            ) : (
+              <Suspense fallback={<SectionLoader message="Loading lost deals..." />}>
+                <LostDealsView dealTypeId={dealTypeMap.residential_sale.id} />
               </Suspense>
             )}
           </DealViewWrapper>
@@ -213,9 +227,13 @@ function DealsContent() {
               <Suspense fallback={<SectionLoader message="Loading pipeline..." />}>
                 <DealPipelineBoard dealTypeId={dealTypeMap.mortgage.id} />
               </Suspense>
-            ) : (
+            ) : viewMode === 'list' ? (
               <Suspense fallback={<SectionLoader message="Loading deals..." />}>
                 <DealListView dealTypeId={dealTypeMap.mortgage.id} />
+              </Suspense>
+            ) : (
+              <Suspense fallback={<SectionLoader message="Loading lost deals..." />}>
+                <LostDealsView dealTypeId={dealTypeMap.mortgage.id} />
               </Suspense>
             )}
           </DealViewWrapper>

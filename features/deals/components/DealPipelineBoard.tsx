@@ -145,6 +145,18 @@ export function DealPipelineBoard({ dealTypeId, userId }: DealPipelineBoardProps
     );
   }
 
+  // Check if there are any deals across all stages
+  const totalDeals = data.stages.reduce((sum, stage) => sum + stage.deals.length, 0);
+
+  // Show "No deals found" message if there are no deals
+  if (totalDeals === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        No deals found. Try adjusting your filters.
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Desktop View: Horizontal Columns */}
