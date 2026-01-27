@@ -211,7 +211,7 @@ export function useDealDragDrop(options: UseDealDragDropOptions = {}) {
       );
 
       let dealName = null;
-      let stageType: 'normal' | 'won' | undefined;
+      let stageType: 'normal' | 'won' | 'lost' | undefined;
 
       if (pipelineData) {
         // Find the deal to get deal name and deal type pipeline stages

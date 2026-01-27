@@ -195,12 +195,14 @@ export interface UpdateDealStageInput {
 export interface CreateMilestoneInput {
   name: string;
   due_date?: string;
+  milestone_type?: string;
 }
 
 export interface UpdateMilestoneInput {
-  name?: string;
-  due_date?: string;
-  status?: 'pending' | 'completed';
+  milestone_name?: string;
+  scheduled_date?: string | null;
+  status?: 'pending' | 'completed' | 'cancelled';
+  completed_date?: string | null;
 }
 
 export interface UploadDocumentInput {

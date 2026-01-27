@@ -95,7 +95,7 @@ export function DealPipelineBoard({ dealTypeId, userId }: DealPipelineBoardProps
     if (terminalStageModal.isClosedLost && (!lostReason.trim() || lostReason.trim().length < 10)) {
       return; // Require reason with minimum 10 characters for lost deals
     }
-    confirmTerminalStage(lostReason);
+    confirmTerminalStage();
     setLostReason('');
   };
 

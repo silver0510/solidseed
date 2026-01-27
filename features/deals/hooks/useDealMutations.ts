@@ -135,6 +135,48 @@ export function useDealMutations(dealId: string) {
     },
   });
 
+  // Update milestone (edit name/date)
+  const updateMilestone = useMutation({
+    mutationFn: async ({ milestoneId, ...input }: UpdateMilestoneInput & { milestoneId: string }) => {
+      const response = await fetch(`/api/deals/${dealId}/milestones/${milestoneId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Failed to update milestone' }));
+        throw new Error(error.message || 'Failed to update milestone');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
+      queryClient.invalidateQueries({ queryKey: dealQueryKeys.activities(dealId) });
+    },
+  });
+
+  // Delete milestone
+  const deleteMilestone = useMutation({
+    mutationFn: async (milestoneId: string) => {
+      const response = await fetch(`/api/deals/${dealId}/milestones/${milestoneId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Failed to delete milestone' }));
+        throw new Error(error.message || 'Failed to delete milestone');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
+      queryClient.invalidateQueries({ queryKey: dealQueryKeys.activities(dealId) });
+    },
+  });
+
   // Upload document
   const uploadDocument = useMutation({
     mutationFn: async ({ file, document_type }: UploadDocumentInput) => {
@@ -227,6 +269,8 @@ export function useDealMutations(dealId: string) {
     changeStage,
     toggleMilestone,
     addMilestone,
+    updateMilestone,
+    deleteMilestone,
     uploadDocument,
     deleteDocument,
     markAsLost,
