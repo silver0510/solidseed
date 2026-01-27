@@ -13,6 +13,7 @@ import type {
   CommissionCalculation,
   ActivityType,
 } from '@/lib/types/deals';
+import { formatActivityMessage, type ActivityMessageOptions } from '@/lib/utils/activityFormatter';
 
 /**
  * Create Supabase admin client with service role key
@@ -358,11 +359,14 @@ export class DealService {
     }
 
     // Log activity
+    const message = formatActivityMessage('other', {
+      dealName: deal.deal_name,
+    });
     await this.logActivity(
       deal.id,
       'other',
-      'Deal Created',
-      `Created deal: ${deal.deal_name}`,
+      message.title,
+      message.description,
       userId
     );
 
@@ -492,11 +496,12 @@ export class DealService {
       throw new Error(`Failed to update deal: ${error.message}`);
     }
 
-    // Log activity
+    // Log activity for field update
+    const message = formatActivityMessage('field_update', {});
     await this.logActivity(
       dealId,
       'field_update',
-      'Deal Updated',
+      message.title,
       `Updated deal fields`,
       userId
     );
@@ -783,11 +788,16 @@ export class DealService {
 
     // Log activity
     if (data && data.length > 0) {
+      const itemNames = checklistItems.map((item: any) => item.milestone_name);
+      const message = formatActivityMessage('other', {
+        itemNames,
+        count: data.length,
+      });
       await this.logActivity(
         dealId,
         'other',
-        `Created ${data.length} checklist items`,
-        `Checklist: ${checklistItems.map(item => item.milestone_name).join(', ')}`,
+        message.title,
+        message.description,
         userId
       );
     }

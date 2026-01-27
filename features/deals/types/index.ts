@@ -143,8 +143,11 @@ export interface DealActivity {
   id: string;
   deal_id: string;
   activity_type: DealActivityType;
-  description: string;
-  metadata: Record<string, any> | null;
+  title: string;
+  description: string | null;
+  old_stage?: string | null;
+  new_stage?: string | null;
+  metadata?: Record<string, any> | null;
   created_at: string;
 }
 

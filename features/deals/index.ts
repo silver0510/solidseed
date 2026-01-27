@@ -78,8 +78,8 @@ export type { OverviewTabProps } from './components/tabs/OverviewTab';
 export { DetailsTab } from './components/tabs/DetailsTab';
 export type { DetailsTabProps } from './components/tabs/DetailsTab';
 
-export { MilestonesTab } from './components/tabs/MilestonesTab';
-export type { MilestonesTabProps } from './components/tabs/MilestonesTab';
+export { ChecklistTab } from './components/tabs/ChecklistTab';
+export type { ChecklistTabProps } from './components/tabs/ChecklistTab';
 
 export { DocumentsTab } from './components/tabs/DocumentsTab';
 export type { DocumentsTabProps } from './components/tabs/DocumentsTab';

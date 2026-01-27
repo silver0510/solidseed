@@ -17,6 +17,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import type { DealDocument, DocumentType } from '@/lib/types/deals';
+import { formatActivityMessage } from '@/lib/utils/activityFormatter';
 
 /** Storage bucket name for deal documents */
 const STORAGE_BUCKET = 'deal-documents';
@@ -150,10 +151,14 @@ export class DealDocumentService {
     }
 
     // Log activity
+    const message = formatActivityMessage('document_upload', {
+      documentName: file.name,
+    });
     await this.logActivity(
       dealId,
       'document_upload',
-      `Uploaded: ${file.name}`,
+      message.title,
+      message.description,
       userId
     );
 
@@ -277,10 +282,14 @@ export class DealDocumentService {
     }
 
     // Log activity
+    const message = formatActivityMessage('document_delete', {
+      documentName: doc.file_name,
+    });
     await this.logActivity(
       dealId,
       'document_delete',
-      `Deleted: ${doc.file_name}`,
+      message.title,
+      message.description,
       userId
     );
   }
@@ -337,6 +346,7 @@ export class DealDocumentService {
     dealId: string,
     activityType: 'document_upload' | 'document_delete',
     title: string,
+    description: string | null,
     userId: string
   ): Promise<void> {
     try {
@@ -346,7 +356,7 @@ export class DealDocumentService {
           deal_id: dealId,
           activity_type: activityType,
           title,
-          description: null,
+          description,
           created_by: userId,
         });
     } catch (error) {

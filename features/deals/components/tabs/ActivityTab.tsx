@@ -21,6 +21,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  PlusCircle,
+  ArrowRightLeft,
+  DollarSign,
+  CheckCircle,
+  Upload,
+  Trash2,
+  StickyNote,
+  Phone,
+  Mail,
+  Users,
+  Home,
+  Edit,
+  Settings,
+} from 'lucide-react';
 import { ACTIVITY_TYPE_LABELS, DEAL_STAGES } from '../../types';
 import type { DealWithRelations, DealActivityType } from '../../types';
 
@@ -28,14 +43,29 @@ export interface ActivityTabProps {
   deal: DealWithRelations;
 }
 
-const ACTIVITY_COLORS: Record<DealActivityType, string> = {
-  created: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-  stage_changed: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-  value_updated: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-  milestone_completed: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
-  document_uploaded: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-  note_added: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
-  field_updated: 'bg-slate-100 text-slate-600 dark:bg-slate-900/30 dark:text-slate-400',
+// Color mapping for all activity types (supports both frontend and backend type names)
+const ACTIVITY_COLORS: Record<string, string> = {
+  // Frontend naming
+  created: 'bg-blue-200 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
+  stage_changed: 'bg-purple-200 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300',
+  value_updated: 'bg-green-200 text-green-700 dark:bg-green-900/50 dark:text-green-300',
+  milestone_completed: 'bg-emerald-200 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
+  document_uploaded: 'bg-amber-200 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
+  note_added: 'bg-indigo-200 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
+  field_updated: 'bg-slate-200 text-slate-700 dark:bg-slate-900/50 dark:text-slate-300',
+
+  // Backend naming (snake_case from database)
+  stage_change: 'bg-purple-200 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300',
+  milestone_complete: 'bg-emerald-200 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
+  document_upload: 'bg-amber-200 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
+  document_delete: 'bg-red-200 text-red-700 dark:bg-red-900/50 dark:text-red-300',
+  field_update: 'bg-slate-200 text-slate-700 dark:bg-slate-900/50 dark:text-slate-300',
+  note: 'bg-indigo-200 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
+  call: 'bg-cyan-200 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300',
+  email: 'bg-sky-200 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300',
+  meeting: 'bg-violet-200 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300',
+  showing: 'bg-pink-200 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
+  other: 'bg-gray-200 text-gray-700 dark:bg-gray-900/50 dark:text-gray-300',
 };
 
 export function ActivityTab({ deal }: ActivityTabProps) {
@@ -67,99 +97,91 @@ export function ActivityTab({ deal }: ActivityTabProps) {
     });
   };
 
-  const getActivityIcon = (type: DealActivityType) => {
+  const getActivityIcon = (type: string) => {
+    // Handle both frontend and backend activity type names
     switch (type) {
       case 'created':
-        return (
-          <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        );
+        return <PlusCircle className="w-5 h-5" />;
+
       case 'stage_changed':
-        return (
-          <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
-            />
-          </svg>
-        );
+      case 'stage_change':
+        return <ArrowRightLeft className="w-5 h-5" />;
+
       case 'value_updated':
-        return (
-          <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        );
+        return <DollarSign className="w-5 h-5" />;
+
       case 'milestone_completed':
-        return (
-          <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        );
+      case 'milestone_complete':
+        return <CheckCircle className="w-5 h-5" />;
+
       case 'document_uploaded':
-        return (
-          <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-            />
-          </svg>
-        );
+      case 'document_upload':
+        return <Upload className="w-5 h-5" />;
+
+      case 'document_delete':
+        return <Trash2 className="w-5 h-5" />;
+
       case 'note_added':
-        return (
-          <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-            />
-          </svg>
-        );
+      case 'note':
+        return <StickyNote className="w-5 h-5" />;
+
+      case 'call':
+        return <Phone className="w-5 h-5" />;
+
+      case 'email':
+        return <Mail className="w-5 h-5" />;
+
+      case 'meeting':
+        return <Users className="w-5 h-5" />;
+
+      case 'showing':
+        return <Home className="w-5 h-5" />;
+
       case 'field_updated':
-        return (
-          <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
-            />
-          </svg>
-        );
+      case 'field_update':
+        return <Edit className="w-5 h-5" />;
+
+      case 'other':
+      default:
+        return <Settings className="w-5 h-5" />;
     }
   };
 
   const renderActivityDescription = (activity: typeof filteredActivities[0]) => {
-    if (activity.activity_type === 'stage_changed' && activity.metadata) {
-      const { old_stage, new_stage } = activity.metadata;
-      return (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span>Stage changed from</span>
-          <Badge variant="secondary" className="text-xs">
-            {DEAL_STAGES[old_stage as keyof typeof DEAL_STAGES]?.name || old_stage}
-          </Badge>
-          <span>to</span>
-          <Badge variant="secondary" className="text-xs">
-            {DEAL_STAGES[new_stage as keyof typeof DEAL_STAGES]?.name || new_stage}
-          </Badge>
-        </div>
-      );
+    // Stage changes show old → new with badges
+    if (activity.activity_type === 'stage_changed') {
+      // Try to get stages from old_stage/new_stage fields first
+      const oldStage = (activity as any).old_stage;
+      const newStage = (activity as any).new_stage;
+
+      if (oldStage && newStage) {
+        return (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span>Moved from</span>
+            <Badge variant="secondary" className="text-xs">
+              {DEAL_STAGES[oldStage as keyof typeof DEAL_STAGES]?.name || oldStage}
+            </Badge>
+            <span>to</span>
+            <Badge variant="secondary" className="text-xs">
+              {DEAL_STAGES[newStage as keyof typeof DEAL_STAGES]?.name || newStage}
+            </Badge>
+          </div>
+        );
+      }
+
+      // Fallback to description if no stage fields
+      if (activity.description) {
+        return <span className="text-sm">{activity.description}</span>;
+      }
     }
 
-    return <span>{activity.description}</span>;
+    // For all other activities, show description if available
+    if (activity.description) {
+      return <span className="text-sm">{activity.description}</span>;
+    }
+
+    // No description available
+    return null;
   };
 
   return (
@@ -203,44 +225,68 @@ export function ActivityTab({ deal }: ActivityTabProps) {
         </Card>
       ) : (
         <div className="relative">
-          {/* Timeline Line */}
-          <div className="absolute left-6 top-8 bottom-8 w-0.5 bg-border" />
+          {/* Timeline */}
+          <div className="space-y-0">
+            {filteredActivities.map((activity, index) => {
+              const isLast = index === filteredActivities.length - 1;
 
-          {/* Activity Items */}
-          <div className="space-y-4">
-            {filteredActivities.map((activity) => (
-              <div key={activity.id} className="relative pl-14">
-                {/* Activity Icon */}
-                <div
-                  className={`absolute left-0 top-2 h-12 w-12 rounded-full flex items-center justify-center ${
-                    ACTIVITY_COLORS[activity.activity_type]
-                  }`}
-                >
-                  <div className="h-6 w-6">{getActivityIcon(activity.activity_type)}</div>
-                </div>
+              return (
+                <div key={activity.id} className="relative flex gap-4">
+                  {/* Time */}
+                  <div className="text-xs text-muted-foreground whitespace-nowrap pt-0.5 w-16 text-right">
+                    {formatDate(activity.created_at)}
+                  </div>
 
-                {/* Activity Card */}
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3">
+                  {/* Timeline Column */}
+                  <div className="flex flex-col items-center relative w-3 pt-0.5">
+                    {/* Timeline Node */}
+                    <div className="relative flex items-center justify-center flex-shrink-0 z-10 mt-0.5">
+                      <div
+                        className={`h-3 w-3 rounded-full border-2 border-background ${
+                          ACTIVITY_COLORS[activity.activity_type]?.split(' ')[0] || 'bg-gray-100'
+                        }`}
+                      />
+                    </div>
+
+                    {/* Timeline Line - Connects from current dot to next dot */}
+                    {!isLast && (
+                      <div className="w-0.5 flex-1 bg-muted-foreground" style={{ minHeight: '2rem' }} />
+                    )}
+                  </div>
+
+                  {/* Content Column */}
+                  <div className="flex-1 -mt-0.5 pb-8">
+                    {/* Activity Header */}
+                    <div className="flex items-start gap-3 mb-2">
+                      {/* Icon */}
+                      <div
+                        className={`flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center ${
+                          ACTIVITY_COLORS[activity.activity_type] || 'bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400'
+                        }`}
+                      >
+                        <div className="h-5 w-5">{getActivityIcon(activity.activity_type)}</div>
+                      </div>
+
+                      {/* Title and Badge */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="font-medium">
-                            {ACTIVITY_TYPE_LABELS[activity.activity_type]}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-sm">
+                            {(activity as any).title || ACTIVITY_TYPE_LABELS[activity.activity_type]}
                           </span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDate(activity.created_at)}
-                          </span>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {renderActivityDescription(activity)}
                         </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            ))}
+
+                    {/* Description */}
+                    {renderActivityDescription(activity) && (
+                      <div className="ml-[52px] text-sm text-muted-foreground">
+                        {renderActivityDescription(activity)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
