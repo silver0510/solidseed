@@ -366,6 +366,9 @@ export class DealService {
       userId
     );
 
+    // Auto-generate checklist items from user's template
+    await this.createChecklistFromTemplate(deal.id, data.deal_type_id, userId, data.expected_close_date);
+
     return deal as Deal;
   }
 
@@ -384,7 +387,7 @@ export class DealService {
         *,
         deal_type:deal_types(*),
         client:clients(id, name, email),
-        milestones:deal_milestones(*),
+        milestones:deal_checklist_items(*),
         documents:deal_documents(*),
         activities:deal_activities(*)
       `)
@@ -571,20 +574,9 @@ export class DealService {
       newStage
     );
 
-    // Auto-create milestones for trigger stages
-    let milestonesCreated = 0;
-    const triggerStages: Record<string, string> = {
-      'residential_sale': 'contract',
-      'mortgage': 'application',
-    };
-
-    if (triggerStages[dealType.type_code] === newStage) {
-      milestonesCreated = await this.createDefaultMilestones(dealId, dealType, userId, deal.expected_close_date);
-    }
-
     return {
       deal: updatedDeal as Deal,
-      milestones_created: milestonesCreated,
+      milestones_created: 0, // Checklist items are only created at deal creation
     };
   }
 
@@ -748,7 +740,63 @@ export class DealService {
   }
 
   /**
-   * Create default milestones from deal type template
+   * Create checklist items from user's template for a specific deal type
+   */
+  private async createChecklistFromTemplate(
+    dealId: string,
+    dealTypeId: string,
+    userId: string,
+    baseDate?: string | null
+  ): Promise<number> {
+    // Fetch user's checklist template for this deal type
+    const { data: setting, error: settingError } = await this.supabase
+      .from('user_deal_type_settings')
+      .select('checklist_template')
+      .eq('user_id', userId)
+      .eq('deal_type_id', dealTypeId)
+      .single();
+
+    // If no user template exists or error, skip checklist creation
+    if (settingError || !setting || !setting.checklist_template || setting.checklist_template.length === 0) {
+      console.log('No checklist template found for user and deal type');
+      return 0;
+    }
+
+    // Create checklist items from template
+    const checklistItems = setting.checklist_template.map((template: any) => ({
+      deal_id: dealId,
+      milestone_name: template.name,
+      scheduled_date: template.scheduled_date || null,
+      status: 'pending' as const,
+      created_by: userId,
+    }));
+
+    const { data, error } = await this.supabase
+      .from('deal_checklist_items')
+      .insert(checklistItems)
+      .select();
+
+    if (error) {
+      console.error('Failed to create checklist items:', error);
+      return 0;
+    }
+
+    // Log activity
+    if (data && data.length > 0) {
+      await this.logActivity(
+        dealId,
+        'other',
+        `Created ${data.length} checklist items`,
+        `Checklist: ${checklistItems.map(item => item.milestone_name).join(', ')}`,
+        userId
+      );
+    }
+
+    return data?.length || 0;
+  }
+
+  /**
+   * Create default milestones from deal type template (DEPRECATED - kept for backwards compatibility)
    */
   private async createDefaultMilestones(
     dealId: string,
@@ -762,7 +810,6 @@ export class DealService {
 
     const milestones = dealType.default_milestones.map(template => ({
       deal_id: dealId,
-      milestone_type: template.type,
       milestone_name: template.name,
       scheduled_date: this.calculateMilestoneDate(template.days_offset, baseDate),
       status: 'pending' as const,
@@ -770,7 +817,7 @@ export class DealService {
     }));
 
     const { data, error } = await this.supabase
-      .from('deal_milestones')
+      .from('deal_checklist_items')
       .insert(milestones)
       .select();
 
@@ -792,11 +839,11 @@ export class DealService {
   }
 
   /**
-   * Cancel all uncompleted milestones when deal is lost
+   * Cancel all uncompleted checklist items when deal is lost
    */
   private async cancelUncompletedMilestones(dealId: string, userId: string): Promise<void> {
     const { error } = await this.supabase
-      .from('deal_milestones')
+      .from('deal_checklist_items')
       .update({
         status: 'cancelled',
         updated_at: new Date().toISOString(),
@@ -805,15 +852,15 @@ export class DealService {
       .eq('status', 'pending');
 
     if (error) {
-      console.error('Failed to cancel milestones:', error);
-      // Don't throw error - milestone cancellation is not critical to deal loss
+      console.error('Failed to cancel checklist items:', error);
+      // Don't throw error - checklist cancellation is not critical to deal loss
     }
 
     // Log activity
     await this.logActivity(
       dealId,
       'other',
-      'Cancelled uncompleted milestones',
+      'Cancelled uncompleted checklist items',
       'Deal was marked as lost',
       userId
     );

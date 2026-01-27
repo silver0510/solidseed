@@ -1,10 +1,10 @@
 /**
- * API Route: /api/deals/[id]/milestones/[milestoneId]
+ * API Route: /api/deals/[id]/checklist/[checklistId]
  *
- * Manage individual milestones
+ * Manage individual checklist items
  *
- * PATCH - Update milestone status/completion/name/date
- * DELETE - Delete milestone
+ * PATCH - Update checklist item status/completion/name/date
+ * DELETE - Delete checklist item
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -12,8 +12,8 @@ import { getSessionUser } from '@/lib/auth/session';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
-// Validation schema for updating milestones
-const updateMilestoneSchema = z.object({
+// Validation schema for updating checklist items
+const updateChecklistItemSchema = z.object({
   status: z.enum(['pending', 'completed', 'cancelled']).optional(),
   completed_date: z.string().nullable().optional(),
   milestone_name: z.string().min(1).max(255).optional(),
@@ -21,26 +21,26 @@ const updateMilestoneSchema = z.object({
 });
 
 /**
- * PATCH /api/deals/[id]/milestones/[milestoneId]
+ * PATCH /api/deals/[id]/checklist/[checklistId]
  *
- * Update milestone status or completion
+ * Update checklist item status or completion
  *
  * Request body:
  * - status: string (optional) - One of: pending, completed, cancelled
  * - completed_date: string | null (optional) - ISO datetime when completed
- * - milestone_name: string (optional) - New milestone name
+ * - milestone_name: string (optional) - New checklist item name
  * - scheduled_date: string | null (optional) - New due date in YYYY-MM-DD format
  *
  * Response:
- * - 200: Milestone updated successfully
+ * - 200: Checklist item updated successfully
  * - 400: Validation error
  * - 401: Not authenticated
- * - 404: Milestone or deal not found or access denied
+ * - 404: Checklist item or deal not found or access denied
  * - 500: Internal server error
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string; milestoneId: string }> }
+  { params }: { params: Promise<{ id: string; checklistId: string }> }
 ) {
   try {
     // Validate session
@@ -61,8 +61,8 @@ export async function PATCH(
       },
     });
 
-    // Get deal ID and milestone ID from params
-    const { id: dealId, milestoneId } = await params;
+    // Get deal ID and checklist ID from params
+    const { id: dealId, checklistId } = await params;
 
     // Verify deal exists and user has access
     const { data: deal, error: dealError } = await supabase
@@ -78,17 +78,17 @@ export async function PATCH(
       );
     }
 
-    // Verify milestone exists and belongs to this deal
-    const { data: existingMilestone, error: milestoneError } = await supabase
-      .from('deal_milestones')
+    // Verify checklist item exists and belongs to this deal
+    const { data: existingItem, error: itemError } = await supabase
+      .from('deal_checklist_items')
       .select('id, milestone_name, status')
-      .eq('id', milestoneId)
+      .eq('id', checklistId)
       .eq('deal_id', dealId)
       .single();
 
-    if (milestoneError || !existingMilestone) {
+    if (itemError || !existingItem) {
       return NextResponse.json(
-        { error: 'Milestone not found' },
+        { error: 'Checklist item not found' },
         { status: 404 }
       );
     }
@@ -97,7 +97,7 @@ export async function PATCH(
     const body = await request.json();
 
     // Validate input using Zod schema
-    const validatedData = updateMilestoneSchema.parse(body);
+    const validatedData = updateChecklistItemSchema.parse(body);
 
     // Build update object
     const updateData: Record<string, any> = {
@@ -109,31 +109,31 @@ export async function PATCH(
     if (validatedData.milestone_name) updateData.milestone_name = validatedData.milestone_name;
     if (validatedData.scheduled_date !== undefined) updateData.scheduled_date = validatedData.scheduled_date;
 
-    // Update milestone
-    const { data: updatedMilestone, error: updateError } = await supabase
-      .from('deal_milestones')
+    // Update checklist item
+    const { data: updatedItem, error: updateError } = await supabase
+      .from('deal_checklist_items')
       .update(updateData)
-      .eq('id', milestoneId)
+      .eq('id', checklistId)
       .select()
       .single();
 
     if (updateError) {
-      console.error('Failed to update milestone:', updateError);
+      console.error('Failed to update checklist item:', updateError);
       return NextResponse.json(
-        { error: 'Failed to update milestone' },
+        { error: 'Failed to update checklist item' },
         { status: 500 }
       );
     }
 
     // Log activity if status changed to completed
-    if (validatedData.status === 'completed' && existingMilestone.status !== 'completed') {
+    if (validatedData.status === 'completed' && existingItem.status !== 'completed') {
       await supabase
         .from('deal_activities')
         .insert({
           deal_id: dealId,
           activity_type: 'milestone_complete',
-          title: 'Milestone Completed',
-          description: `Completed milestone: ${existingMilestone.milestone_name}`,
+          title: 'Checklist Item Completed',
+          description: `Completed checklist item: ${existingItem.milestone_name}`,
           created_by: user.id,
         });
     }
@@ -141,7 +141,7 @@ export async function PATCH(
     return NextResponse.json(
       {
         success: true,
-        data: updatedMilestone,
+        data: updatedItem,
       },
       { status: 200 }
     );
@@ -172,20 +172,19 @@ export async function PATCH(
 }
 
 /**
- * DELETE /api/deals/[id]/milestones/[milestoneId]
+ * DELETE /api/deals/[id]/checklist/[checklistId]
  *
- * Delete a milestone
+ * Delete a checklist item
  *
  * Response:
- * - 200: Milestone deleted successfully
+ * - 200: Checklist item deleted successfully
  * - 401: Not authenticated
- * - 403: Cannot delete system milestones
- * - 404: Milestone or deal not found or access denied
+ * - 404: Checklist item or deal not found or access denied
  * - 500: Internal server error
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string; milestoneId: string }> }
+  { params }: { params: Promise<{ id: string; checklistId: string }> }
 ) {
   try {
     // Validate session
@@ -206,8 +205,8 @@ export async function DELETE(
       },
     });
 
-    // Get deal ID and milestone ID from params
-    const { id: dealId, milestoneId } = await params;
+    // Get deal ID and checklist ID from params
+    const { id: dealId, checklistId } = await params;
 
     // Verify deal exists and user has access
     const { data: deal, error: dealError } = await supabase
@@ -223,39 +222,31 @@ export async function DELETE(
       );
     }
 
-    // Verify milestone exists and belongs to this deal
-    const { data: existingMilestone, error: milestoneError } = await supabase
-      .from('deal_milestones')
-      .select('id, milestone_name, milestone_type')
-      .eq('id', milestoneId)
+    // Verify checklist item exists and belongs to this deal
+    const { data: existingItem, error: itemError } = await supabase
+      .from('deal_checklist_items')
+      .select('id, milestone_name')
+      .eq('id', checklistId)
       .eq('deal_id', dealId)
       .single();
 
-    if (milestoneError || !existingMilestone) {
+    if (itemError || !existingItem) {
       return NextResponse.json(
-        { error: 'Milestone not found' },
+        { error: 'Checklist item not found' },
         { status: 404 }
       );
     }
 
-    // Prevent deletion of system milestones (optional - uncomment if needed)
-    // if (existingMilestone.milestone_type !== 'custom') {
-    //   return NextResponse.json(
-    //     { error: 'Cannot delete system milestones' },
-    //     { status: 403 }
-    //   );
-    // }
-
-    // Delete milestone
+    // Delete checklist item
     const { error: deleteError } = await supabase
-      .from('deal_milestones')
+      .from('deal_checklist_items')
       .delete()
-      .eq('id', milestoneId);
+      .eq('id', checklistId);
 
     if (deleteError) {
-      console.error('Failed to delete milestone:', deleteError);
+      console.error('Failed to delete checklist item:', deleteError);
       return NextResponse.json(
-        { error: 'Failed to delete milestone' },
+        { error: 'Failed to delete checklist item' },
         { status: 500 }
       );
     }
@@ -266,15 +257,15 @@ export async function DELETE(
       .insert({
         deal_id: dealId,
         activity_type: 'other',
-        title: 'Milestone Deleted',
-        description: `Deleted milestone: ${existingMilestone.milestone_name}`,
+        title: 'Checklist Item Deleted',
+        description: `Deleted checklist item: ${existingItem.milestone_name}`,
         created_by: user.id,
       });
 
     return NextResponse.json(
       {
         success: true,
-        message: 'Milestone deleted successfully',
+        message: 'Checklist item deleted successfully',
       },
       { status: 200 }
     );

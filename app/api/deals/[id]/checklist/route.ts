@@ -1,9 +1,9 @@
 /**
- * API Route: /api/deals/[id]/milestones
+ * API Route: /api/deals/[id]/checklist
  *
- * Manage deal milestones
+ * Manage deal checklist items
  *
- * POST - Create a new milestone
+ * POST - Create a new checklist item
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -11,38 +11,23 @@ import { getSessionUser } from '@/lib/auth/session';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
-// Valid milestone types
-const VALID_MILESTONE_TYPES = [
-  'custom',
-  'inspection',
-  'appraisal',
-  'financing_approval',
-  'final_walkthrough',
-  'closing',
-  'title_search',
-  'survey',
-  'insurance',
-] as const;
-
-// Validation schema for creating milestones
-const createMilestoneSchema = z.object({
-  name: z.string().min(1, 'Milestone name is required').max(255, 'Name must be less than 255 characters'),
-  due_date: z.string().optional(),
-  milestone_type: z.enum(VALID_MILESTONE_TYPES).optional().default('custom'),
+// Validation schema for creating checklist items
+const createChecklistItemSchema = z.object({
+  name: z.string().min(1, 'Checklist item name is required').max(255, 'Name must be less than 255 characters'),
+  due_date: z.string().optional().nullable(),
 });
 
 /**
- * POST /api/deals/[id]/milestones
+ * POST /api/deals/[id]/checklist
  *
- * Create a new milestone for the deal
+ * Create a new checklist item for the deal
  *
  * Request body:
- * - name: string (required) - Milestone name (max 255 chars)
- * - due_date: string (optional) - Due date in YYYY-MM-DD format
- * - milestone_type: string (optional) - Milestone type (defaults to 'custom')
+ * - name: string (required) - Checklist item name (max 255 chars)
+ * - due_date: string (optional/nullable) - Due date in YYYY-MM-DD format
  *
  * Response:
- * - 201: Milestone created successfully
+ * - 201: Checklist item created successfully
  * - 400: Validation error
  * - 401: Not authenticated
  * - 404: Deal not found or access denied
@@ -92,14 +77,13 @@ export async function POST(
     const body = await request.json();
 
     // Validate input using Zod schema
-    const validatedData = createMilestoneSchema.parse(body);
+    const validatedData = createChecklistItemSchema.parse(body);
 
-    // Create milestone
-    const { data: milestone, error: insertError } = await supabase
-      .from('deal_milestones')
+    // Create checklist item
+    const { data: checklistItem, error: insertError } = await supabase
+      .from('deal_checklist_items')
       .insert({
         deal_id: dealId,
-        milestone_type: validatedData.milestone_type,
         milestone_name: validatedData.name,
         scheduled_date: validatedData.due_date || null,
         status: 'pending',
@@ -109,9 +93,9 @@ export async function POST(
       .single();
 
     if (insertError) {
-      console.error('Failed to create milestone:', insertError);
+      console.error('Failed to create checklist item:', insertError);
       return NextResponse.json(
-        { error: 'Failed to create milestone' },
+        { error: 'Failed to create checklist item' },
         { status: 500 }
       );
     }
@@ -122,15 +106,15 @@ export async function POST(
       .insert({
         deal_id: dealId,
         activity_type: 'other',
-        title: 'Milestone Added',
-        description: `Added milestone: ${validatedData.name}`,
+        title: 'Checklist Item Added',
+        description: `Added checklist item: ${validatedData.name}`,
         created_by: user.id,
       });
 
     return NextResponse.json(
       {
         success: true,
-        data: milestone,
+        data: checklistItem,
       },
       { status: 201 }
     );

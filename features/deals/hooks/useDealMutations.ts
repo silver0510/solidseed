@@ -1,7 +1,7 @@
 /**
  * useDealMutations Hook
  *
- * Provides mutations for updating deals, changing stages, managing milestones,
+ * Provides mutations for updating deals, changing stages, managing checklist items,
  * uploading documents, and logging activities with optimistic updates.
  */
 
@@ -89,10 +89,10 @@ export function useDealMutations(dealId: string) {
     },
   });
 
-  // Toggle milestone completion
+  // Toggle checklist item completion
   const toggleMilestone = useMutation({
     mutationFn: async ({ milestoneId, completed }: { milestoneId: string; completed: boolean }) => {
-      const response = await fetch(`/api/deals/${dealId}/milestones/${milestoneId}`, {
+      const response = await fetch(`/api/deals/${dealId}/checklist/${milestoneId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -102,8 +102,8 @@ export function useDealMutations(dealId: string) {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to update milestone' }));
-        throw new Error(error.message || 'Failed to update milestone');
+        const error = await response.json().catch(() => ({ message: 'Failed to update checklist item' }));
+        throw new Error(error.message || 'Failed to update checklist item');
       }
 
       return response.json();
@@ -114,18 +114,18 @@ export function useDealMutations(dealId: string) {
     },
   });
 
-  // Add new milestone
+  // Add new checklist item
   const addMilestone = useMutation({
     mutationFn: async (input: CreateMilestoneInput) => {
-      const response = await fetch(`/api/deals/${dealId}/milestones`, {
+      const response = await fetch(`/api/deals/${dealId}/checklist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to add milestone' }));
-        throw new Error(error.message || 'Failed to add milestone');
+        const error = await response.json().catch(() => ({ message: 'Failed to add checklist item' }));
+        throw new Error(error.message || 'Failed to add checklist item');
       }
 
       return response.json();
@@ -135,18 +135,18 @@ export function useDealMutations(dealId: string) {
     },
   });
 
-  // Update milestone (edit name/date)
+  // Update checklist item (edit name/date)
   const updateMilestone = useMutation({
     mutationFn: async ({ milestoneId, ...input }: UpdateMilestoneInput & { milestoneId: string }) => {
-      const response = await fetch(`/api/deals/${dealId}/milestones/${milestoneId}`, {
+      const response = await fetch(`/api/deals/${dealId}/checklist/${milestoneId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to update milestone' }));
-        throw new Error(error.message || 'Failed to update milestone');
+        const error = await response.json().catch(() => ({ message: 'Failed to update checklist item' }));
+        throw new Error(error.message || 'Failed to update checklist item');
       }
 
       return response.json();
@@ -157,16 +157,16 @@ export function useDealMutations(dealId: string) {
     },
   });
 
-  // Delete milestone
+  // Delete checklist item
   const deleteMilestone = useMutation({
     mutationFn: async (milestoneId: string) => {
-      const response = await fetch(`/api/deals/${dealId}/milestones/${milestoneId}`, {
+      const response = await fetch(`/api/deals/${dealId}/checklist/${milestoneId}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to delete milestone' }));
-        throw new Error(error.message || 'Failed to delete milestone');
+        const error = await response.json().catch(() => ({ message: 'Failed to delete checklist item' }));
+        throw new Error(error.message || 'Failed to delete checklist item');
       }
 
       return response.json();

@@ -40,6 +40,7 @@ export function Header({ onMenuClick, onToggleCollapse, isCollapsed }: HeaderPro
   const pathname = usePathname();
   const pageTitle = getPageTitle(pathname);
   const isClientsPage = pathname === '/clients' || pathname.startsWith('/clients/');
+  const isDealsPage = pathname === '/deals' || pathname.startsWith('/deals/');
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4 lg:px-6">
@@ -81,6 +82,18 @@ export function Header({ onMenuClick, onToggleCollapse, isCollapsed }: HeaderPro
             <Button variant="outline" size="sm" className="h-8">
               <SettingsIcon className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Client Settings</span>
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {/* Deal Settings button - shown only on deals page */}
+      {isDealsPage && (
+        <div className="ml-auto">
+          <Link href="/settings/deals">
+            <Button variant="outline" size="sm" className="h-8">
+              <SettingsIcon className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Deal Settings</span>
             </Button>
           </Link>
         </div>

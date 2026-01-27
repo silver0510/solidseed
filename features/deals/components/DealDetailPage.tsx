@@ -4,7 +4,7 @@
  * Main deal detail page with 5 tabs:
  * - Overview: Stage progress, financials, key dates
  * - Details: Dynamic form based on deal type
- * - Milestones: Timeline with completion toggles
+ * - Checklist: Track key tasks and milestones
  * - Documents: Upload and list documents
  * - Activity: Activity feed
  */
@@ -19,7 +19,7 @@ import { SectionLoader } from '@/components/ui/SuspenseLoader';
 import { useDealDetail } from '../hooks/useDealDetail';
 import { OverviewTab } from './tabs/OverviewTab';
 import { DetailsTab } from './tabs/DetailsTab';
-import { MilestonesTab } from './tabs/MilestonesTab';
+import { ChecklistTab } from './tabs/ChecklistTab';
 import { DocumentsTab } from './tabs/DocumentsTab';
 import { ActivityTab } from './tabs/ActivityTab';
 
@@ -79,8 +79,8 @@ export function DealDetailPage({ dealId }: DealDetailPageProps) {
           <TabsTrigger value="details" className="flex-1 sm:flex-none">
             Details
           </TabsTrigger>
-          <TabsTrigger value="milestones" className="flex-1 sm:flex-none">
-            Milestones
+          <TabsTrigger value="checklist" className="flex-1 sm:flex-none">
+            Checklist
           </TabsTrigger>
           <TabsTrigger value="documents" className="flex-1 sm:flex-none">
             Documents
@@ -102,9 +102,9 @@ export function DealDetailPage({ dealId }: DealDetailPageProps) {
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="milestones" className="mt-4">
-          <Suspense fallback={<SectionLoader message="Loading milestones..." />}>
-            <MilestonesTab deal={deal} />
+        <TabsContent value="checklist" className="mt-4">
+          <Suspense fallback={<SectionLoader message="Loading checklist..." />}>
+            <ChecklistTab deal={deal} />
           </Suspense>
         </TabsContent>
 
