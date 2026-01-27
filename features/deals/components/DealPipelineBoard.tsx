@@ -152,7 +152,7 @@ export function DealPipelineBoard({ dealTypeId, userId }: DealPipelineBoardProps
   if (totalDeals === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No deals found. Try adjusting your filters.
+        No deals found.
       </div>
     );
   }

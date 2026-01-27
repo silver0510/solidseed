@@ -9,7 +9,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -33,6 +33,7 @@ import {
 import { useDealMutations } from '../../hooks/useDealMutations';
 import type { DealWithRelations } from '../../types';
 import { DealStagePipeline } from '../DealStagePipeline';
+import { getDaysInPipeline } from '@/lib/utils/formatters';
 
 export interface OverviewTabProps {
   deal: DealWithRelations;
@@ -50,16 +51,12 @@ export function OverviewTab({ deal }: OverviewTabProps) {
     newStage: null,
   });
   const [lostReason, setLostReason] = useState('');
-  const [currentTime, setCurrentTime] = useState(() => Date.now());
   const { changeStage, markAsLost } = useDealMutations(deal.id);
 
   // Use pipeline stages from deal type if available
   const pipelineStages = deal.deal_type?.pipeline_stages || [];
 
-  const daysInPipeline = useMemo(() => {
-    if (!deal.created_at) return 0;
-    return Math.floor((currentTime - new Date(deal.created_at).getTime()) / (1000 * 60 * 60 * 24));
-  }, [deal.created_at, currentTime]);
+  const daysInPipeline = deal.created_at ? getDaysInPipeline(deal.created_at) : 0;
 
   const handleChangeStage = async () => {
     // Check if new stage is terminal "won" stage

@@ -310,7 +310,7 @@ export function DealListView({ dealTypeId }: DealListViewProps) {
   if (deals.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No deals found. Try adjusting your filters.
+        No deals found.
       </div>
     );
   }
