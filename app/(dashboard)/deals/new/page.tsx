@@ -57,7 +57,7 @@ const MORTGAGE_FIELD_ORDER = [
 ];
 
 // Fields that should be required for mortgage (override database config)
-const MORTGAGE_REQUIRED_FIELDS = ['loan_type', 'loan_purpose', 'purchase_price', 'down_payment'];
+const MORTGAGE_REQUIRED_FIELDS = ['loan_type', 'loan_purpose', 'purchase_price', 'down_payment', 'loan_amount'];
 
 // Field config type for enabled fields
 interface FieldConfig {
@@ -95,10 +95,6 @@ const isFieldRequired = (
 ): boolean => {
   if (dealTypeCode === 'mortgage' && MORTGAGE_REQUIRED_FIELDS.includes(fieldName)) {
     return true;
-  }
-  // For loan_amount in mortgage, it's not required (auto-calculated)
-  if (dealTypeCode === 'mortgage' && fieldName === 'loan_amount') {
-    return false;
   }
   return fieldConfig?.required || false;
 };
