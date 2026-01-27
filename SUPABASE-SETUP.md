@@ -119,15 +119,34 @@ RLS policies are automatically created by migrations, but verify they're enabled
 
 ## Storage Configuration
 
-### 1. Create Storage Bucket
+### 1. Create Storage Buckets
+
+The project uses three storage buckets for different purposes:
+
+#### Bucket 1: `avatar` (User Profile Pictures)
 
 1. **Navigate to Storage**
    - Supabase Dashboard → Storage
    - Click "New bucket"
 
 2. **Configure Bucket Settings**
+   - Name: `avatar`
+   - Public bucket: **ON** (checked - avatars are publicly accessible)
+   - File size limit: `5242880` (5MB in bytes)
+   - Allowed MIME types:
+     ```
+     image/jpeg
+     image/png
+     image/webp
+     ```
+
+3. **Click "Create bucket"**
+
+#### Bucket 2: `client-documents` (Client Hub Documents)
+
+1. **Create New Bucket**
    - Name: `client-documents`
-   - Public bucket: **OFF** (unchecked)
+   - Public bucket: **OFF** (unchecked - private documents)
    - File size limit: `10485760` (10MB in bytes)
    - Allowed MIME types:
      ```
@@ -138,70 +157,83 @@ RLS policies are automatically created by migrations, but verify they're enabled
      image/png
      ```
 
-3. **Click "Create bucket"**
+2. **Click "Create bucket"**
+
+#### Bucket 3: `deal-documents` (Deal Management Documents)
+
+1. **Create New Bucket**
+   - Name: `deal-documents`
+   - Public bucket: **OFF** (unchecked - private documents)
+   - File size limit: `26214400` (25MB in bytes)
+   - Allowed MIME types:
+     ```
+     application/pdf
+     application/msword
+     application/vnd.openxmlformats-officedocument.wordprocessingml.document
+     application/vnd.ms-excel
+     application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+     image/jpeg
+     image/png
+     ```
+
+2. **Click "Create bucket"**
 
 ### 2. Configure Storage RLS Policies
 
-1. **Navigate to Storage Policies**
-   - Storage → Policies
-   - Select `client-documents` bucket
+**IMPORTANT**: Since this project uses **Better Auth** instead of Supabase Auth, the standard `auth.uid()` RLS policies **will not work**. Better Auth does not populate Supabase's auth context.
 
-2. **Add Storage Policies**
+#### For Development/Testing
 
-Open SQL Editor (Database → SQL Editor) and run:
+**Option 1: No RLS Policies (Recommended for Better Auth)**
 
-```sql
--- Policy: Users can upload documents for their clients
-CREATE POLICY "Users can upload documents for their clients"
-ON storage.objects FOR INSERT
-WITH CHECK (
-  bucket_id = 'client-documents' AND
-  EXISTS (
-    SELECT 1 FROM clients
-    WHERE clients.id = (storage.foldername(name))[1]::uuid
-    AND clients.assigned_to = auth.uid()
-    AND clients.is_deleted = FALSE
-  )
-);
+Since authorization is handled in the application code (API routes check user sessions and ownership), you can run the storage buckets without RLS policies:
 
--- Policy: Users can read documents for their clients
-CREATE POLICY "Users can read documents for their clients"
-ON storage.objects FOR SELECT
-USING (
-  bucket_id = 'client-documents' AND
-  EXISTS (
-    SELECT 1 FROM clients
-    WHERE clients.id = (storage.foldername(name))[1]::uuid
-    AND clients.assigned_to = auth.uid()
-    AND clients.is_deleted = FALSE
-  )
-);
+1. Go to Storage → Select each bucket (`client-documents`, `deal-documents`)
+2. Navigate to Policies tab
+3. Ensure no policies exist (delete any auto-created policies)
 
--- Policy: Users can delete documents for their clients
-CREATE POLICY "Users can delete documents for their clients"
-ON storage.objects FOR DELETE
-USING (
-  bucket_id = 'client-documents' AND
-  EXISTS (
-    SELECT 1 FROM clients
-    WHERE clients.id = (storage.foldername(name))[1]::uuid
-    AND clients.assigned_to = auth.uid()
-  )
-);
-```
+The application uses:
+- **Service Role Key** for storage operations (bypasses RLS)
+- **Session validation** in API routes (checks user authentication)
+- **Ownership checks** in service layer (verifies user owns the resource)
 
-**Note**: The folder name is cast to UUID (`::uuid`) to match the `clients.id` column type.
+#### For Production (Optional: Service Role Policies)
 
-### 3. Verify Storage Policies
+If you want to add an extra layer of security, you can create policies that check against your `users` table, but these require custom auth context setup with Better Auth, which is beyond the basic configuration.
 
-```sql
--- Check storage policies
-SELECT * FROM pg_policies
-WHERE schemaname = 'storage'
-AND tablename = 'objects';
-```
+#### Avatar Bucket (Public)
 
-Expected output: 3 policies for `client-documents` bucket.
+The `avatar` bucket is public, so no RLS policies are needed:
+
+1. Users can upload their own avatars (validated in API)
+2. Anyone can view avatars (public URLs)
+3. Only the owner can update/delete (validated in API)
+
+### 3. Verify Storage Setup
+
+Check that all buckets are created correctly:
+
+1. **Navigate to Storage**
+   - Supabase Dashboard → Storage
+   - Verify all three buckets exist:
+     - ✅ `avatar` (public)
+     - ✅ `client-documents` (private)
+     - ✅ `deal-documents` (private)
+
+2. **Test Upload (Optional)**
+   - Use the application to upload a document
+   - Verify it appears in the correct bucket
+   - Check that download URLs work
+
+3. **Verify No Conflicting Policies**
+   ```sql
+   -- Check if any RLS policies exist on storage.objects
+   SELECT * FROM pg_policies
+   WHERE schemaname = 'storage'
+   AND tablename = 'objects';
+   ```
+
+   Expected output: Empty (no policies for Better Auth setup)
 
 ## Authentication Configuration
 
@@ -357,24 +389,37 @@ supabase db reset --linked
 
 ### Storage Issues
 
+**Error: "Bucket not found"**
+
+- Verify bucket exists in Supabase Dashboard → Storage
+- Check bucket name matches exactly (case-sensitive):
+  - `avatar`, `client-documents`, `deal-documents`
+- Ensure `SUPABASE_SERVICE_ROLE_KEY` is set correctly in `.env.local`
+
 **Error: "new row violates row-level security policy"**
 
-- Verify RLS policies are created correctly
-- Check `auth.uid()` comparison uses UUID (no text cast needed)
-- Test with authenticated user session
+- This error occurs if RLS policies exist on storage buckets
+- For Better Auth setup, **delete all storage RLS policies**
+- Go to Storage → Select bucket → Policies → Delete all policies
+- Application handles authorization in API routes
 
 **Files not uploading**
 
-- Check bucket exists and is private
-- Verify MIME types are allowed
-- Check file size is under 10MB
-- Test storage policies with SQL:
-  ```sql
-  -- Test if user can access client
-  SELECT * FROM clients
-  WHERE assigned_to = 'your-user-id'
-  AND is_deleted = FALSE;
-  ```
+- Check bucket exists with correct name
+- Verify MIME type is allowed (see bucket configuration above)
+- Check file size limits:
+  - `avatar`: 5MB max
+  - `client-documents`: 10MB max
+  - `deal-documents`: 25MB max
+- Verify `SUPABASE_SERVICE_ROLE_KEY` is set (not `SUPABASE_ANON_KEY`)
+- Check browser console and server logs for specific error messages
+
+**Files upload but can't download**
+
+- Verify signed URL generation is working
+- Check file path format: `deals/{dealId}/documents/{fileId}_{filename}`
+- Ensure service role key has read permissions
+- Check that download URL hasn't expired (1 hour default)
 
 ### Connection Issues
 
