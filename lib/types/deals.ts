@@ -30,6 +30,7 @@ export interface PipelineStage {
   code: string;
   name: string;
   order: number;
+  type?: 'normal' | 'won' | 'lost'; // Optional for backward compatibility
 }
 
 // Milestone template from deal type

@@ -9,13 +9,12 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { CheckCircle, XCircle, Flag } from 'lucide-react';
+import { XCircle } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -41,38 +40,80 @@ export interface OverviewTabProps {
 
 export function OverviewTab({ deal }: OverviewTabProps) {
   const [isChangeStageOpen, setIsChangeStageOpen] = useState(false);
-  const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState<string>(deal.current_stage);
-  const [completionOutcome, setCompletionOutcome] = useState<'won' | 'lost'>('won');
+  const [isMarkAsLostOpen, setIsMarkAsLostOpen] = useState(false);
+  const [terminalStageModal, setTerminalStageModal] = useState<{
+    isOpen: boolean;
+    newStage: string | null;
+  }>({
+    isOpen: false,
+    newStage: null,
+  });
   const [lostReason, setLostReason] = useState('');
-  const { changeStage } = useDealMutations(deal.id);
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const { changeStage, markAsLost } = useDealMutations(deal.id);
 
   // Use pipeline stages from deal type if available
   const pipelineStages = deal.deal_type?.pipeline_stages || [];
-  const closedStage = pipelineStages.find(s => s.code === 'closed' || s.code === 'funded');
-  const lostStage = pipelineStages.find(s => s.code === 'lost');
 
-  const daysInPipeline = deal.created_at
-    ? Math.floor((Date.now() - new Date(deal.created_at).getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
+  const daysInPipeline = useMemo(() => {
+    if (!deal.created_at) return 0;
+    return Math.floor((currentTime - new Date(deal.created_at).getTime()) / (1000 * 60 * 60 * 24));
+  }, [deal.created_at, currentTime]);
 
   const handleChangeStage = async () => {
-    await changeStage.mutateAsync({
-      new_stage: selectedStage,
-    });
+    // Check if new stage is terminal "won" stage
+    const currentStageInfo = pipelineStages.find(s => s.code === selectedStage);
+
+    if (!currentStageInfo) {
+      // Stage doesn't exist in this pipeline, shouldn't happen but handle gracefully
+      setIsChangeStageOpen(false);
+      return;
+    }
+
+    // Use type field if available, otherwise fall back to hardcoded logic for backward compatibility
+    const stageType = currentStageInfo.type;
+    const isClosedWon = stageType === 'won' || selectedStage === 'closed' || selectedStage === 'funded';
+
+    // Close the change stage dialog first
     setIsChangeStageOpen(false);
+
+    if (isClosedWon) {
+      // Show terminal stage modal for won deals
+      setTerminalStageModal({
+        isOpen: true,
+        newStage: selectedStage,
+      });
+    } else {
+      // Non-terminal stage, update immediately
+      await changeStage.mutateAsync({ new_stage: selectedStage });
+    }
   };
 
-  const handleCompleteDeal = async () => {
-    if (completionOutcome === 'won' && closedStage) {
-      await changeStage.mutateAsync({ new_stage: closedStage.code });
-    } else if (completionOutcome === 'lost' && lostStage) {
-      await changeStage.mutateAsync({
-        new_stage: lostStage.code,
-        lost_reason: lostReason || 'No reason provided',
-      });
+  const closeTerminalModal = () => {
+    setTerminalStageModal({
+      isOpen: false,
+      newStage: null,
+    });
+  };
+
+  const confirmTerminalStage = async () => {
+    if (!terminalStageModal.newStage) return;
+
+    await changeStage.mutateAsync({
+      new_stage: terminalStageModal.newStage,
+    });
+
+    closeTerminalModal();
+  };
+
+  const handleMarkAsLost = async () => {
+    if (!lostReason.trim() || lostReason.trim().length < 10) {
+      return;
     }
-    setIsCompleteDialogOpen(false);
+
+    await markAsLost.mutateAsync({ lost_reason: lostReason });
+    setIsMarkAsLostOpen(false);
     setLostReason('');
   };
 
@@ -101,13 +142,26 @@ export function OverviewTab({ deal }: OverviewTabProps) {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Deal Stage</CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsChangeStageOpen(true)}
-            >
-              Change Stage
-            </Button>
+            <div className="flex gap-2">
+              {deal.status !== 'closed_won' && deal.status !== 'closed_lost' && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsChangeStageOpen(true)}
+                  >
+                    Change Stage
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setIsMarkAsLostOpen(true)}
+                  >
+                    Mark as Lost
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="pt-4">
@@ -172,17 +226,6 @@ export function OverviewTab({ deal }: OverviewTabProps) {
         </Card>
       </div>
 
-      {/* Complete Deal Button */}
-      {deal.status !== 'closed_won' && deal.status !== 'closed_lost' && (
-        <Button
-          className="w-full bg-primary hover:bg-primary/90"
-          onClick={() => setIsCompleteDialogOpen(true)}
-        >
-          <Flag className="h-4 w-4 mr-2" />
-          Mark Deal as Completed
-        </Button>
-      )}
-
       {/* Lost Reason Display */}
       {deal.status === 'closed_lost' && deal.lost_reason && (
         <Card className="border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
@@ -198,85 +241,6 @@ export function OverviewTab({ deal }: OverviewTabProps) {
         </Card>
       )}
 
-      {/* Complete Deal Dialog */}
-      <Dialog open={isCompleteDialogOpen} onOpenChange={setIsCompleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Complete Deal</DialogTitle>
-            <DialogDescription>
-              Select the outcome for this deal. This action will close the deal and update its status.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <RadioGroup
-              value={completionOutcome}
-              onValueChange={(value) => setCompletionOutcome(value as 'won' | 'lost')}
-              className="grid grid-cols-2 gap-4"
-            >
-              <div>
-                <RadioGroupItem
-                  value="won"
-                  id="outcome-won"
-                  className="peer sr-only"
-                />
-                <Label
-                  htmlFor="outcome-won"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-green-500 peer-data-[state=checked]:bg-green-50 dark:peer-data-[state=checked]:bg-green-950 cursor-pointer"
-                >
-                  <CheckCircle className="mb-2 h-6 w-6 text-green-500" />
-                  <span className="font-semibold">Won</span>
-                  <span className="text-xs text-muted-foreground">Deal closed successfully</span>
-                </Label>
-              </div>
-              <div>
-                <RadioGroupItem
-                  value="lost"
-                  id="outcome-lost"
-                  className="peer sr-only"
-                />
-                <Label
-                  htmlFor="outcome-lost"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-red-500 peer-data-[state=checked]:bg-red-50 dark:peer-data-[state=checked]:bg-red-950 cursor-pointer"
-                >
-                  <XCircle className="mb-2 h-6 w-6 text-red-500" />
-                  <span className="font-semibold">Lost</span>
-                  <span className="text-xs text-muted-foreground">Deal fell through</span>
-                </Label>
-              </div>
-            </RadioGroup>
-
-            {completionOutcome === 'lost' && (
-              <div className="space-y-2">
-                <Label htmlFor="lost-reason">Reason for Loss</Label>
-                <Textarea
-                  id="lost-reason"
-                  placeholder="Why was this deal lost? (optional)"
-                  value={lostReason}
-                  onChange={(e) => setLostReason(e.target.value)}
-                  rows={3}
-                />
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsCompleteDialogOpen(false)}
-              disabled={changeStage.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCompleteDeal}
-              disabled={changeStage.isPending}
-              className={completionOutcome === 'won' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
-            >
-              {changeStage.isPending ? 'Completing...' : `Mark as ${completionOutcome === 'won' ? 'Won' : 'Lost'}`}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Change Stage Dialog */}
       <Dialog open={isChangeStageOpen} onOpenChange={setIsChangeStageOpen}>
         <DialogContent>
@@ -288,7 +252,7 @@ export function OverviewTab({ deal }: OverviewTabProps) {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">New Stage</label>
+              <Label className="text-sm font-medium">New Stage</Label>
               <Select
                 value={selectedStage}
                 onValueChange={(value) => setSelectedStage(value)}
@@ -319,6 +283,76 @@ export function OverviewTab({ deal }: OverviewTabProps) {
               disabled={changeStage.isPending || selectedStage === deal.current_stage}
             >
               {changeStage.isPending ? 'Updating...' : 'Update Stage'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Terminal "Won" Stage Confirmation Modal */}
+      <Dialog open={terminalStageModal.isOpen} onOpenChange={(open) => !open && closeTerminalModal()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mark Deal as Won</DialogTitle>
+            <DialogDescription>
+              You are about to mark &ldquo;{deal.deal_name}&rdquo; as won. This will close the deal.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeTerminalModal}>
+              Cancel
+            </Button>
+            <Button onClick={confirmTerminalStage}>
+              Mark as Won
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mark as Lost Dialog */}
+      <Dialog open={isMarkAsLostOpen} onOpenChange={setIsMarkAsLostOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mark Deal as Lost</DialogTitle>
+            <DialogDescription>
+              You are about to mark &ldquo;{deal.deal_name}&rdquo; as lost. Please provide a reason.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <Label htmlFor="lost-reason">
+              Reason for losing <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              id="lost-reason"
+              placeholder="Enter the reason why this deal was lost (minimum 10 characters)"
+              value={lostReason}
+              onChange={(e) => setLostReason(e.target.value)}
+              className="min-h-[100px]"
+            />
+            {lostReason.length > 0 && lostReason.length < 10 && (
+              <p className="text-sm text-destructive">
+                Please enter at least 10 characters ({10 - lostReason.length} more needed)
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsMarkAsLostOpen(false);
+                setLostReason('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleMarkAsLost}
+              disabled={markAsLost.isPending || lostReason.trim().length < 10}
+            >
+              {markAsLost.isPending ? 'Marking as Lost...' : 'Mark as Lost'}
             </Button>
           </DialogFooter>
         </DialogContent>

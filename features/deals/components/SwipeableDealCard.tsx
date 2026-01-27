@@ -16,6 +16,7 @@ interface SwipeableDealCardProps {
   onClick?: () => void;
   stages: string[];
   currentStageIndex: number;
+  onStageChange?: (dealId: string, newStage: string) => void;
 }
 
 export function SwipeableDealCard({
@@ -23,6 +24,7 @@ export function SwipeableDealCard({
   onClick,
   stages,
   currentStageIndex,
+  onStageChange,
 }: SwipeableDealCardProps) {
   const queryClient = useQueryClient();
   const [swipeOffset, setSwipeOffset] = React.useState(0);
@@ -54,17 +56,28 @@ export function SwipeableDealCard({
     },
   });
 
+  // Handle stage change with terminal stage detection
+  const handleStageChange = (newStage: string) => {
+    // If parent provides onStageChange, use it (will handle terminal stages)
+    if (onStageChange) {
+      onStageChange(deal.id, newStage);
+    } else {
+      // Fallback to direct mutation
+      changeStage.mutate(newStage);
+    }
+  };
+
   const swipeHandlers = useSwipe({
     onSwipeLeft: () => {
       if (canSwipeLeft && !changeStage.isPending) {
         const nextStage = stages[currentStageIndex + 1];
-        if (nextStage) changeStage.mutate(nextStage);
+        if (nextStage) handleStageChange(nextStage);
       }
     },
     onSwipeRight: () => {
       if (canSwipeRight && !changeStage.isPending) {
         const prevStage = stages[currentStageIndex - 1];
-        if (prevStage) changeStage.mutate(prevStage);
+        if (prevStage) handleStageChange(prevStage);
       }
     },
     minSwipeDistance: 80,

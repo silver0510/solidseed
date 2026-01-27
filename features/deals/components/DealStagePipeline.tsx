@@ -28,9 +28,8 @@ export function DealStagePipeline({
   currentStage,
   dealTypeColor = '#3b82f6',
 }: DealStagePipelineProps) {
-  // Filter out terminal 'lost' stage from the main pipeline display
-  const mainStages = stages.filter((s) => s.code !== 'lost');
-  const currentMainIndex = mainStages.findIndex((s) => s.code === currentStage);
+  // Find current stage index in the pipeline
+  const currentMainIndex = stages.findIndex((s) => s.code === currentStage);
 
   return (
     <div>
@@ -39,7 +38,7 @@ export function DealStagePipeline({
         {/* Mobile: Horizontal scroll container - extra padding for pulse animation */}
         <div className="overflow-x-auto pt-3 pb-2 -mx-2 px-2 -mt-3">
           <div className="flex items-start min-w-max">
-            {mainStages.map((stage, index) => {
+            {stages.map((stage, index) => {
               const isCompleted = index < currentMainIndex;
               const isCurrent = index === currentMainIndex;
               const isFuture = index > currentMainIndex;
@@ -118,7 +117,7 @@ export function DealStagePipeline({
                   </div>
 
                   {/* Connector Line */}
-                  {index < mainStages.length - 1 && (
+                  {index < stages.length - 1 && (
                     <div className="flex items-center h-10 mx-1">
                       <div
                         className={cn(

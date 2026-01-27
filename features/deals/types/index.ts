@@ -28,6 +28,7 @@ export interface PipelineStage {
   code: string;
   name: string;
   order: number;
+  type?: 'normal' | 'won' | 'lost'; // Optional for backward compatibility
 }
 
 export interface DefaultMilestone {

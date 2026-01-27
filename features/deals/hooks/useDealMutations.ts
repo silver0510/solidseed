@@ -179,6 +179,28 @@ export function useDealMutations(dealId: string) {
     },
   });
 
+  // Mark deal as lost
+  const markAsLost = useMutation({
+    mutationFn: async (input: { lost_reason: string }) => {
+      const response = await fetch(`/api/deals/${dealId}/mark-lost`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Failed to mark deal as lost' }));
+        throw new Error(error.message || 'Failed to mark deal as lost');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
+      queryClient.invalidateQueries({ queryKey: dealQueryKeys.activities(dealId) });
+    },
+  });
+
   // Log activity
   const logActivity = useMutation({
     mutationFn: async (input: LogActivityInput) => {
@@ -207,6 +229,7 @@ export function useDealMutations(dealId: string) {
     addMilestone,
     uploadDocument,
     deleteDocument,
+    markAsLost,
     logActivity,
   };
 }

@@ -63,7 +63,8 @@ async function fetchPipelineDeals(params: GetPipelineParams = {}): Promise<Pipel
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
   });
-  return handleResponse<PipelineResponse>(response);
+  const result = await handleResponse<{ success: boolean; data: PipelineResponse }>(response);
+  return result.data;
 }
 
 // =============================================================================

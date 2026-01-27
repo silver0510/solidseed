@@ -74,7 +74,7 @@ interface TerminalStageModal {
   dealId: string | null;
   dealName: string | null;
   newStage: string | null;
-  isClosedLost: boolean;
+  isClosedLost: boolean; // Keep for backward compatibility, always false now
 }
 
 // =============================================================================
@@ -205,34 +205,39 @@ export function useDealDragDrop(options: UseDealDragDropOptions = {}) {
       const dealId = String(active.id);
       const newStage = String(over.id);
 
-      // Get current pipeline data to find deal info
+      // Get current pipeline data to find deal info and stage type
       const pipelineData = queryClient.getQueryData<PipelineResponse>(
         pipelineKeys.list({})
       );
 
       let dealName = null;
+      let stageType: 'normal' | 'won' | undefined;
+
       if (pipelineData) {
+        // Find the deal to get deal name and deal type pipeline stages
         for (const stage of pipelineData.stages) {
           const deal = stage.deals.find((d) => d.id === dealId);
           if (deal) {
             dealName = deal.deal_name;
+            // Get stage type from deal type's pipeline stages
+            const targetStage = deal.deal_type?.pipeline_stages?.find(s => s.code === newStage);
+            stageType = targetStage?.type;
             break;
           }
         }
       }
 
-      // Check if new stage is terminal (closed_won or closed_lost)
-      const isClosedWon = newStage === 'closed_won';
-      const isClosedLost = newStage === 'closed_lost';
+      // Check if new stage is terminal "won" stage using type field with fallback to hardcoded logic
+      const isClosedWon = stageType === 'won' || newStage === 'closed' || newStage === 'funded';
 
-      if (isClosedWon || isClosedLost) {
-        // Show modal for terminal stages
+      if (isClosedWon) {
+        // Show modal for won terminal stage
         setTerminalStageModal({
           isOpen: true,
           dealId,
           dealName,
           newStage,
-          isClosedLost,
+          isClosedLost: false,
         });
       } else {
         // Non-terminal stage, update immediately
@@ -259,10 +264,10 @@ export function useDealDragDrop(options: UseDealDragDropOptions = {}) {
   }, []);
 
   /**
-   * Confirm terminal stage change with optional reason
+   * Confirm terminal "won" stage change
    */
   const confirmTerminalStage = useCallback(
-    (reason?: string) => {
+    () => {
       if (!terminalStageModal.dealId || !terminalStageModal.newStage) {
         return;
       }
@@ -271,7 +276,6 @@ export function useDealDragDrop(options: UseDealDragDropOptions = {}) {
         dealId: terminalStageModal.dealId,
         data: {
           new_stage: terminalStageModal.newStage,
-          lost_reason: terminalStageModal.isClosedLost ? reason : undefined,
         },
       });
 

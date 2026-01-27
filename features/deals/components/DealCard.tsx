@@ -4,7 +4,6 @@ import * as React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Calendar, DollarSign, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Deal } from '@/lib/types/deals';
@@ -91,28 +90,14 @@ export function DealCard({ deal, onClick }: DealCardProps) {
         </div>
       )}
 
-      {/* Footer: Deal Type Badge & Days in Stage */}
-      <div className="flex items-center justify-between gap-2">
-        {deal.deal_type && (
-          <Badge
-            variant="outline"
-            className={cn(
-              'text-xs',
-              `border-${dealTypeColor}-200 bg-${dealTypeColor}-50 text-${dealTypeColor}-700`
-            )}
-          >
-            {deal.deal_type.icon && (
-              <span className="mr-1">{deal.deal_type.icon}</span>
-            )}
-            {deal.deal_type.type_name}
-          </Badge>
-        )}
-        {daysInStage > 0 && (
+      {/* Footer: Days in Stage */}
+      {daysInStage > 0 && (
+        <div className="flex items-center justify-end">
           <span className="text-xs text-muted-foreground">
             {daysInStage}d
           </span>
-        )}
-      </div>
+        </div>
+      )}
     </Card>
   );
 }

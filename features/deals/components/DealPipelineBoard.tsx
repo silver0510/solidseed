@@ -11,7 +11,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,7 +30,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, TrendingUp } from 'lucide-react';
+import { Loader2, TrendingUp, DollarSign, LayoutGrid, LayoutList, List } from 'lucide-react';
 import { StageColumn } from './StageColumn';
 import { DealCard } from './DealCard';
 import { SwipeableDealCard } from './SwipeableDealCard';
@@ -65,6 +65,17 @@ export function DealPipelineBoard({ dealTypeId, userId }: DealPipelineBoardProps
     confirmTerminalStage,
   } = useDealDragDrop();
 
+  // Handle swipe stage change (for mobile SwipeableDealCard)
+  // This simulates a drag event to reuse the terminal stage logic
+  const handleSwipeStageChange = React.useCallback((dealId: string, newStage: string) => {
+    // Create a synthetic drag event to trigger the same flow as drag & drop
+    const syntheticEvent = {
+      active: { id: dealId },
+      over: { id: newStage },
+    };
+    handleDragEnd(syntheticEvent as any);
+  }, [handleDragEnd]);
+
   // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -81,8 +92,8 @@ export function DealPipelineBoard({ dealTypeId, userId }: DealPipelineBoardProps
 
   // Handle terminal stage confirmation
   const handleConfirmTerminal = () => {
-    if (terminalStageModal.isClosedLost && !lostReason.trim()) {
-      return; // Require reason for lost deals
+    if (terminalStageModal.isClosedLost && (!lostReason.trim() || lostReason.trim().length < 10)) {
+      return; // Require reason with minimum 10 characters for lost deals
     }
     confirmTerminalStage(lostReason);
     setLostReason('');
@@ -125,36 +136,17 @@ export function DealPipelineBoard({ dealTypeId, userId }: DealPipelineBoardProps
     }).format(value);
   };
 
+  // Handle loading or missing data
+  if (!data || !data.summary || !data.stages) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4">
-      {/* Pipeline Summary */}
-      <Card className="p-4">
-        <div className="flex flex-wrap items-center gap-4 md:gap-8">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-sm text-muted-foreground">Total Pipeline</p>
-              <p className="text-xl font-bold">
-                {formatCurrency(data.summary.total_pipeline_value)}
-              </p>
-            </div>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Expected Commission</p>
-            <p className="text-xl font-bold">
-              {formatCurrency(data.summary.expected_commission)}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Active Deals</p>
-            <p className="text-xl font-bold">{data.summary.active_deals}</p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Deal Type Filter (Optional - can be expanded later) */}
-      {/* This would require fetching deal types and showing tabs */}
-
+    <>
       {/* Desktop View: Horizontal Columns */}
       <div className="hidden md:block">
         <DndContext
@@ -221,6 +213,7 @@ export function DealPipelineBoard({ dealTypeId, userId }: DealPipelineBoardProps
                           onClick={() => handleDealClick(deal.id)}
                           stages={allStages}
                           currentStageIndex={stageIndex}
+                          onStageChange={handleSwipeStageChange}
                         />
                       );
                     })
@@ -248,14 +241,21 @@ export function DealPipelineBoard({ dealTypeId, userId }: DealPipelineBoardProps
 
           {terminalStageModal.isClosedLost && (
             <div className="space-y-2">
-              <Label htmlFor="lost-reason">Reason for Loss *</Label>
+              <Label htmlFor="lost-reason">
+                Reason for losing <span className="text-destructive">*</span>
+              </Label>
               <Textarea
                 id="lost-reason"
-                placeholder="e.g., Client chose another agent, financing fell through..."
+                placeholder="Enter the reason why this deal was lost (minimum 10 characters)"
                 value={lostReason}
                 onChange={(e) => setLostReason(e.target.value)}
-                rows={4}
+                className="min-h-[100px]"
               />
+              {lostReason.length > 0 && lostReason.length < 10 && (
+                <p className="text-sm text-destructive">
+                  Please enter at least 10 characters ({10 - lostReason.length} more needed)
+                </p>
+              )}
             </div>
           )}
 
@@ -265,13 +265,13 @@ export function DealPipelineBoard({ dealTypeId, userId }: DealPipelineBoardProps
             </Button>
             <Button
               onClick={handleConfirmTerminal}
-              disabled={terminalStageModal.isClosedLost && !lostReason.trim()}
+              disabled={terminalStageModal.isClosedLost && lostReason.trim().length < 10}
             >
-              Confirm
+              {terminalStageModal.isClosedLost ? 'Mark as Lost' : 'Mark as Won'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

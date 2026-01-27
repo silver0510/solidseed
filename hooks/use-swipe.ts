@@ -28,17 +28,23 @@ export function useSwipe({
 
   const onTouchStart = (e: TouchEvent) => {
     setTouchEnd(null);
-    setTouchStart({
-      x: e.targetTouches[0].clientX,
-      y: e.targetTouches[0].clientY,
-    });
+    const touch = e.targetTouches[0];
+    if (touch) {
+      setTouchStart({
+        x: touch.clientX,
+        y: touch.clientY,
+      });
+    }
   };
 
   const onTouchMove = (e: TouchEvent) => {
-    setTouchEnd({
-      x: e.targetTouches[0].clientX,
-      y: e.targetTouches[0].clientY,
-    });
+    const touch = e.targetTouches[0];
+    if (touch) {
+      setTouchEnd({
+        x: touch.clientX,
+        y: touch.clientY,
+      });
+    }
   };
 
   const onTouchEnd = () => {

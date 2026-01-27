@@ -470,7 +470,7 @@ export class DealService {
       const currentDeal = await this.getDeal(dealId, userId);
       const dealValue = data.deal_value ?? currentDeal.deal_value ?? 0;
       const commissionRate = data.commission_rate ?? currentDeal.commission_rate ?? 0;
-      const commissionSplit = data.commission_split_percent ?? currentDeal.commission_split_percent;
+      const commissionSplit = data.commission_split_percent ?? currentDeal.commission_split_percent ?? undefined;
 
       const commissionCalc = this.calculateCommission(dealValue, commissionRate, commissionSplit);
       updateData.commission_amount = commissionCalc.commission_amount;
@@ -537,20 +537,14 @@ export class DealService {
       updated_at: new Date().toISOString(),
     };
 
-    // Handle terminal stages
-    if (newStage === 'closed' || newStage === 'funded') {
+    // Handle terminal "won" stages (closed for residential, funded for mortgage)
+    const stageInfo = dealType.pipeline_stages.find(s => s.code === newStage);
+    if (stageInfo?.type === 'won' || newStage === 'closed' || newStage === 'funded') {
       updates.status = 'closed_won';
       updates.closed_at = new Date().toISOString();
       if (!deal.actual_close_date) {
         updates.actual_close_date = new Date().toISOString().split('T')[0];
       }
-    } else if (newStage === 'lost') {
-      if (!stageData.lost_reason || stageData.lost_reason.length < 10) {
-        throw new Error('Lost reason required (minimum 10 characters)');
-      }
-      updates.status = 'closed_lost';
-      updates.closed_at = new Date().toISOString();
-      updates.lost_reason = stageData.lost_reason;
     }
 
     // Update deal
@@ -592,6 +586,63 @@ export class DealService {
       deal: updatedDeal as Deal,
       milestones_created: milestonesCreated,
     };
+  }
+
+  /**
+   * Mark deal as lost
+   *
+   * @param dealId - The deal ID
+   * @param lostReason - Reason for losing the deal (minimum 10 characters)
+   * @param userId - The authenticated user's ID
+   * @returns Promise<Deal> The updated deal
+   * @throws {Error} If marking as lost fails
+   */
+  async markDealAsLost(
+    dealId: string,
+    lostReason: string,
+    userId: string
+  ): Promise<Deal> {
+    if (!lostReason || lostReason.length < 10) {
+      throw new Error('Lost reason required (minimum 10 characters)');
+    }
+
+    // Get current deal
+    const deal = await this.getDeal(dealId, userId);
+
+    // Prepare update data - keep current_stage unchanged
+    const updates: any = {
+      status: 'closed_lost',
+      closed_at: new Date().toISOString(),
+      lost_reason: lostReason,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Update deal
+    const { data: updatedDeal, error } = await this.supabase
+      .from('deals')
+      .update(updates)
+      .eq('id', dealId)
+      .eq('assigned_to', userId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to mark deal as lost: ${error.message}`);
+    }
+
+    // Cancel all uncompleted milestones
+    await this.cancelUncompletedMilestones(dealId, userId);
+
+    // Log activity
+    await this.logActivity(
+      dealId,
+      'other',
+      'Deal Marked as Lost',
+      `Reason: ${lostReason}`,
+      userId
+    );
+
+    return updatedDeal as Deal;
   }
 
   /**
@@ -741,12 +792,40 @@ export class DealService {
   }
 
   /**
+   * Cancel all uncompleted milestones when deal is lost
+   */
+  private async cancelUncompletedMilestones(dealId: string, userId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('deal_milestones')
+      .update({
+        status: 'cancelled',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('deal_id', dealId)
+      .eq('status', 'pending');
+
+    if (error) {
+      console.error('Failed to cancel milestones:', error);
+      // Don't throw error - milestone cancellation is not critical to deal loss
+    }
+
+    // Log activity
+    await this.logActivity(
+      dealId,
+      'other',
+      'Cancelled uncompleted milestones',
+      'Deal was marked as lost',
+      userId
+    );
+  }
+
+  /**
    * Calculate milestone date based on offset
    */
   private calculateMilestoneDate(daysOffset: number, baseDate?: string | null): string {
     const date = baseDate ? new Date(baseDate) : new Date();
     date.setDate(date.getDate() + daysOffset);
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split('T')[0] || '';
   }
 
   /**

@@ -131,6 +131,8 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                   className={`absolute left-0 top-2.5 h-6 w-6 rounded-full border-2 flex items-center justify-center ${
                     milestone.status === 'completed'
                       ? 'bg-green-500 border-green-500 text-white'
+                      : milestone.status === 'cancelled'
+                      ? 'bg-orange-100 border-orange-500 text-orange-500 dark:bg-orange-900/30'
                       : isPastDue(milestone.scheduled_date, milestone.status)
                       ? 'bg-red-100 border-red-500 text-red-500 dark:bg-red-900/30'
                       : 'bg-background border-border'
@@ -146,6 +148,16 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
+                  ) : milestone.status === 'cancelled' ? (
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2.5}
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   ) : (
                     <div className="h-2 w-2 rounded-full bg-muted" />
                   )}
@@ -154,7 +166,7 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                 {/* Milestone Card */}
                 <Card
                   className={`transition-all ${
-                    milestone.status === 'completed' ? 'opacity-75' : ''
+                    milestone.status === 'completed' || milestone.status === 'cancelled' ? 'opacity-75' : ''
                   }`}
                 >
                   <CardContent className="p-2.5">
@@ -165,23 +177,29 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                         onCheckedChange={() =>
                           handleToggleComplete(milestone.id, milestone.status)
                         }
-                        disabled={toggleMilestone.isPending}
+                        disabled={toggleMilestone.isPending || milestone.status === 'cancelled'}
                         className="h-4 w-4"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <label
                             htmlFor={`milestone-${milestone.id}`}
-                            className={`text-sm font-medium cursor-pointer truncate ${
+                            className={`text-sm font-medium ${
+                              milestone.status === 'cancelled'
+                                ? 'text-muted-foreground cursor-not-allowed'
+                                : 'cursor-pointer'
+                            } truncate ${
                               milestone.status === 'completed'
                                 ? 'line-through text-muted-foreground'
+                                : milestone.status === 'cancelled'
+                                ? 'line-through'
                                 : ''
                             }`}
                           >
                             {milestone.milestone_name}
                           </label>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-                            {milestone.scheduled_date && (
+                            {milestone.scheduled_date && milestone.status !== 'cancelled' && (
                               <span
                                 className={
                                   isPastDue(milestone.scheduled_date, milestone.status)
@@ -195,6 +213,11 @@ export function MilestonesTab({ deal }: MilestonesTabProps) {
                             {milestone.completed_date && (
                               <span className="text-green-600 dark:text-green-400">
                                 Done
+                              </span>
+                            )}
+                            {milestone.status === 'cancelled' && (
+                              <span className="text-orange-600 dark:text-orange-400">
+                                Cancelled
                               </span>
                             )}
                           </div>
