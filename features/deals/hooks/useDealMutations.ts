@@ -83,9 +83,50 @@ export function useDealMutations(dealId: string) {
 
       return response.json();
     },
+    onMutate: async (input) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: dealQueryKeys.detail(dealId) });
+
+      // Snapshot previous value
+      const previousDeal = queryClient.getQueryData(dealQueryKeys.detail(dealId));
+
+      // Optimistically update the stage
+      queryClient.setQueryData(dealQueryKeys.detail(dealId), (old: any) => {
+        if (!old) return old;
+
+        const updates: any = {
+          ...old,
+          current_stage: input.new_stage,
+          updated_at: new Date().toISOString(),
+        };
+
+        // If moving to won stage, update status
+        if (old.deal_type?.pipeline_stages) {
+          const stageInfo = old.deal_type.pipeline_stages.find((s: any) => s.code === input.new_stage);
+          if (stageInfo?.type === 'won' || input.new_stage === 'closed' || input.new_stage === 'funded') {
+            updates.status = 'closed_won';
+            updates.closed_at = new Date().toISOString();
+            if (!old.actual_close_date) {
+              updates.actual_close_date = new Date().toISOString().split('T')[0];
+            }
+          }
+        }
+
+        return updates;
+      });
+
+      return { previousDeal };
+    },
+    onError: (_err, _input, context) => {
+      // Rollback on error
+      if (context?.previousDeal) {
+        queryClient.setQueryData(dealQueryKeys.detail(dealId), context.previousDeal);
+      }
+    },
     onSuccess: () => {
+      // Only invalidate to refetch the deal (includes new activity)
+      // Don't invalidate activities separately - they're part of the deal
       queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
-      queryClient.invalidateQueries({ queryKey: dealQueryKeys.activities(dealId) });
     },
   });
 
@@ -109,8 +150,8 @@ export function useDealMutations(dealId: string) {
       return response.json();
     },
     onSuccess: () => {
+      // Activities are part of deal detail, no need to invalidate separately
       queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
-      queryClient.invalidateQueries({ queryKey: dealQueryKeys.activities(dealId) });
     },
   });
 
@@ -152,8 +193,8 @@ export function useDealMutations(dealId: string) {
       return response.json();
     },
     onSuccess: () => {
+      // Activities are part of deal detail, no need to invalidate separately
       queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
-      queryClient.invalidateQueries({ queryKey: dealQueryKeys.activities(dealId) });
     },
   });
 
@@ -172,8 +213,8 @@ export function useDealMutations(dealId: string) {
       return response.json();
     },
     onSuccess: () => {
+      // Activities are part of deal detail, no need to invalidate separately
       queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
-      queryClient.invalidateQueries({ queryKey: dealQueryKeys.activities(dealId) });
     },
   });
 
@@ -197,8 +238,8 @@ export function useDealMutations(dealId: string) {
       return response.json();
     },
     onSuccess: () => {
+      // Activities are part of deal detail, no need to invalidate separately
       queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
-      queryClient.invalidateQueries({ queryKey: dealQueryKeys.activities(dealId) });
     },
   });
 
@@ -237,9 +278,33 @@ export function useDealMutations(dealId: string) {
 
       return response.json();
     },
+    onMutate: async (input) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: dealQueryKeys.detail(dealId) });
+
+      // Snapshot previous value
+      const previousDeal = queryClient.getQueryData(dealQueryKeys.detail(dealId));
+
+      // Optimistically update the deal
+      queryClient.setQueryData(dealQueryKeys.detail(dealId), (old: any) => ({
+        ...old,
+        status: 'closed_lost',
+        closed_at: new Date().toISOString(),
+        lost_reason: input.lost_reason,
+        updated_at: new Date().toISOString(),
+      }));
+
+      return { previousDeal };
+    },
+    onError: (_err, _input, context) => {
+      // Rollback on error
+      if (context?.previousDeal) {
+        queryClient.setQueryData(dealQueryKeys.detail(dealId), context.previousDeal);
+      }
+    },
     onSuccess: () => {
+      // Refetch to get the new activity entry
       queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
-      queryClient.invalidateQueries({ queryKey: dealQueryKeys.activities(dealId) });
     },
   });
 
