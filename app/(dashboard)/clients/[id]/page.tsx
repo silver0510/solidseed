@@ -15,7 +15,6 @@ import { ClientForm } from '@/features/clients/components/ClientForm';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -23,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { clientApi, clientQueryKeys, taskApi, noteApi, documentApi } from '@/features/clients/api/clientApi';
+import { clientApi, clientQueryKeys } from '@/features/clients/api/clientApi';
 import type { ClientFormData } from '@/features/clients';
 import type { ClientStatus, UserTag } from '@/lib/types/client';
 
@@ -121,47 +120,6 @@ function TagsDisplay({ tagNames }: { tagNames: string[] }) {
   );
 }
 
-// Metric card component matching dashboard design
-function MetricCard({
-  title,
-  value,
-  subtitle,
-  icon,
-  variant = 'default',
-}: {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  icon: React.ReactNode;
-  variant?: 'default' | 'warning' | 'danger' | 'info' | 'success';
-}) {
-  return (
-    <Card className="transition-shadow hover:shadow-md">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="mt-1 text-2xl font-semibold">{value}</p>
-            {subtitle && (
-              <p className="mt-1 text-xs font-medium text-muted-foreground">
-                {subtitle}
-              </p>
-            )}
-          </div>
-          <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-            variant === 'danger' ? 'bg-destructive/10 text-destructive' :
-            variant === 'warning' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' :
-            variant === 'info' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
-            variant === 'success' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' :
-            'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
-          }`}>
-            {icon}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function ClientProfilePage() {
   const params = useParams();
@@ -177,30 +135,6 @@ export default function ClientProfilePage() {
     queryFn: () => clientApi.getClient(clientId),
     enabled: !!clientId,
   });
-
-  // Fetch counts for metrics
-  const { data: tasks } = useQuery({
-    queryKey: ['clients', clientId, 'tasks'],
-    queryFn: () => taskApi.getClientTasks(clientId),
-    enabled: !!clientId,
-  });
-
-  const { data: notes } = useQuery({
-    queryKey: ['clients', clientId, 'notes'],
-    queryFn: () => noteApi.getClientNotes(clientId),
-    enabled: !!clientId,
-  });
-
-  const { data: documents } = useQuery({
-    queryKey: ['clients', clientId, 'documents'],
-    queryFn: () => documentApi.getClientDocuments(clientId),
-    enabled: !!clientId,
-  });
-
-  const activeTasksCount = tasks?.filter((t) => t.status !== 'closed').length ?? 0;
-  const closedTasksCount = tasks?.filter((t) => t.status === 'closed').length ?? 0;
-  const notesCount = notes?.length ?? 0;
-  const documentsCount = documents?.length ?? 0;
 
   // Update client mutation
   const updateClientMutation = useMutation({
@@ -309,54 +243,6 @@ export default function ClientProfilePage() {
           </svg>
           <span className="hidden sm:inline ml-1">Edit</span>
         </Button>
-      </div>
-
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
-        <MetricCard
-          title="Active Tasks"
-          value={activeTasksCount}
-          subtitle={activeTasksCount === 1 ? 'Task to complete' : 'Tasks to complete'}
-          variant="default"
-          icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-            </svg>
-          }
-        />
-        <MetricCard
-          title="Closed"
-          value={closedTasksCount}
-          subtitle="Tasks done"
-          variant="success"
-          icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          }
-        />
-        <MetricCard
-          title="Notes"
-          value={notesCount}
-          subtitle="Interactions logged"
-          variant="warning"
-          icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-            </svg>
-          }
-        />
-        <MetricCard
-          title="Documents"
-          value={documentsCount}
-          subtitle="Files uploaded"
-          variant="info"
-          icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-            </svg>
-          }
-        />
       </div>
 
       {/* Content */}
