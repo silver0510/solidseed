@@ -46,26 +46,26 @@ export interface ActivityTabProps {
 // Color mapping for all activity types (supports both frontend and backend type names)
 const ACTIVITY_COLORS: Record<string, string> = {
   // Frontend naming
-  created: 'bg-blue-200 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
-  stage_changed: 'bg-purple-200 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300',
-  value_updated: 'bg-green-200 text-green-700 dark:bg-green-900/50 dark:text-green-300',
-  milestone_completed: 'bg-emerald-200 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
-  document_uploaded: 'bg-amber-200 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
-  note_added: 'bg-indigo-200 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
-  field_updated: 'bg-slate-200 text-slate-700 dark:bg-slate-900/50 dark:text-slate-300',
+  created: 'bg-blue-200 text-blue-700 dark:bg-blue-800/50 dark:text-blue-200',
+  stage_changed: 'bg-purple-200 text-purple-700 dark:bg-purple-800/50 dark:text-purple-200',
+  value_updated: 'bg-green-200 text-green-700 dark:bg-green-800/50 dark:text-green-200',
+  milestone_completed: 'bg-emerald-200 text-emerald-700 dark:bg-emerald-800/50 dark:text-emerald-200',
+  document_uploaded: 'bg-amber-200 text-amber-800 dark:bg-amber-800/50 dark:text-amber-200',
+  note_added: 'bg-indigo-200 text-indigo-700 dark:bg-indigo-800/50 dark:text-indigo-200',
+  field_updated: 'bg-slate-200 text-slate-700 dark:bg-slate-800/50 dark:text-slate-200',
 
   // Backend naming (snake_case from database)
-  stage_change: 'bg-purple-200 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300',
-  milestone_complete: 'bg-emerald-200 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
-  document_upload: 'bg-amber-200 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
-  document_delete: 'bg-red-200 text-red-700 dark:bg-red-900/50 dark:text-red-300',
-  field_update: 'bg-slate-200 text-slate-700 dark:bg-slate-900/50 dark:text-slate-300',
-  note: 'bg-indigo-200 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
-  call: 'bg-cyan-200 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300',
-  email: 'bg-sky-200 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300',
-  meeting: 'bg-violet-200 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300',
-  showing: 'bg-pink-200 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
-  other: 'bg-gray-200 text-gray-700 dark:bg-gray-900/50 dark:text-gray-300',
+  stage_change: 'bg-purple-200 text-purple-700 dark:bg-purple-800/50 dark:text-purple-200',
+  milestone_complete: 'bg-emerald-200 text-emerald-700 dark:bg-emerald-800/50 dark:text-emerald-200',
+  document_upload: 'bg-amber-200 text-amber-800 dark:bg-amber-800/50 dark:text-amber-200',
+  document_delete: 'bg-red-200 text-red-700 dark:bg-red-800/50 dark:text-red-200',
+  field_update: 'bg-slate-200 text-slate-700 dark:bg-slate-800/50 dark:text-slate-200',
+  note: 'bg-indigo-200 text-indigo-700 dark:bg-indigo-800/50 dark:text-indigo-200',
+  call: 'bg-cyan-200 text-cyan-700 dark:bg-cyan-800/50 dark:text-cyan-200',
+  email: 'bg-sky-200 text-sky-700 dark:bg-sky-800/50 dark:text-sky-200',
+  meeting: 'bg-violet-200 text-violet-700 dark:bg-violet-800/50 dark:text-violet-200',
+  showing: 'bg-pink-200 text-pink-700 dark:bg-pink-800/50 dark:text-pink-200',
+  other: 'bg-gray-200 text-gray-700 dark:bg-gray-800/50 dark:text-gray-200',
 };
 
 export function ActivityTab({ deal }: ActivityTabProps) {
@@ -101,49 +101,49 @@ export function ActivityTab({ deal }: ActivityTabProps) {
     // Handle both frontend and backend activity type names
     switch (type) {
       case 'created':
-        return <PlusCircle className="w-5 h-5" />;
+        return <PlusCircle className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'stage_changed':
       case 'stage_change':
-        return <ArrowRightLeft className="w-5 h-5" />;
+        return <ArrowRightLeft className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'value_updated':
-        return <DollarSign className="w-5 h-5" />;
+        return <DollarSign className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'milestone_completed':
       case 'milestone_complete':
-        return <CheckCircle className="w-5 h-5" />;
+        return <CheckCircle className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'document_uploaded':
       case 'document_upload':
-        return <Upload className="w-5 h-5" />;
+        return <Upload className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'document_delete':
-        return <Trash2 className="w-5 h-5" />;
+        return <Trash2 className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'note_added':
       case 'note':
-        return <StickyNote className="w-5 h-5" />;
+        return <StickyNote className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'call':
-        return <Phone className="w-5 h-5" />;
+        return <Phone className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'email':
-        return <Mail className="w-5 h-5" />;
+        return <Mail className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'meeting':
-        return <Users className="w-5 h-5" />;
+        return <Users className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'showing':
-        return <Home className="w-5 h-5" />;
+        return <Home className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'field_updated':
       case 'field_update':
-        return <Edit className="w-5 h-5" />;
+        return <Edit className="w-5 h-5" strokeWidth={2.5} />;
 
       case 'other':
       default:
-        return <Settings className="w-5 h-5" />;
+        return <Settings className="w-5 h-5" strokeWidth={2.5} />;
     }
   };
 
@@ -208,86 +208,52 @@ export function ActivityTab({ deal }: ActivityTabProps) {
 
       {/* Activity Feed */}
       {filteredActivities.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center text-muted-foreground">
-            <div className="mx-auto h-12 w-12 mb-4 text-muted-foreground/40">
-              <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <p className="font-medium">No activities yet</p>
-            <p className="text-sm mt-1">Activities will appear here as you work on this deal</p>
-          </CardContent>
-        </Card>
+        <div className="text-center py-12">
+          <svg className="mx-auto h-12 w-12 text-muted-foreground/50" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="mt-4 font-medium text-muted-foreground">No activities yet</p>
+          <p className="text-sm text-muted-foreground mt-1">Activities will appear here as you work on this deal</p>
+        </div>
       ) : (
-        <div className="relative">
-          {/* Timeline */}
-          <div className="space-y-0">
-            {filteredActivities.map((activity, index) => {
-              const isLast = index === filteredActivities.length - 1;
+        <div className="space-y-4">
+          {filteredActivities.map((activity, index) => (
+            <div key={activity.id} className="relative">
+              {/* Timeline line */}
+              {index < filteredActivities.length - 1 && (
+                <div className="absolute left-4 top-8 bottom-0 w-px bg-border" />
+              )}
 
-              return (
-                <div key={activity.id} className="relative flex gap-4">
-                  {/* Time */}
-                  <div className="text-xs text-muted-foreground whitespace-nowrap pt-0.5 w-16 text-right">
-                    {formatDate(activity.created_at)}
-                  </div>
-
-                  {/* Timeline Column */}
-                  <div className="flex flex-col items-center relative w-3 pt-0.5">
-                    {/* Timeline Node */}
-                    <div className="relative flex items-center justify-center flex-shrink-0 z-10 mt-0.5">
-                      <div
-                        className={`h-3 w-3 rounded-full border-2 border-background ${
-                          ACTIVITY_COLORS[activity.activity_type]?.split(' ')[0] || 'bg-gray-100'
-                        }`}
-                      />
-                    </div>
-
-                    {/* Timeline Line - Connects from current dot to next dot */}
-                    {!isLast && (
-                      <div className="w-0.5 flex-1 bg-muted-foreground" style={{ minHeight: '2rem' }} />
-                    )}
-                  </div>
-
-                  {/* Content Column */}
-                  <div className="flex-1 -mt-0.5 pb-8">
-                    {/* Activity Header */}
-                    <div className="flex items-start gap-3 mb-2">
-                      {/* Icon */}
-                      <div
-                        className={`flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center ${
-                          ACTIVITY_COLORS[activity.activity_type] || 'bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400'
-                        }`}
-                      >
-                        <div className="h-5 w-5">{getActivityIcon(activity.activity_type)}</div>
-                      </div>
-
-                      {/* Title and Badge */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-sm">
-                            {(activity as any).title || ACTIVITY_TYPE_LABELS[activity.activity_type]}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Description */}
-                    {renderActivityDescription(activity) && (
-                      <div className="ml-[52px] text-sm text-muted-foreground">
-                        {renderActivityDescription(activity)}
-                      </div>
-                    )}
-                  </div>
+              {/* Timeline item */}
+              <div className="flex gap-3">
+                {/* Icon */}
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                    ACTIVITY_COLORS[activity.activity_type] || 'bg-gray-200 text-gray-700 dark:bg-gray-800/50 dark:text-gray-200'
+                  }`}
+                >
+                  {getActivityIcon(activity.activity_type)}
                 </div>
-              );
-            })}
-          </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-medium text-foreground">
+                      {(activity as any).title || ACTIVITY_TYPE_LABELS[activity.activity_type]}
+                    </p>
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      {formatDate(activity.created_at)}
+                    </span>
+                  </div>
+                  {renderActivityDescription(activity) && (
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {renderActivityDescription(activity)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

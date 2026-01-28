@@ -10,6 +10,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils/cn';
 import { Card, CardContent } from '@/components/ui/card';
+import { CheckCircle, StickyNote, Briefcase } from 'lucide-react';
 import { useClientDeals } from '../../hooks/useClientDeals';
 import { taskApi, noteApi } from '../../api/clientApi';
 import type { ClientWithCounts } from '../../types';
@@ -386,25 +387,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   // Get icon for timeline item
   const getTimelineIcon = (type: string) => {
     if (type === 'task') {
-      return (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      );
+      return <CheckCircle className="h-5 w-5" strokeWidth={2.5} />;
     }
     if (type === 'note') {
-      return (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-        </svg>
-      );
+      return <StickyNote className="h-5 w-5" strokeWidth={2.5} />;
     }
     if (type === 'deal') {
-      return (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-        </svg>
-      );
+      return <Briefcase className="h-5 w-5" strokeWidth={2.5} />;
     }
     return null;
   };
@@ -552,16 +541,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <div key={item.id} className="relative">
                     {/* Timeline line */}
                     {index < timelineItems.length - 1 && (
-                      <div className="absolute left-[15px] top-8 bottom-0 w-px bg-border" />
+                      <div className="absolute left-4 top-8 bottom-0 w-px bg-border" />
                     )}
 
                     {/* Timeline item */}
                     <div className="flex gap-3">
                       {/* Icon */}
                       <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                        item.type === 'task' ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' :
-                        item.type === 'note' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
-                        'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+                        item.type === 'task' ? 'bg-purple-200 text-purple-700 dark:bg-purple-800/50 dark:text-purple-200' :
+                        item.type === 'note' ? 'bg-blue-200 text-blue-700 dark:bg-blue-800/50 dark:text-blue-200' :
+                        'bg-green-200 text-green-700 dark:bg-green-800/50 dark:text-green-200'
                       }`}>
                         {getTimelineIcon(item.type)}
                       </div>
