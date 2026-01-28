@@ -3,6 +3,7 @@ name: deal-management
 description: Multi-type deal pipeline system for tracking real estate and mortgage transactions from lead to close
 status: backlog
 created: 2026-01-22T15:45:34Z
+updated: 2026-01-28T03:31:45Z
 ---
 
 # Deal Management
@@ -72,6 +73,26 @@ created: 2026-01-22T15:45:34Z
 ### Feature Group 1: Deal Type System
 
 **Description**: Configurable deal type templates defining pipeline stages, required fields, and default milestones for each transaction type.
+
+#### Requirement 1.0: Deal Type Onboarding
+
+- **User Story**: As a new user, I want to select which deal types I work with during onboarding so that my dashboard shows only relevant deals
+- **Acceptance Criteria**:
+  - [ ] After email verification (before dashboard access), show onboarding screen: "What type of deals do you work with?"
+  - [ ] Two checkboxes displayed: "Residential Sales" and "Mortgage Loans"
+  - [ ] Both checkboxes checked by default
+  - [ ] Require at least one selection to continue
+  - [ ] Note displayed: "You can change this later in Deal Settings"
+  - [ ] Continue button saves preferences and redirects to dashboard
+  - [ ] User preferences stored in `user_deal_preferences` table or `users.enabled_deal_types` JSONB field
+  - [ ] Dashboard filters deal types based on saved preferences
+  - [ ] Deal Settings page allows toggling deal types with same note
+- **Business Rules**:
+  - At least one deal type must be enabled at all times
+  - First-time users see onboarding screen only once
+  - Returning users (after logout) skip onboarding
+  - If only one deal type enabled, dashboard defaults to filtered view
+  - If both enabled, dashboard shows both types with tabs/filters
 
 #### Requirement 1.1: Deal Type Configuration Storage
 
@@ -628,6 +649,22 @@ created: 2026-01-22T15:45:34Z
 
 ## Database Schema
 
+### user_deal_preferences
+
+| Field                      | Type        | Null | Description                       | Validation                |
+| -------------------------- | ----------- | ---- | --------------------------------- | ------------------------- |
+| id                         | UUID        | No   | Primary key                       | Auto-generated            |
+| user_id                    | UUID        | No   | User reference                    | FK to users.id, UNIQUE    |
+| residential_sale_enabled   | BOOLEAN     | No   | Residential sales enabled         | Default true              |
+| mortgage_loan_enabled      | BOOLEAN     | No   | Mortgage loans enabled            | Default true              |
+| onboarding_completed       | BOOLEAN     | No   | User completed onboarding         | Default false             |
+| created_at                 | TIMESTAMPTZ | No   | Creation timestamp                | Default CURRENT_TIMESTAMP |
+| updated_at                 | TIMESTAMPTZ | No   | Last update timestamp             | Default CURRENT_TIMESTAMP |
+
+**Indexes:** user_id (unique)
+
+**Constraints:** CHECK (residential_sale_enabled = true OR mortgage_loan_enabled = true)
+
 ### deal_types
 
 | Field              | Type         | Null | Description                    | Validation                |
@@ -733,73 +770,80 @@ created: 2026-01-22T15:45:34Z
 
 ## Business Rules
 
-1. **Deal Type Immutability**: Once a deal is created, its `deal_type_id` cannot be changed (data structure incompatibility)
+1. **Deal Type Preferences**: Users select enabled deal types during onboarding (after email verification, before dashboard access)
+   - At least one deal type must be enabled at all times (database constraint)
+   - Both types enabled by default on onboarding screen
+   - Users can change preferences later in Deal Settings with note displayed
+   - Dashboard and pipeline views automatically filter based on preferences
+   - Empty states handle when user has no deals of enabled type
 
-2. **Client Requirement**: All deals MUST link to an existing client via `client_id` (foreign key constraint, no orphan deals)
+2. **Deal Type Immutability**: Once a deal is created, its `deal_type_id` cannot be changed (data structure incompatibility)
 
-3. **Commission Calculations**:
+3. **Client Requirement**: All deals MUST link to an existing client via `client_id` (foreign key constraint, no orphan deals)
+
+4. **Commission Calculations**:
    - `commission_amount = deal_value × (commission_rate / 100)`
    - `agent_commission = commission_amount × (commission_split_percent / 100)`
    - Calculations trigger automatically on value/rate changes unless manually overridden
 
-4. **Pipeline Stage Rules**:
+5. **Pipeline Stage Rules**:
    - Deals can only move between stages defined in their `deal_type.pipeline_stages`
    - Moving to "closed" or "lost" stages sets `status` and `closed_at` automatically
    - Moving to "closed_lost" requires `lost_reason` (mandatory field)
 
-5. **Milestone Auto-Creation**:
+6. **Milestone Auto-Creation**:
    - Residential Sale: Moving to "contract" stage creates 5 default milestones
    - Mortgage Loan: Moving to "application" stage creates 6 default milestones
    - Milestones scheduled based on `expected_close_date` or `current_date + offset`
 
-6. **Soft Delete Cascade**:
+7. **Soft Delete Cascade**:
    - Deleting deal sets `is_deleted = true` for deal, milestones, documents, activities
    - Soft-deleted deals excluded from all lists, reports, and calculations
    - Hard delete from storage only for documents (files removed)
 
-7. **Days in Pipeline**:
+8. **Days in Pipeline**:
    - For active deals: `days_in_pipeline = CURRENT_DATE - created_at`
    - For closed deals: `days_in_pipeline = closed_at - created_at` (frozen)
    - Calculation runs daily via scheduled job
 
-8. **Commission Defaults**:
+9. **Commission Defaults**:
    - Residential Sale: `commission_rate = 3.0%`, `commission_split_percent = 80%`
    - Mortgage Loan: `commission_rate = 1.0%`, `commission_split_percent = 80%`
    - Users can override defaults per deal
 
-9. **Document Storage**:
+10. **Document Storage**:
    - Max file size: 25MB
    - Allowed types: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX
    - Storage path: `deals/{deal_id}/documents/{file_id}_{filename}`
    - Virus scanning required before storage
 
-10. **Activity Logging**:
+11. **Activity Logging**:
     - All stage changes automatically logged
     - Field updates log activity with old/new values
     - Manual activities (notes, calls, meetings) user-created
     - Activities are immutable (cannot be edited or deleted)
 
-11. **Permissions**:
+12. **Permissions**:
     - Users can only view/edit deals where `assigned_to = current_user_id` OR they have admin role
     - Users can only upload documents to their assigned deals
     - Users can only add milestones and activities to their assigned deals
 
-12. **Close Date Validation**:
+13. **Close Date Validation**:
     - `actual_close_date` must be <= today (cannot close deals in future)
     - `expected_close_date` can be past (warning shown) or future
     - Deals with `expected_close_date` in past highlighted as "overdue"
 
-13. **Secondary Clients**:
+14. **Secondary Clients**:
     - `secondary_client_ids` allows multiple clients per deal (e.g., co-buyers)
     - All linked clients must be non-deleted
     - Maximum 5 secondary clients per deal
 
-14. **Stage Progression Tracking**:
+15. **Stage Progression Tracking**:
     - System tracks time spent in each stage via `deal_activities` timestamps
     - Stage analytics calculate average time per stage
     - Used for velocity reporting and bottleneck identification
 
-15. **Lost Reason Analytics**:
+16. **Lost Reason Analytics**:
     - Lost reasons categorized for reporting: pricing, timing, financing, competition, other
     - Free-text field allows detailed capture
     - Used for win/loss analysis and process improvement

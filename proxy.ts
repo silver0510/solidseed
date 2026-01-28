@@ -6,6 +6,8 @@ const PROTECTED_ROUTES = [
   '/dashboard',
   '/clients',
   '/tasks',
+  '/deals',
+  '/settings',
 ];
 
 // Auth routes that should redirect to dashboard if already authenticated
@@ -20,9 +22,10 @@ const PUBLIC_ROUTES = [
   '/',
   '/reset-password',
   '/verify-email',
+  '/onboarding',
 ];
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if the current path is protected
@@ -40,8 +43,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // For protected routes, just add redirect parameter if no token
-  // The actual authentication check will be done by ProtectedRoute component
+  // For protected routes, check authentication and onboarding
   if (isProtectedRoute) {
     // Get token from cookies
     const token = request.cookies.get('better-auth.session_token')?.value ||
@@ -52,6 +54,31 @@ export function proxy(request: NextRequest) {
       const url = new URL('/login', request.url);
       url.searchParams.set('redirect', pathname);
       return NextResponse.redirect(url);
+    }
+
+    // Check onboarding status (only for authenticated users)
+    // Skip onboarding check if already on onboarding page
+    if (!pathname.startsWith('/onboarding')) {
+      try {
+        const preferencesUrl = new URL('/api/user-preferences', request.url);
+        const response = await fetch(preferencesUrl.toString(), {
+          headers: {
+            Cookie: request.headers.get('cookie') || '',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && !data.data.onboarding_completed) {
+            // Redirect to onboarding if not completed
+            return NextResponse.redirect(new URL('/onboarding/deal-types', request.url));
+          }
+        }
+      } catch (error) {
+        // On error, allow request to continue
+        // API routes will handle auth validation
+        console.error('Error checking onboarding status:', error);
+      }
     }
   }
 

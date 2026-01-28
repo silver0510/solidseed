@@ -152,9 +152,41 @@ function DealsContent() {
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [selectedDealTypeId, setSelectedDealTypeId] = useState<string | undefined>(undefined);
   const [viewMode, setViewMode] = useState<ViewMode>('pipeline');
+  const [userPreferences, setUserPreferences] = useState<{
+    residential_sale_enabled: boolean;
+    mortgage_loan_enabled: boolean;
+  } | null>(null);
 
   // Fetch deal types from API
   const { data: dealTypes } = useDealTypes();
+
+  // Fetch user preferences
+  useEffect(() => {
+    async function fetchPreferences() {
+      try {
+        const response = await fetch('/api/user-preferences', {
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUserPreferences({
+            residential_sale_enabled: data.data.residential_sale_enabled,
+            mortgage_loan_enabled: data.data.mortgage_loan_enabled,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user preferences:', error);
+        // Default to showing both if fetch fails
+        setUserPreferences({
+          residential_sale_enabled: true,
+          mortgage_loan_enabled: true,
+        });
+      }
+    }
+
+    fetchPreferences();
+  }, []);
 
   // Map deal types by type_code for easy access
   const dealTypeMap = useMemo(() => {
@@ -164,80 +196,104 @@ function DealsContent() {
     };
   }, [dealTypes]);
 
+  // Filter enabled deal types based on user preferences
+  const enabledDealTypes = useMemo(() => {
+    if (!userPreferences) return [];
+
+    const enabled = [];
+    if (userPreferences.residential_sale_enabled && dealTypeMap.residential_sale) {
+      enabled.push(dealTypeMap.residential_sale);
+    }
+    if (userPreferences.mortgage_loan_enabled && dealTypeMap.mortgage) {
+      enabled.push(dealTypeMap.mortgage);
+    }
+    return enabled;
+  }, [userPreferences, dealTypeMap]);
+
   // Set default deal type once data is loaded
   useEffect(() => {
-    if (dealTypeMap.residential_sale?.id && !selectedDealTypeId) {
-      setSelectedDealTypeId(dealTypeMap.residential_sale.id);
+    if (enabledDealTypes.length > 0 && !selectedDealTypeId) {
+      setSelectedDealTypeId(enabledDealTypes[0].id);
     }
-  }, [dealTypeMap.residential_sale?.id, selectedDealTypeId]);
+  }, [enabledDealTypes, selectedDealTypeId]);
 
-  // If no deal types loaded yet, return null (let Suspense handle it)
-  if (!dealTypeMap.residential_sale || !dealTypeMap.mortgage || !selectedDealTypeId) {
+  // If no deal types loaded yet or preferences not loaded, return null (let Suspense handle it)
+  if (!userPreferences || enabledDealTypes.length === 0 || !selectedDealTypeId) {
     return null;
   }
 
   return (
     <div className="flex-1 space-y-4 p-4 lg:p-6">
-      {/* Deal Type Tabs */}
+      {/* Deal Type Tabs - Only show if more than one type is enabled */}
       <Tabs value={selectedDealTypeId} onValueChange={setSelectedDealTypeId} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value={dealTypeMap.residential_sale.id} className="flex items-center gap-2">
-            <Home className="h-4 w-4" />
-            <span className="hidden sm:inline">{dealTypeMap.residential_sale.type_name}</span>
-            <span className="sm:hidden">Residential</span>
-          </TabsTrigger>
-          <TabsTrigger value={dealTypeMap.mortgage.id} className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4" />
-            <span className="hidden sm:inline">{dealTypeMap.mortgage.type_name}</span>
-            <span className="sm:hidden">Mortgage</span>
-          </TabsTrigger>
-        </TabsList>
+        {enabledDealTypes.length > 1 && (
+          <TabsList className={`grid w-full grid-cols-${enabledDealTypes.length}`}>
+            {userPreferences.residential_sale_enabled && dealTypeMap.residential_sale && (
+              <TabsTrigger value={dealTypeMap.residential_sale.id} className="flex items-center gap-2">
+                <Home className="h-4 w-4" />
+                <span className="hidden sm:inline">{dealTypeMap.residential_sale.type_name}</span>
+                <span className="sm:hidden">Residential</span>
+              </TabsTrigger>
+            )}
+            {userPreferences.mortgage_loan_enabled && dealTypeMap.mortgage && (
+              <TabsTrigger value={dealTypeMap.mortgage.id} className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                <span className="hidden sm:inline">{dealTypeMap.mortgage.type_name}</span>
+                <span className="sm:hidden">Mortgage</span>
+              </TabsTrigger>
+            )}
+          </TabsList>
+        )}
 
         {/* Residential Sale Content */}
-        <TabsContent value={dealTypeMap.residential_sale.id} className="space-y-4 mt-0">
-          <DealViewWrapper
-            dealTypeId={dealTypeMap.residential_sale.id}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          >
-            {viewMode === 'pipeline' ? (
-              <Suspense fallback={<SectionLoader message="Loading pipeline..." />}>
-                <DealPipelineBoard dealTypeId={dealTypeMap.residential_sale.id} />
-              </Suspense>
-            ) : viewMode === 'list' ? (
-              <Suspense fallback={<SectionLoader message="Loading deals..." />}>
-                <DealListView dealTypeId={dealTypeMap.residential_sale.id} />
-              </Suspense>
-            ) : (
-              <Suspense fallback={<SectionLoader message="Loading lost deals..." />}>
-                <LostDealsView dealTypeId={dealTypeMap.residential_sale.id} />
-              </Suspense>
-            )}
-          </DealViewWrapper>
-        </TabsContent>
+        {userPreferences.residential_sale_enabled && dealTypeMap.residential_sale && (
+          <TabsContent value={dealTypeMap.residential_sale.id} className="space-y-4 mt-0">
+            <DealViewWrapper
+              dealTypeId={dealTypeMap.residential_sale.id}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            >
+              {viewMode === 'pipeline' ? (
+                <Suspense fallback={<SectionLoader message="Loading pipeline..." />}>
+                  <DealPipelineBoard dealTypeId={dealTypeMap.residential_sale.id} />
+                </Suspense>
+              ) : viewMode === 'list' ? (
+                <Suspense fallback={<SectionLoader message="Loading deals..." />}>
+                  <DealListView dealTypeId={dealTypeMap.residential_sale.id} />
+                </Suspense>
+              ) : (
+                <Suspense fallback={<SectionLoader message="Loading lost deals..." />}>
+                  <LostDealsView dealTypeId={dealTypeMap.residential_sale.id} />
+                </Suspense>
+              )}
+            </DealViewWrapper>
+          </TabsContent>
+        )}
 
         {/* Mortgage Content */}
-        <TabsContent value={dealTypeMap.mortgage.id} className="space-y-4 mt-0">
-          <DealViewWrapper
-            dealTypeId={dealTypeMap.mortgage.id}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          >
-            {viewMode === 'pipeline' ? (
-              <Suspense fallback={<SectionLoader message="Loading pipeline..." />}>
-                <DealPipelineBoard dealTypeId={dealTypeMap.mortgage.id} />
-              </Suspense>
-            ) : viewMode === 'list' ? (
-              <Suspense fallback={<SectionLoader message="Loading deals..." />}>
-                <DealListView dealTypeId={dealTypeMap.mortgage.id} />
-              </Suspense>
-            ) : (
-              <Suspense fallback={<SectionLoader message="Loading lost deals..." />}>
-                <LostDealsView dealTypeId={dealTypeMap.mortgage.id} />
-              </Suspense>
-            )}
-          </DealViewWrapper>
-        </TabsContent>
+        {userPreferences.mortgage_loan_enabled && dealTypeMap.mortgage && (
+          <TabsContent value={dealTypeMap.mortgage.id} className="space-y-4 mt-0">
+            <DealViewWrapper
+              dealTypeId={dealTypeMap.mortgage.id}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            >
+              {viewMode === 'pipeline' ? (
+                <Suspense fallback={<SectionLoader message="Loading pipeline..." />}>
+                  <DealPipelineBoard dealTypeId={dealTypeMap.mortgage.id} />
+                </Suspense>
+              ) : viewMode === 'list' ? (
+                <Suspense fallback={<SectionLoader message="Loading deals..." />}>
+                  <DealListView dealTypeId={dealTypeMap.mortgage.id} />
+                </Suspense>
+              ) : (
+                <Suspense fallback={<SectionLoader message="Loading lost deals..." />}>
+                  <LostDealsView dealTypeId={dealTypeMap.mortgage.id} />
+                </Suspense>
+              )}
+            </DealViewWrapper>
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Floating Action Button - Mobile Only */}
