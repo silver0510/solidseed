@@ -7,8 +7,8 @@
  * Mobile-first design with 44x44px touch targets.
  */
 
-import { Suspense, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { ClientList } from '@/features/clients/components/ClientList';
 import { ClientForm } from '@/features/clients/components/ClientForm';
@@ -69,12 +69,23 @@ function MetricCard({
 
 export default function ClientsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [clientToDelete, setClientToDelete] = useState<ClientWithTags | null>(null);
+
+  // Check for action=new query parameter to open dialog
+  useEffect(() => {
+    const action = searchParams.get('action');
+    if (action === 'new') {
+      setIsDialogOpen(true);
+      // Remove the query parameter after opening the dialog
+      router.replace('/clients');
+    }
+  }, [searchParams, router]);
 
   // Fetch client stats for metrics
   const { data: clientsData } = useQuery({
