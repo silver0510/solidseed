@@ -41,7 +41,9 @@ export default function DashboardLayout({
 
               {/* Page content */}
               <main className="pb-20 lg:pb-6">
-                {children}
+                <div className="mx-auto max-w-[1000px]">
+                  {children}
+                </div>
               </main>
             </div>
 
