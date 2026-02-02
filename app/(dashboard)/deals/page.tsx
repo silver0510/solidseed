@@ -151,7 +151,7 @@ function DealViewWrapper({
 function DealsContent() {
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [selectedDealTypeId, setSelectedDealTypeId] = useState<string | undefined>(undefined);
-  const [viewMode, setViewMode] = useState<ViewMode>('pipeline');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [userPreferences, setUserPreferences] = useState<{
     residential_sale_enabled: boolean;
     mortgage_loan_enabled: boolean;
