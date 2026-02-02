@@ -9,6 +9,7 @@
 import { useState, FormEvent, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Spinner } from '@/components/ui/spinner';
 import { resetPassword } from '@/lib/auth/api';
 import { FormInput } from '@/components/auth/FormInput';
 import { Button } from '@/components/auth/Button';
@@ -207,8 +208,8 @@ function ResetPasswordForm() {
   if (tokenValid === null) {
     return (
       <div className="text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+          <Spinner className="size-8 text-primary" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900">Validating Reset Link</h2>
         <p className="mt-2 text-sm text-gray-600">Please wait...</p>
@@ -284,8 +285,8 @@ export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
       <div className="text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+          <Spinner className="size-8 text-primary" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900">Loading...</h2>
         <p className="mt-2 text-sm text-gray-600">Please wait...</p>

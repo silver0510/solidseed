@@ -13,6 +13,7 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { ClientList } from '@/features/clients/components/ClientList';
 import { ClientForm } from '@/features/clients/components/ClientForm';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
+import { Spinner } from '@/components/ui/spinner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -272,7 +273,7 @@ export default function ClientsPage() {
           {isLoadingClient ? (
             <div className="flex items-center justify-center py-8">
               <div className="flex flex-col items-center gap-2">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <Spinner className="size-8 text-primary" />
                 <p className="text-sm text-muted-foreground">Loading client data...</p>
               </div>
             </div>

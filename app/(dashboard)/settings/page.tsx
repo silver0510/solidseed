@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { Camera, Loader2 } from 'lucide-react';
+import { Camera } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -166,7 +167,7 @@ export default function SettingsPage() {
   if (authLoading || isLoadingProfile) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Spinner className="size-8 text-primary" />
       </div>
     );
   }
@@ -204,7 +205,7 @@ export default function SettingsPage() {
                 </Avatar>
                 {isUploadingAvatar && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                    <Loader2 className="h-6 w-6 animate-spin text-white" />
+                    <Spinner className="size-6 text-white" />
                   </div>
                 )}
                 <button
@@ -276,7 +277,7 @@ export default function SettingsPage() {
 
         <div className="flex justify-end mt-6">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting && <Spinner className="mr-2 size-4" />}
             Save Changes
           </Button>
         </div>

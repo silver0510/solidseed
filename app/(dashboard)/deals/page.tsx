@@ -11,7 +11,8 @@ import { LostDealsView } from '@/features/deals/components/LostDealsView';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { QuickDealAddSheet } from '@/features/deals/components/QuickDealAddSheet';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
-import { Home, DollarSign, TrendingUp, LayoutGrid, LayoutList, Loader2, XCircle } from 'lucide-react';
+import { Home, DollarSign, TrendingUp, LayoutGrid, LayoutList, XCircle } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 import { useDealTypes } from '@/features/deals/hooks/useDealTypes';
 import { usePipelineDeals } from '@/features/deals/hooks/usePipelineDeals';
 
@@ -45,7 +46,7 @@ function DealViewWrapper({
   if (!data || !data.summary || !data.stages) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Spinner className="size-8 text-primary" />
       </div>
     );
   }

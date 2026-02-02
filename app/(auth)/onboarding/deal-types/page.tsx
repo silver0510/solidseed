@@ -9,7 +9,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, Calculator, Loader2 } from 'lucide-react';
+import { Home, Calculator } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -187,7 +188,7 @@ export default function DealTypeOnboardingPage() {
       >
         {isSubmitting ? (
           <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            <Spinner className="mr-2 size-5" />
             Saving...
           </>
         ) : (
