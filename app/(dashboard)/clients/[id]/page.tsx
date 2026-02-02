@@ -25,6 +25,7 @@ import {
 import { clientApi, clientQueryKeys } from '@/features/clients/api/clientApi';
 import type { ClientFormData } from '@/features/clients';
 import type { ClientStatus, UserTag } from '@/lib/types/client';
+import { ArrowLeft, Pencil } from 'lucide-react';
 
 // =============================================================================
 // API HELPERS
@@ -183,20 +184,7 @@ export default function ClientProfilePage() {
           aria-label="Go back to clients list"
           className="-ml-2 shrink-0"
         >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 19.5L8.25 12l7.5-7.5"
-            />
-          </svg>
+          <ArrowLeft className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
         </Button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -227,20 +215,7 @@ export default function ClientProfilePage() {
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={handleEdit} aria-label="Edit client" className="shrink-0">
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-            />
-          </svg>
+          <Pencil className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
           <span className="hidden sm:inline ml-1">Edit</span>
         </Button>
       </div>

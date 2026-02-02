@@ -12,6 +12,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { Button } from '@/components/auth/Button';
+import { Upload, FileText, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { useDocumentUpload } from '../../hooks/useDocumentUpload';
 import { formatFileSize } from '../../helpers';
 import type { ClientDocument } from '../../types';
@@ -69,107 +70,8 @@ const ACCEPT_TYPES = [
 ].join(',');
 
 // =============================================================================
-// ICONS (inline SVG to avoid external dependencies)
+// HELPER COMPONENTS
 // =============================================================================
-
-const UploadIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="17,8 12,3 7,8" />
-    <line x1="12" x2="12" y1="3" y2="15" />
-  </svg>
-);
-
-const FileTextIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-    <path d="M10 9H8" />
-    <path d="M16 13H8" />
-    <path d="M16 17H8" />
-  </svg>
-);
-
-const CheckCircleIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <path d="m9 12 2 2 4-4" />
-  </svg>
-);
-
-const AlertCircleIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" x2="12" y1="8" y2="12" />
-    <line x1="12" x2="12.01" y1="16" y2="16" />
-  </svg>
-);
-
-const XIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M18 6 6 18" />
-    <path d="m6 6 12 12" />
-  </svg>
-);
 
 const SpinnerIcon = ({ className }: { className?: string }) => (
   <div
@@ -357,11 +259,11 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
       case 'uploading':
         return <SpinnerIcon className="text-blue-500" />;
       case 'success':
-        return <CheckCircleIcon className="text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case 'error':
-        return <AlertCircleIcon className="text-red-500" />;
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
-        return <FileTextIcon className="text-muted-foreground" />;
+        return <FileText className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -412,7 +314,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
               isDragActive ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
             )}
           >
-            <UploadIcon />
+            <Upload className="h-6 w-6" />
           </div>
 
           <div className="space-y-1">
@@ -501,7 +403,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
                   aria-label={`Remove ${uploadingFile.file.name}`}
                   className="p-1 hover:bg-muted rounded"
                 >
-                  <XIcon />
+                  <X className="h-4 w-4" />
                 </button>
               )}
             </div>
@@ -516,7 +418,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({
           role="alert"
         >
           <div className="flex items-center gap-2">
-            <AlertCircleIcon className="text-red-500 flex-shrink-0" />
+            <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
             <span className="text-sm">{error}</span>
           </div>
         </div>

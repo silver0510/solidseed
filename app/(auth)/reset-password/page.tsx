@@ -9,6 +9,7 @@
 import { useState, FormEvent, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { XCircle, Check } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
 import { resetPassword } from '@/lib/auth/api';
 import { FormInput } from '@/components/auth/FormInput';
@@ -120,19 +121,7 @@ function ResetPasswordForm() {
       <div className="space-y-6">
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-            <svg
-              className="h-8 w-8 text-red-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
+            <XCircle className="h-8 w-8 text-red-600" strokeWidth={2} />
           </div>
           <h2 className="text-2xl font-bold text-gray-900">Invalid Reset Link</h2>
           <p className="mt-2 text-sm text-gray-600">
@@ -165,19 +154,7 @@ function ResetPasswordForm() {
       <div className="space-y-6">
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <svg
-              className="h-8 w-8 text-green-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+            <Check className="h-8 w-8 text-green-600" strokeWidth={2} />
           </div>
           <h2 className="text-2xl font-bold text-gray-900">Password Reset Successful!</h2>
           <p className="mt-2 text-sm text-gray-600">

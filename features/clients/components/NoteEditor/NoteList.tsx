@@ -9,6 +9,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils/cn';
+import { Star, Pencil, Trash2, StickyNote } from 'lucide-react';
 import { formatDateTime } from '../../helpers';
 import type { ClientNote } from '../../types';
 
@@ -35,65 +36,8 @@ export interface NoteListProps {
 }
 
 // =============================================================================
-// ICONS (inline SVG to avoid external dependencies)
+// HELPER COMPONENTS
 // =============================================================================
-
-const StarIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>
-);
-
-const EditIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-    <path d="m15 5 4 4" />
-  </svg>
-);
-
-const TrashIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M3 6h18" />
-    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-  </svg>
-);
 
 const SpinnerIcon = ({ className }: { className?: string }) => (
   <div
@@ -104,25 +48,6 @@ const SpinnerIcon = ({ className }: { className?: string }) => (
     role="status"
     aria-label="Loading"
   />
-);
-
-const StickyNoteIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="48"
-    height="48"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z" />
-    <path d="M15 3v4a2 2 0 0 0 2 2h4" />
-  </svg>
 );
 
 // =============================================================================
@@ -171,7 +96,7 @@ export const NoteList: React.FC<NoteListProps> = ({
     return (
       <div className={cn('w-full rounded-lg border border-border bg-card p-8', className)}>
         <div className="flex flex-col items-center justify-center py-4">
-          <StickyNoteIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
+          <StickyNote className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <p className="text-sm text-muted-foreground">No notes yet</p>
           <p className="text-xs text-muted-foreground/70 mt-1">Add your first note above</p>
         </div>
@@ -217,7 +142,7 @@ export const NoteList: React.FC<NoteListProps> = ({
                   <td className="px-4 py-3">
                     <div className="flex items-start gap-2">
                       {note.is_important && (
-                        <StarIcon className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                        <Star fill="currentColor" className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                       )}
                       <p className="text-sm text-foreground whitespace-pre-wrap wrap-break-word line-clamp-2">
                         {note.content}
@@ -253,7 +178,7 @@ export const NoteList: React.FC<NoteListProps> = ({
                             isCurrentlyDeleting && 'cursor-not-allowed opacity-50'
                           )}
                         >
-                          <EditIcon />
+                          <Pencil className="h-4 w-4" />
                         </button>
                       )}
                       {onDelete && (
@@ -272,7 +197,7 @@ export const NoteList: React.FC<NoteListProps> = ({
                               : 'text-destructive/70 hover:text-destructive hover:bg-destructive/10'
                           )}
                         >
-                          {isCurrentlyDeleting ? <SpinnerIcon /> : <TrashIcon />}
+                          {isCurrentlyDeleting ? <SpinnerIcon /> : <Trash2 className="h-4 w-4" />}
                         </button>
                       )}
                     </div>

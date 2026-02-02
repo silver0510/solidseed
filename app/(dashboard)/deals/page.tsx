@@ -11,7 +11,7 @@ import { LostDealsView } from '@/features/deals/components/LostDealsView';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { QuickDealAddSheet } from '@/features/deals/components/QuickDealAddSheet';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
-import { Home, DollarSign, TrendingUp, LayoutGrid, LayoutList, XCircle } from 'lucide-react';
+import { Home, DollarSign, TrendingUp, LayoutGrid, LayoutList, XCircle, Plus } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
 import { useDealTypes } from '@/features/deals/hooks/useDealTypes';
 import { usePipelineDeals } from '@/features/deals/hooks/usePipelineDeals';
@@ -136,9 +136,7 @@ function DealViewWrapper({
           Lost Deals
         </Button>
         <Button variant="outline" size="sm" className="h-9" onClick={() => router.push('/deals/new')}>
-          <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
+          <Plus className="h-4 w-4 mr-2" strokeWidth={1.5} />
           Add Deal
         </Button>
       </div>

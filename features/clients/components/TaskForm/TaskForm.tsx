@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils/cn';
 import type { ClientWithTags, CreateTaskInput, TaskPriority } from '../../types';
@@ -113,19 +113,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
         {fixedClientId ? (
           // Fixed client - read-only display
           <div className="flex items-center gap-2 rounded-md border border-input bg-muted px-3 py-2 text-sm h-9">
-            <svg
-              className="h-4 w-4 text-muted-foreground"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-              />
-            </svg>
+            <User className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
             <span className="text-foreground">{fixedClientName || 'Current Client'}</span>
           </div>
         ) : (

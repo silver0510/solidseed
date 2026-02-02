@@ -15,6 +15,7 @@ import { DocumentsTab } from './DocumentsTab';
 import { NotesTab } from './NotesTab';
 import { TasksTab } from './TasksTab';
 import { DealsTab } from './DealsTab';
+import { ArrowLeft, User, FileText, StickyNote, CheckSquare, Briefcase, Loader2 } from 'lucide-react';
 import type { ClientProfileTab, ClientWithCounts } from '../../types';
 
 // =============================================================================
@@ -38,144 +39,16 @@ export interface ClientProfileProps {
 }
 
 // =============================================================================
-// ICONS
+// ICONS - Using lucide-react
 // =============================================================================
 
-const ArrowLeftIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="m12 19-7-7 7-7" />
-    <path d="M19 12H5" />
-  </svg>
-);
-
-const UserIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
-
-const FileTextIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-    <path d="M10 9H8" />
-    <path d="M16 13H8" />
-    <path d="M16 17H8" />
-  </svg>
-);
-
-const StickyNoteIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z" />
-    <path d="M15 3v4a2 2 0 0 0 2 2h4" />
-  </svg>
-);
-
-const CheckSquareIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <rect width="18" height="18" x="3" y="3" rx="2" />
-    <path d="m9 12 2 2 4-4" />
-  </svg>
-);
-
-const BriefcaseIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <rect width="20" height="14" x="2" y="7" rx="2" ry="2" />
-    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-  </svg>
-);
-
-const LoadingSpinner = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={cn('animate-spin', className)}
-    aria-hidden="true"
-    role="status"
-  >
-    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-  </svg>
-);
+const ArrowLeftIcon = ArrowLeft;
+const UserIcon = User;
+const FileTextIcon = FileText;
+const StickyNoteIcon = StickyNote;
+const CheckSquareIcon = CheckSquare;
+const BriefcaseIcon = Briefcase;
+const LoadingSpinner = Loader2;
 
 // =============================================================================
 // TAB DEFINITIONS

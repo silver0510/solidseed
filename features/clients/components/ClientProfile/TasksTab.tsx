@@ -8,6 +8,7 @@
 
 import React, { useCallback, useState } from 'react';
 import { cn } from '@/lib/utils/cn';
+import { Plus } from 'lucide-react';
 import { TaskList } from '../TaskCard';
 import { TaskDetailsDialog } from '../TaskDetailsDialog';
 import { TaskForm } from '../TaskForm';
@@ -177,20 +178,7 @@ export const TasksTab: React.FC<TasksTabProps> = ({
           onClick={handleAddTask}
           className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
         >
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 4.5v15m7.5-7.5h-15"
-            />
-          </svg>
+          <Plus className="h-4 w-4" aria-hidden="true" />
           <span>Add Task</span>
         </button>
       </div>

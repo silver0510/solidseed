@@ -7,6 +7,7 @@
  */
 
 import { useMemo, useEffect, useState } from 'react';
+import { Check } from 'lucide-react';
 import { calculatePasswordStrength, type PasswordStrength } from '@/lib/password-validation';
 
 interface PasswordStrengthIndicatorProps {
@@ -129,19 +130,7 @@ export function PasswordStrengthIndicator({
                   }`}
                 >
                   {criterion.met && (
-                    <svg
-                      className="h-2.5 w-2.5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={3}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
+                    <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
                   )}
                 </div>
                 <span

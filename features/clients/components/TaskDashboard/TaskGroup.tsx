@@ -14,6 +14,11 @@ import {
   CircleIcon,
   PlayCircleIcon,
   CheckCircle2Icon,
+  ChevronDown,
+  AlertTriangle,
+  Clock,
+  Calendar,
+  CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Card, CardContent } from '@/components/ui/card';
@@ -80,105 +85,14 @@ const STATUS_CONFIG = {
 } as const;
 
 // =============================================================================
-// ICONS (inline SVG)
+// ICONS - Using lucide-react
 // =============================================================================
 
-const ChevronDownIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="m6 9 6 6 6-6" />
-  </svg>
-);
-
-const AlertTriangleIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-    <path d="M12 9v4" />
-    <path d="M12 17h.01" />
-  </svg>
-);
-
-const ClockIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-);
-
-const CalendarIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M8 2v4" />
-    <path d="M16 2v4" />
-    <rect width="18" height="18" x="3" y="4" rx="2" />
-    <path d="M3 10h18" />
-  </svg>
-);
-
-const CheckCircleIconSvg = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-    <path d="m9 11 3 3L22 4" />
-  </svg>
-);
+const ChevronDownIcon = ChevronDown;
+const AlertTriangleIcon = AlertTriangle;
+const ClockIcon = Clock;
+const CalendarIcon = Calendar;
+const CheckCircleIconSvg = CheckCircle2;
 
 // =============================================================================
 // HELPERS

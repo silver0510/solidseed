@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Home, Calculator, Plus, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useClientDeals } from '../hooks/useClientDeals';
 import type { ClientDeal } from '../hooks/useClientDeals';
@@ -27,91 +28,13 @@ export interface ClientDealsWidgetProps {
 }
 
 // =============================================================================
-// ICONS
+// ICONS - Using lucide-react
 // =============================================================================
 
-const HomeIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    <polyline points="9 22 9 12 15 12 15 22" />
-  </svg>
-);
-
-const CalculatorIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <rect width="16" height="20" x="4" y="2" rx="2" />
-    <line x1="8" x2="16" y1="6" y2="6" />
-    <line x1="16" x2="16" y1="14" y2="18" />
-    <path d="M16 10h.01" />
-    <path d="M12 10h.01" />
-    <path d="M8 10h.01" />
-    <path d="M12 14h.01" />
-    <path d="M8 14h.01" />
-    <path d="M12 18h.01" />
-    <path d="M8 18h.01" />
-  </svg>
-);
-
-const PlusIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M5 12h14" />
-    <path d="M12 5v14" />
-  </svg>
-);
-
-const LoadingSpinner = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={cn('animate-spin', className)}
-    aria-hidden="true"
-  >
-    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-  </svg>
-);
+const HomeIcon = Home;
+const CalculatorIcon = Calculator;
+const PlusIcon = Plus;
+const LoadingSpinner = Loader2;
 
 // =============================================================================
 // HELPER FUNCTIONS

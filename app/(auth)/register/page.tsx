@@ -9,6 +9,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Check } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
 import { FormInput } from '@/components/auth/FormInput';
 import { Button } from '@/components/auth/Button';
@@ -168,19 +169,7 @@ export default function RegisterPage() {
       <div className="space-y-6">
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
-            <svg
-              className="h-8 w-8 text-emerald-600 dark:text-emerald-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+            <Check className="h-8 w-8 text-emerald-600 dark:text-emerald-400" strokeWidth={2} />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Check Your Email</h2>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">

@@ -9,6 +9,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils/cn';
+import { FileText, FileImage, File, Download, Trash2, FolderOpen } from 'lucide-react';
 import { formatFileSize, formatDateTime } from '../../helpers';
 import type { ClientDocument } from '../../types';
 
@@ -33,110 +34,8 @@ export interface DocumentListProps {
 }
 
 // =============================================================================
-// ICONS (inline SVG to avoid external dependencies)
+// HELPER COMPONENTS
 // =============================================================================
-
-const FileTextIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-    <path d="M10 9H8" />
-    <path d="M16 13H8" />
-    <path d="M16 17H8" />
-  </svg>
-);
-
-const FileImageIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-    <circle cx="10" cy="13" r="2" />
-    <path d="m20 17-1.09-1.09a2 2 0 0 0-2.82 0L10 22" />
-  </svg>
-);
-
-const FileIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-  </svg>
-);
-
-const DownloadIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="7 10 12 15 17 10" />
-    <line x1="12" x2="12" y1="15" y2="3" />
-  </svg>
-);
-
-const TrashIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M3 6h18" />
-    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-  </svg>
-);
 
 const SpinnerIcon = ({ className }: { className?: string }) => (
   <div
@@ -149,24 +48,6 @@ const SpinnerIcon = ({ className }: { className?: string }) => (
   />
 );
 
-const FolderOpenIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="48"
-    height="48"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2" />
-  </svg>
-);
-
 // =============================================================================
 // HELPERS
 // =============================================================================
@@ -176,12 +57,12 @@ const FolderOpenIcon = ({ className }: { className?: string }) => (
  */
 function getFileIcon(fileType: string) {
   if (fileType.startsWith('image/')) {
-    return FileImageIcon;
+    return FileImage;
   }
   if (fileType === 'application/pdf') {
-    return FileTextIcon;
+    return FileText;
   }
-  return FileIcon;
+  return File;
 }
 
 /**
@@ -241,7 +122,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     return (
       <div className={cn('w-full rounded-lg border border-border bg-card p-8', className)}>
         <div className="flex flex-col items-center justify-center py-4">
-          <FolderOpenIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
+          <FolderOpen className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <p className="text-sm text-muted-foreground">No documents uploaded yet</p>
         </div>
       </div>
@@ -289,7 +170,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="shrink-0">
-                      <FileIconComponent className="text-muted-foreground h-5 w-5" />
+                      <FileIconComponent className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">
@@ -336,7 +217,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                         aria-label={`Download ${document.file_name}`}
                         className="p-1.5 rounded transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
                       >
-                        <DownloadIcon />
+                        <Download className="h-4 w-4" />
                       </button>
                     )}
                     {onDelete && (
@@ -356,7 +237,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                             : 'text-destructive/70 hover:text-destructive hover:bg-destructive/10'
                         )}
                       >
-                        {isCurrentlyDeleting ? <SpinnerIcon /> : <TrashIcon />}
+                        {isCurrentlyDeleting ? <SpinnerIcon /> : <Trash2 className="h-4 w-4" />}
                       </button>
                     )}
                   </div>

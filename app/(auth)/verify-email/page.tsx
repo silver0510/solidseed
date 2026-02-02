@@ -9,6 +9,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Check, XCircle } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
 import { verifyEmail } from '@/lib/auth/api';
 import { formatAuthError } from '@/lib/auth/utils';
@@ -77,19 +78,7 @@ function VerifyEmailContent() {
         <>
           <div className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <svg
-                className="h-8 w-8 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+              <Check className="h-8 w-8 text-green-600" strokeWidth={2} />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Email Verified!</h2>
             <p className="mt-2 text-sm text-gray-600">{message}</p>
@@ -118,19 +107,7 @@ function VerifyEmailContent() {
         <>
           <div className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-              <svg
-                className="h-8 w-8 text-red-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <XCircle className="h-8 w-8 text-red-600" strokeWidth={2} />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Verification Failed</h2>
             <p className="mt-2 text-sm text-gray-600">{message}</p>

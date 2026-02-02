@@ -35,6 +35,7 @@ import {
   Home,
   Edit,
   Settings,
+  Clock,
 } from 'lucide-react';
 import { ACTIVITY_TYPE_LABELS, DEAL_STAGES } from '../../types';
 import type { DealWithRelations, DealActivityType } from '../../types';
@@ -209,9 +210,7 @@ export function ActivityTab({ deal }: ActivityTabProps) {
       {/* Activity Feed */}
       {filteredActivities.length === 0 ? (
         <div className="text-center py-12">
-          <svg className="mx-auto h-12 w-12 text-muted-foreground/50" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <Clock className="mx-auto h-12 w-12 text-muted-foreground/50" strokeWidth={1.5} />
           <p className="mt-4 font-medium text-muted-foreground">No activities yet</p>
           <p className="text-sm text-muted-foreground mt-1">Activities will appear here as you work on this deal</p>
         </div>
