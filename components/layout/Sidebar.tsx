@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   SettingsIcon,
@@ -321,10 +322,16 @@ function SidebarContent({ onClose, isCollapsed }: { onClose?: () => void; isColl
         "flex h-16 items-center",
         isCollapsed ? "justify-center px-2" : "gap-3 px-6"
       )}>
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold">
-          K
+        <div className="relative h-9 shrink-0">
+          <Image
+            src="/icons/icon.png"
+            alt="Korella Logo"
+            width={140}
+            height={54}
+            className="rounded-lg"
+            priority
+          />
         </div>
-        {!isCollapsed && <span className="font-semibold text-lg">Korella</span>}
       </div>
 
       {/* Main Navigation */}
