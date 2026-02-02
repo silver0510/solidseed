@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, StickyNote, Briefcase, DollarSign, TrendingUp, CheckCircle2, ChevronRight, Plus, Users, Star, Home, Calendar, Clock } from 'lucide-react';
+import { CheckCircle, StickyNote, Briefcase, DollarSign, CheckCircle2, ChevronRight, Plus, Users, Star, Home, Calendar, Clock } from 'lucide-react';
 
 /**
  * Dashboard Page
@@ -23,7 +23,7 @@ import { CheckCircle, StickyNote, Briefcase, DollarSign, TrendingUp, CheckCircle
 interface DashboardStats {
   pipeline_value: number;
   active_deals_count: number;
-  close_rate: number;
+  total_clients: number;
   hot_deals_count: number;
   expected_commission: number;
   tasks_due_today: number;
@@ -389,15 +389,15 @@ export default function DashboardPage() {
           icon={<Briefcase className="h-5 w-5" strokeWidth={1.5} />}
         />
         <MetricCard
-          title="Close Rate"
-          value={statsLoading ? '...' : `${statsData?.close_rate || 0}%`}
-          change="Last 90 days"
-          changeType={statsData && statsData.close_rate >= 70 ? 'positive' : statsData && statsData.close_rate >= 50 ? 'neutral' : 'negative'}
-          variant={statsData && statsData.close_rate >= 70 ? 'success' : statsData && statsData.close_rate >= 50 ? 'warning' : 'danger'}
-          icon={<TrendingUp className="h-5 w-5" strokeWidth={1.5} />}
+          title="Total Clients"
+          value={statsLoading ? '...' : statsData?.total_clients || 0}
+          change="All clients"
+          changeType="neutral"
+          variant="default"
+          icon={<Users className="h-5 w-5" strokeWidth={1.5} />}
         />
         <MetricCard
-          title="Action Items"
+          title="Today's Tasks"
           value={statsLoading ? '...' : (statsData?.tasks_due_today || 0) + (statsData?.overdue_tasks || 0)}
           change={statsData?.overdue_tasks ? `${statsData.overdue_tasks} overdue` : 'All caught up'}
           changeType={statsData && statsData.overdue_tasks > 0 ? 'negative' : 'positive'}
@@ -413,16 +413,16 @@ export default function DashboardPage() {
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <QuickActionCard
-            title="Add New Deal"
-            description="Create a new deal opportunity"
-            onClick={handleAddDeal}
-            icon={<Briefcase className="h-6 w-6" strokeWidth={1.5} />}
-          />
-          <QuickActionCard
             title="Add New Client"
             description="Create a new client profile"
             onClick={handleAddClient}
             icon={<Users className="h-6 w-6" strokeWidth={1.5} />}
+          />
+          <QuickActionCard
+            title="Add New Deal"
+            description="Create a new deal opportunity"
+            onClick={handleAddDeal}
+            icon={<Briefcase className="h-6 w-6" strokeWidth={1.5} />}
           />
           <QuickActionCard
             title="View Deals"

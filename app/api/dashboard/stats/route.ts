@@ -15,10 +15,10 @@ import { createClient } from '@supabase/supabase-js';
  *
  * Get dashboard statistics including:
  * - Pipeline value and active deals
- * - Close rate (won / total closed)
+ * - Total clients count
  * - Hot deals (closing in next 30 days)
  * - Expected commission
- * - Tasks due today
+ * - Tasks due today and overdue
  *
  * Response:
  * - 200: Dashboard statistics
@@ -78,7 +78,18 @@ export async function GET() {
       return closeDate >= today && closeDate <= thirtyDaysFromNow;
     }).length;
 
-    // Get closed deals for close rate calculation (last 90 days)
+    // Get total clients count
+    const { count: clientsCount, error: clientsError } = await supabase
+      .from('clients')
+      .select('*', { count: 'exact', head: true })
+      .eq('assigned_to', user.id)
+      .eq('is_deleted', false);
+
+    if (clientsError) {
+      throw new Error(`Failed to fetch clients: ${clientsError.message}`);
+    }
+
+    // Get closed deals for comparison data (last 90 days)
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(today.getDate() - 90);
 
@@ -94,10 +105,9 @@ export async function GET() {
       throw new Error(`Failed to fetch closed deals: ${closedError.message}`);
     }
 
-    // Calculate close rate
+    // Calculate won/lost deals for comparison
     const wonDeals = (closedDeals || []).filter((d) => d.status === 'closed_won').length;
     const totalClosed = (closedDeals || []).length;
-    const closeRate = totalClosed > 0 ? Math.round((wonDeals / totalClosed) * 100) : 0;
 
     // Get tasks due today
     const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -134,7 +144,7 @@ export async function GET() {
         data: {
           pipeline_value: pipelineValue,
           active_deals_count: (activeDeals || []).length,
-          close_rate: closeRate,
+          total_clients: clientsCount || 0,
           hot_deals_count: hotDealsCount,
           expected_commission: expectedCommission,
           tasks_due_today: (tasksDueToday || []).length,

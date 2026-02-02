@@ -324,7 +324,7 @@ function SidebarContent({ onClose, isCollapsed }: { onClose?: () => void; isColl
       )}>
         <div className="relative h-9 shrink-0">
           <Image
-            src="/icons/icon.png"
+            src={isDark ? "/icons/icon.png" : "/icons/icon-dark.png"}
             alt="Korella Logo"
             width={140}
             height={54}
