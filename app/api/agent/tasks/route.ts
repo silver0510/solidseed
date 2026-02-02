@@ -95,19 +95,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Handle specific error messages
+    // Handle known errors
     if (error instanceof Error) {
-      // Authentication error
-      if (error.message.includes('Not authenticated')) {
-        return NextResponse.json(
-          { error: 'Authentication required' },
-          { status: 401 }
-        );
-      }
-
       console.error('[API] Error in getTasksByAgent:', error.message);
       return NextResponse.json(
-        { error: error.message || 'Internal server error' },
+        { error: error.message },
         { status: 500 }
       );
     }
