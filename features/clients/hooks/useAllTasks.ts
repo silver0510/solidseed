@@ -130,8 +130,14 @@ export function useAllTasks(options: UseAllTasksOptions = {}): UseAllTasksReturn
   }
 
   // Fetch all tasks using React Query
+  // Use a stable base key for all task queries to enable efficient cache updates
+  const baseQueryKey = ['tasks', 'all'] as const;
+  const queryKey = filters && Object.keys(filters).length > 0
+    ? [...baseQueryKey, filters] as const
+    : baseQueryKey;
+
   const { data: allTasks = [], isLoading, refetch } = useQuery({
-    queryKey: ['tasks', 'all', filters],
+    queryKey,
     queryFn: () => taskApi.getUserTasks(filters),
   });
 
@@ -153,26 +159,45 @@ export function useAllTasks(options: UseAllTasksOptions = {}): UseAllTasksReturn
       throw new Error('Task not found');
     }
 
-    const queryKey = ['tasks', 'all', filters];
+    // Helper to update task in a list
+    const updateTaskInList = (tasks: TaskWithClient[] | undefined): TaskWithClient[] => {
+      if (!tasks) return [];
+      return tasks.map((t) =>
+        t.id === taskId
+          ? { ...t, status: newStatus, completed_at: newStatus === 'closed' ? new Date().toISOString() : null }
+          : t
+      );
+    };
 
-    // Optimistic update: immediately update cache
-    queryClient.setQueryData<TaskWithClient[]>(queryKey, (old) =>
-      old ? old.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)) : []
-    );
+    // Snapshot previous state for rollback
+    const previousData = new Map<readonly unknown[], TaskWithClient[] | undefined>();
+
+    // Get all task query keys from cache and update them optimistically
+    const queryCache = queryClient.getQueryCache();
+    const taskQueries = queryCache.findAll({ queryKey: baseQueryKey });
+
+    // Optimistic update: immediately update ALL task caches
+    for (const query of taskQueries) {
+      const key = query.queryKey as readonly unknown[];
+      previousData.set(key, queryClient.getQueryData<TaskWithClient[]>(key));
+      queryClient.setQueryData<TaskWithClient[]>(key, updateTaskInList);
+    }
 
     try {
       // Update via API
       await taskApi.updateTask(task.client_id, taskId, { status: newStatus });
 
-      // Invalidate to ensure sync with server
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      // No need to invalidate - optimistic update is sufficient
+      // Only refetch if data might be stale (e.g., after long idle period)
     } catch (error) {
-      // Revert optimistic update on error
-      queryClient.setQueryData<TaskWithClient[]>(queryKey, allTasks);
+      // Revert all optimistic updates on error
+      for (const [key, data] of previousData) {
+        queryClient.setQueryData(key, data);
+      }
       console.error('Failed to update task status:', error);
       throw error;
     }
-  }, [allTasks, queryClient, filters]);
+  }, [allTasks, queryClient, baseQueryKey]);
 
   // Wrapper for refetch to match the expected return type
   const refetchTasks = useCallback(async () => {

@@ -7,7 +7,7 @@
  * Features filtering by status and priority, and grouping by due date.
  */
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TaskDashboard } from '@/features/clients/components/TaskDashboard';
 import { TaskForm } from '@/features/clients/components/TaskForm';
@@ -84,31 +84,58 @@ export default function TasksPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<TaskWithClient | null>(null);
 
-  // Fetch all tasks for metrics
+  // Fetch all tasks for metrics - uses same cache key as TaskDashboard
   const { data: allTasksData } = useQuery({
     queryKey: ['tasks', 'all'],
     queryFn: () => taskApi.getUserTasks(),
   });
 
-  const tasks = allTasksData ?? [];
-  const todoTasks = tasks.filter((t: TaskWithClient) => t.status === 'todo');
-  const inProgressTasks = tasks.filter((t: TaskWithClient) => t.status === 'in_progress');
-  const closedTasks = tasks.filter((t: TaskWithClient) => t.status === 'closed');
-  const activeTasks = [...todoTasks, ...inProgressTasks]; // Combined for overdue/today calculation
+  // Memoize all metric calculations to avoid recalculating on every render
+  const { todoCount, inProgressCount, closedCount, overdueCount, todayCount } = useMemo(() => {
+    const tasks = allTasksData ?? [];
 
-  // Calculate overdue and today counts (only from active tasks)
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const overdueTasks = activeTasks.filter((t: TaskWithClient) => {
-    if (!t.due_date) return false;
-    const dueDate = new Date(t.due_date);
-    return dueDate < today;
-  });
-  const todayTasks = activeTasks.filter((t: TaskWithClient) => {
-    if (!t.due_date) return false;
-    const dueDate = new Date(t.due_date);
-    return dueDate.toDateString() === today.toDateString();
-  });
+    let todo = 0;
+    let inProgress = 0;
+    let closed = 0;
+    let overdue = 0;
+    let dueToday = 0;
+
+    // Single pass through tasks for all calculations
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    for (const task of tasks) {
+      // Count by status
+      if (task.status === 'todo') {
+        todo++;
+      } else if (task.status === 'in_progress') {
+        inProgress++;
+      } else if (task.status === 'closed') {
+        closed++;
+        continue; // Closed tasks don't count for overdue/today
+      }
+
+      // Count overdue and today (only for active tasks)
+      if (task.due_date) {
+        const dueDate = new Date(task.due_date);
+        const dueDateStart = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+
+        if (dueDateStart.getTime() === todayStart.getTime()) {
+          dueToday++;
+        } else if (dueDateStart < todayStart) {
+          overdue++;
+        }
+      }
+    }
+
+    return {
+      todoCount: todo,
+      inProgressCount: inProgress,
+      closedCount: closed,
+      overdueCount: overdue,
+      todayCount: dueToday,
+    };
+  }, [allTasksData]);
 
   // Fetch clients for both create and edit dialogs
   const { data: clientsData, isLoading: isLoadingClients } = useQuery({
@@ -119,12 +146,31 @@ export default function TasksPage() {
 
   const clients = (clientsData?.data ?? []) as ClientWithTags[];
 
+  // Helper to update task cache optimistically
+  const updateTaskCache = (
+    updateFn: (tasks: TaskWithClient[] | undefined) => TaskWithClient[]
+  ) => {
+    const queryCache = queryClient.getQueryCache();
+    const taskQueries = queryCache.findAll({ queryKey: ['tasks', 'all'] });
+    for (const query of taskQueries) {
+      queryClient.setQueryData<TaskWithClient[]>(query.queryKey, updateFn);
+    }
+  };
+
   // Create task mutation
   const createTaskMutation = useMutation({
     mutationFn: ({ clientId, data }: { clientId: string; data: CreateTaskInput }) =>
       taskApi.createTask(clientId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    onSuccess: (newTask) => {
+      // Find the client name for the new task
+      const client = clients.find(c => c.id === newTask.client_id);
+      const taskWithClient: TaskWithClient = {
+        ...newTask,
+        client_name: client?.name || 'Unknown Client',
+      };
+
+      // Add the new task to all task caches
+      updateTaskCache((old) => old ? [taskWithClient, ...old] : [taskWithClient]);
       setIsCreateDialogOpen(false);
     },
   });
@@ -134,16 +180,22 @@ export default function TasksPage() {
     mutationFn: ({ clientId, taskId, data }: { clientId: string; taskId: string; data: UpdateTaskInput }) =>
       taskApi.updateTask(clientId, taskId, data),
     onSuccess: (updatedTask) => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      // If client changed, find the new client name
+      let clientName = selectedTask?.client_name || 'Unknown Client';
+      if (selectedTask && updatedTask.client_id !== selectedTask.client_id) {
+        const newClient = clients.find(c => c.id === updatedTask.client_id);
+        clientName = newClient?.name || 'Unknown Client';
+      }
+
+      // Update all task caches with the updated task
+      updateTaskCache((old) =>
+        old?.map((t) =>
+          t.id === updatedTask.id ? { ...t, ...updatedTask, client_name: clientName } : t
+        ) ?? []
+      );
+
       // Update the selected task with new data
       if (selectedTask) {
-        // If client changed, find the new client name
-        let clientName = selectedTask.client_name;
-        if (updatedTask.client_id !== selectedTask.client_id) {
-          const newClient = clients.find(c => c.id === updatedTask.client_id);
-          clientName = newClient?.name || 'Unknown Client';
-        }
-
         setSelectedTask({
           ...selectedTask,
           ...updatedTask,
@@ -157,8 +209,9 @@ export default function TasksPage() {
   const deleteTaskMutation = useMutation({
     mutationFn: ({ clientId, taskId }: { clientId: string; taskId: string }) =>
       taskApi.deleteTask(clientId, taskId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    onSuccess: (_, { taskId }) => {
+      // Remove the task from all caches
+      updateTaskCache((old) => old?.filter((t) => t.id !== taskId) ?? []);
     },
   });
 
@@ -224,7 +277,7 @@ export default function TasksPage() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <MetricCard
           title="Overdue"
-          value={overdueTasks.length}
+          value={overdueCount}
           subtitle="Need attention"
           variant="danger"
           icon={
@@ -235,7 +288,7 @@ export default function TasksPage() {
         />
         <MetricCard
           title="Due Today"
-          value={todayTasks.length}
+          value={todayCount}
           subtitle="Focus on these"
           variant="warning"
           icon={
@@ -246,7 +299,7 @@ export default function TasksPage() {
         />
         <MetricCard
           title="In Progress"
-          value={inProgressTasks.length}
+          value={inProgressCount}
           subtitle="Currently working"
           variant="info"
           icon={
@@ -257,7 +310,7 @@ export default function TasksPage() {
         />
         <MetricCard
           title="Closed"
-          value={closedTasks.length}
+          value={closedCount}
           subtitle="Well done!"
           variant="success"
           icon={
