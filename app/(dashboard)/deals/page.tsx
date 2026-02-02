@@ -212,7 +212,10 @@ function DealsContent() {
   // Set default deal type once data is loaded
   useEffect(() => {
     if (enabledDealTypes.length > 0 && !selectedDealTypeId) {
-      setSelectedDealTypeId(enabledDealTypes[0].id);
+      const firstDealType = enabledDealTypes[0];
+      if (firstDealType) {
+        setSelectedDealTypeId(firstDealType.id);
+      }
     }
   }, [enabledDealTypes, selectedDealTypeId]);
 

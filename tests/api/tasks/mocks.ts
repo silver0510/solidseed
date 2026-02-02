@@ -57,7 +57,7 @@ export function createMockTask(overrides: Partial<ClientTask> = {}): ClientTask 
     client_id: overrides.client_id ?? TEST_IDS.CLIENT_1,
     title: overrides.title ?? 'Test Task',
     description: overrides.description ?? 'Test task description',
-    due_date: overrides.due_date ?? tomorrow,
+    due_date: overrides.due_date ?? tomorrow!,
     priority: overrides.priority ?? 'medium',
     status: overrides.status ?? 'todo',
     completed_at: overrides.completed_at ?? null,

@@ -95,7 +95,7 @@ export default function DealTypeOnboardingPage() {
           <div className="flex items-start gap-4">
             <Checkbox
               checked={residential}
-              onCheckedChange={setResidential}
+              onCheckedChange={(checked) => setResidential(checked === true)}
               className="mt-1"
               id="residential"
             />
@@ -138,7 +138,7 @@ export default function DealTypeOnboardingPage() {
           <div className="flex items-start gap-4">
             <Checkbox
               checked={mortgage}
-              onCheckedChange={setMortgage}
+              onCheckedChange={(checked) => setMortgage(checked === true)}
               className="mt-1"
               id="mortgage"
             />

@@ -22,6 +22,7 @@ import {
   LayoutGridIcon,
   PencilIcon,
   TrashIcon,
+  ClipboardList,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/ui/badge';

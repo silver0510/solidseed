@@ -137,6 +137,7 @@ export async function GET() {
           return 'Task created';
         };
 
+        const client = Array.isArray(task.client) ? task.client[0] : task.client;
         activities.push({
           id: task.id,
           type: 'task',
@@ -148,8 +149,8 @@ export async function GET() {
               : task.updated_at,
           status: task.status,
           priority: task.priority,
-          clientName: task.client?.name,
-          clientId: task.client?.id,
+          clientName: client?.name,
+          clientId: client?.id,
         });
       });
     }
@@ -162,14 +163,15 @@ export async function GET() {
             ? `${note.content.substring(0, 60)}...`
             : note.content;
 
+        const client = Array.isArray(note.client) ? note.client[0] : note.client;
         activities.push({
           id: note.id,
           type: 'note',
           title: 'Note added',
           description: preview,
           date: note.created_at,
-          clientName: note.client?.name,
-          clientId: note.client?.id,
+          clientName: client?.name,
+          clientId: client?.id,
         });
       });
     }
@@ -193,6 +195,7 @@ export async function GET() {
             }).format(deal.deal_value)
           : 'Value not set';
 
+        const client = Array.isArray(deal.client) ? deal.client[0] : deal.client;
         activities.push({
           id: deal.id,
           type: 'deal',
@@ -200,8 +203,8 @@ export async function GET() {
           description: `${deal.deal_name} • ${formatStage(deal.current_stage)} • ${dealValue}`,
           date: deal.created_at,
           status: deal.status,
-          clientName: deal.client?.name,
-          clientId: deal.client?.id,
+          clientName: client?.name,
+          clientId: client?.id,
         });
       });
     }
