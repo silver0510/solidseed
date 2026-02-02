@@ -4,13 +4,17 @@
  */
 
 import type { ClientStatus, UserTag } from '@/lib/types/client';
+import { getBaseUrl } from '@/lib/api/utils';
 
 // =============================================================================
 // CLIENT STATUSES
 // =============================================================================
 
 export async function fetchClientStatuses(): Promise<ClientStatus[]> {
-  const response = await fetch('/api/client-statuses');
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/client-statuses`, {
+    credentials: 'include',
+  });
   if (!response.ok) {
     throw new Error('Failed to fetch statuses');
   }
@@ -21,10 +25,12 @@ export async function createClientStatus(data: {
   name: string;
   color: string;
 }): Promise<ClientStatus> {
-  const response = await fetch('/api/client-statuses', {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/client-statuses`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
+    credentials: 'include',
   });
   if (!response.ok) {
     const error = await response.json();
@@ -37,10 +43,12 @@ export async function updateClientStatus(
   id: string,
   data: { name?: string; color?: string; position?: number }
 ): Promise<ClientStatus> {
-  const response = await fetch(`/api/client-statuses/${id}`, {
-    method: 'PUT',
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/client-statuses/${id}`, {
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
+    credentials: 'include',
   });
   if (!response.ok) {
     const error = await response.json();
@@ -50,8 +58,10 @@ export async function updateClientStatus(
 }
 
 export async function deleteClientStatus(id: string): Promise<void> {
-  const response = await fetch(`/api/client-statuses/${id}`, {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/client-statuses/${id}`, {
     method: 'DELETE',
+    credentials: 'include',
   });
   if (!response.ok) {
     const error = await response.json();
@@ -60,10 +70,12 @@ export async function deleteClientStatus(id: string): Promise<void> {
 }
 
 export async function reorderClientStatuses(statusIds: string[]): Promise<void> {
-  const response = await fetch('/api/client-statuses/reorder', {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/client-statuses/reorder`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ statusIds }),
+    credentials: 'include',
   });
   if (!response.ok) {
     const error = await response.json();
@@ -76,7 +88,10 @@ export async function reorderClientStatuses(statusIds: string[]): Promise<void> 
 // =============================================================================
 
 export async function fetchUserTags(): Promise<UserTag[]> {
-  const response = await fetch('/api/user-tags');
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/user-tags`, {
+    credentials: 'include',
+  });
   if (!response.ok) {
     throw new Error('Failed to fetch tags');
   }
@@ -87,10 +102,12 @@ export async function createUserTag(data: {
   name: string;
   color: string;
 }): Promise<UserTag> {
-  const response = await fetch('/api/user-tags', {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/user-tags`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
+    credentials: 'include',
   });
   if (!response.ok) {
     const error = await response.json();
@@ -103,10 +120,12 @@ export async function updateUserTag(
   id: string,
   data: { name?: string; color?: string }
 ): Promise<UserTag> {
-  const response = await fetch(`/api/user-tags/${id}`, {
-    method: 'PUT',
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/user-tags/${id}`, {
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
+    credentials: 'include',
   });
   if (!response.ok) {
     const error = await response.json();
@@ -116,8 +135,10 @@ export async function updateUserTag(
 }
 
 export async function deleteUserTag(id: string): Promise<void> {
-  const response = await fetch(`/api/user-tags/${id}`, {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/user-tags/${id}`, {
     method: 'DELETE',
+    credentials: 'include',
   });
   if (!response.ok) {
     const error = await response.json();

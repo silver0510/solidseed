@@ -59,7 +59,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * PUT /api/user-tags/[id]
+ * PATCH /api/user-tags/[id]
  *
  * Update an existing user tag
  *
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
  * - name: string - Tag name
  * - color: string - Tag color
  */
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { user, error: authError } = await getSessionUser();
     if (!user) {
@@ -132,7 +132,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Tag not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    // 204 No Content - successful deletion with no response body
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json(

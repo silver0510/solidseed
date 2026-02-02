@@ -88,7 +88,7 @@ export interface UpdateClientInput {
  * Parameters for listing clients with pagination and filtering
  */
 export interface ListClientsParams {
-  /** Cursor for pagination (CUID of last item from previous page) */
+  /** Cursor for pagination (created_at timestamp of last item from previous page) */
   cursor?: string;
   /** Number of items per page (default: 20, max: 100) */
   limit?: number;

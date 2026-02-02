@@ -25,7 +25,7 @@ const clientService = new ClientService();
  * List clients with pagination, search, and filtering
  *
  * Query parameters:
- * - cursor: string (optional) - Pagination cursor (created_at timestamp)
+ * - cursor: string (optional) - Pagination cursor (last item's created_at timestamp)
  * - limit: number (optional) - Items per page (default: 20, max: 100)
  * - search: string (optional) - Search by name or email
  * - tag: string (optional) - Filter by tag name

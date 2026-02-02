@@ -28,49 +28,7 @@ import type {
   DocumentDownloadResponse,
 } from '../types';
 import type { Deal } from '@/features/deals/types';
-
-// =============================================================================
-// API HELPERS
-// =============================================================================
-
-/**
- * Get the base URL for API requests
- * Returns empty string for client-side (relative URLs work)
- * Returns full URL for server-side (required for SSR)
- */
-function getBaseUrl(): string {
-  // In browser, use relative URLs
-  if (typeof window !== 'undefined') {
-    return '';
-  }
-  // On server, use environment variable or default
-  return process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
-}
-
-/**
- * Handle API response and throw error if not ok
- */
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
-  }
-  return response.json();
-}
-
-/**
- * Build query string from params
- */
-function buildQueryString(params: Record<string, unknown>): string {
-  const searchParams = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      searchParams.append(key, String(value));
-    }
-  });
-  const query = searchParams.toString();
-  return query ? `?${query}` : '';
-}
+import { getBaseUrl, handleResponse, buildQueryString } from '@/lib/api/utils';
 
 // =============================================================================
 // CLIENT API
@@ -98,15 +56,8 @@ export const clientApi = {
   /**
    * List clients with pagination and filtering
    */
-  listClients: async (params: ListClientsParams & { sortBy?: string; sortDirection?: string } = {}): Promise<PaginatedClients> => {
-    // Map frontend params (sortBy, sortDirection) to API params (sort)
-    const { sortBy, sortDirection, ...restParams } = params;
-    const apiParams = {
-      ...restParams,
-      // API uses 'sort' parameter, convert sortBy to sort
-      sort: sortBy,
-    };
-    const queryString = buildQueryString(apiParams);
+  listClients: async (params: ListClientsParams = {}): Promise<PaginatedClients> => {
+    const queryString = buildQueryString(params as Record<string, unknown>);
     const baseUrl = getBaseUrl();
     const response = await fetch(`${baseUrl}/api/clients${queryString}`, {
       credentials: 'include',

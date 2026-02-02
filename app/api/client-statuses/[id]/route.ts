@@ -60,7 +60,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * PUT /api/client-statuses/[id]
+ * PATCH /api/client-statuses/[id]
  *
  * Update an existing client status
  *
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
  * - color: string - Status color
  * - position: number - Display order position
  */
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { user, error: authError } = await getSessionUser();
     if (!user) {
@@ -134,7 +134,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Status not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    // 204 No Content - successful deletion with no response body
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     if (error instanceof Error) {
       // Handle specific errors
