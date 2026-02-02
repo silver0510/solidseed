@@ -94,7 +94,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           address: client.address ?? '',
         }
       : defaultClientFormValues,
-    mode: 'onBlur',
+    mode: 'onSubmit',
     reValidateMode: 'onChange',
   });
 
