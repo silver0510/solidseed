@@ -24,7 +24,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <ShadcnButton
         ref={ref}
         disabled={disabled || isLoading}
-        className={cn('min-h-[44px]', className)}
+        className={cn('min-h-button', className)}
         {...props}
       >
         {isLoading ? (

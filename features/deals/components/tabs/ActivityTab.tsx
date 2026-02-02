@@ -193,7 +193,7 @@ export function ActivityTab({ deal }: ActivityTabProps) {
           value={filterType}
           onValueChange={(value) => setFilterType(value as DealActivityType | 'all')}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-select-lg">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent>

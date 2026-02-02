@@ -286,7 +286,7 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
         aria-label={`${title} task list`}
         className={cn(
           'transition-all duration-200',
-          isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
+          isExpanded ? 'max-h-card-expanded opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
         )}
       >
         {taskCount > 0 ? (

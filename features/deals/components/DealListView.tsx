@@ -243,7 +243,7 @@ export function DealListView({ dealTypeId }: DealListViewProps) {
                 onValueChange={(value) => handleStageChange(deal.id, value)}
                 disabled={changingStage === deal.id}
               >
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -597,7 +597,7 @@ export function DealListView({ dealTypeId }: DealListViewProps) {
                 placeholder="Enter the reason why this deal was lost (minimum 10 characters)"
                 value={lostReason}
                 onChange={(e) => setLostReason(e.target.value)}
-                className="min-h-[100px]"
+                className="min-h-card-min"
               />
               {lostReason.length > 0 && lostReason.length < 10 && (
                 <p className="text-sm text-destructive">

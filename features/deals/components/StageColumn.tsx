@@ -31,7 +31,7 @@ export function StageColumn({ stage, onDealClick }: StageColumnProps) {
   };
 
   return (
-    <div className="flex min-w-[280px] flex-col md:min-w-[320px]">
+    <div className="flex min-w-column flex-col md:min-w-column-md">
       {/* Stage Header */}
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">

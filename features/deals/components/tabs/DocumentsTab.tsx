@@ -204,7 +204,7 @@ export function DocumentsTab({ deal }: DocumentsTabProps) {
 
                 <div className="flex items-center gap-4 justify-center">
                   <Select value={documentType} onValueChange={setDocumentType}>
-                    <SelectTrigger className="w-[200px]">
+                    <SelectTrigger className="w-select-lg">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -219,7 +219,7 @@ export function DocumentsTab({ deal }: DocumentsTabProps) {
                   <Button
                     onClick={handleUpload}
                     disabled={uploadDocument.isPending}
-                    className="min-w-[100px]"
+                    className="min-w-button"
                   >
                     {uploadDocument.isPending ? 'Uploading...' : 'Upload'}
                   </Button>

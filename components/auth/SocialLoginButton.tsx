@@ -79,7 +79,7 @@ export function SocialLoginButton({
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className={`flex w-full items-center justify-center gap-3 rounded-lg border-2 px-4 py-3 text-sm font-semibold transition-colors min-h-[52px] ${config.bgColor} ${config.textColor} ${config.borderColor} ${config.hoverBg} disabled:opacity-50 disabled:cursor-not-allowed`}
+      className={`flex w-full items-center justify-center gap-3 rounded-lg border-2 px-4 py-3 text-sm font-semibold transition-colors min-h-button-lg ${config.bgColor} ${config.textColor} ${config.borderColor} ${config.hoverBg} disabled:opacity-50 disabled:cursor-not-allowed`}
       style={{ touchAction: 'manipulation' }}
     >
       {loading ? (

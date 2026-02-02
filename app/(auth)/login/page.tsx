@@ -151,7 +151,7 @@ function LoginForm() {
             value={formData.password}
             onChange={(e) => handleInputChange('password', e.target.value)}
             className={cn(
-              'min-h-[44px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
+              'min-h-input text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
               errors.password && 'border-red-500 focus-visible:border-red-500'
             )}
             placeholder="••••••••"

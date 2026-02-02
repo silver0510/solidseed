@@ -110,7 +110,7 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({
   // Loading state
   if (isLoading) {
     return (
-      <div className={cn('flex items-center justify-center min-h-[400px]', className)}>
+      <div className={cn('flex items-center justify-center min-h-loading', className)}>
         <LoadingSpinner className="h-8 w-8 text-primary" data-testid="loading-spinner" />
       </div>
     );

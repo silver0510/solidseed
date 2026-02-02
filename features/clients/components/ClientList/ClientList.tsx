@@ -334,7 +334,7 @@ export const ClientList: React.FC<ClientListProps> = ({
 
         {/* Tag Filter */}
         <Select value={tagFilter || 'all'} onValueChange={handleTagChange}>
-          <SelectTrigger className="w-full sm:w-[140px] h-9">
+          <SelectTrigger className="w-full sm:min-w-select-sm h-9">
             <SelectValue placeholder="All Tags" />
           </SelectTrigger>
           <SelectContent>
@@ -355,7 +355,7 @@ export const ClientList: React.FC<ClientListProps> = ({
 
         {/* Status Filter */}
         <Select value={statusFilter || 'all'} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-full sm:w-[160px] h-9">
+          <SelectTrigger className="w-full sm:min-w-select h-9">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
@@ -392,7 +392,7 @@ export const ClientList: React.FC<ClientListProps> = ({
 
         {/* Sort By */}
         <Select value={sortBy} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-full sm:w-[140px] h-9">
+          <SelectTrigger className="w-full sm:min-w-select-sm h-9">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>

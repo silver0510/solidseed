@@ -91,7 +91,7 @@ export function DealStagePipeline({
                     <div className="mt-3 flex flex-col items-center">
                       <span
                         className={cn(
-                          'text-xs font-medium text-center max-w-[80px] leading-tight',
+                          'text-xs font-medium text-center max-w-tag leading-tight',
                           isCompleted && 'text-foreground',
                           isCurrent && 'text-foreground font-semibold',
                           isFuture && 'text-muted-foreground'

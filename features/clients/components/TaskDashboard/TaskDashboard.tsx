@@ -444,7 +444,7 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
             value={statusFilter}
             onValueChange={(value) => setStatusFilter(value as TaskStatus | 'all')}
           >
-            <SelectTrigger className="w-full sm:w-[120px] h-9" aria-label="Filter by status">
+            <SelectTrigger className="w-full sm:min-w-select-sm h-9" aria-label="Filter by status">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -461,7 +461,7 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
             value={priorityFilter}
             onValueChange={(value) => setPriorityFilter(value as TaskPriority | 'all')}
           >
-            <SelectTrigger className="w-full sm:w-[120px] h-9" aria-label="Filter by priority">
+            <SelectTrigger className="w-full sm:min-w-select-sm h-9" aria-label="Filter by priority">
               <SelectValue placeholder="Priority" />
             </SelectTrigger>
             <SelectContent>
@@ -478,7 +478,7 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
             value={dueDateFilter}
             onValueChange={(value) => setDueDateFilter(value as DueDateFilter)}
           >
-            <SelectTrigger className="w-full sm:w-[120px] h-9" aria-label="Filter by due date">
+            <SelectTrigger className="w-full sm:min-w-select-sm h-9" aria-label="Filter by due date">
               <SelectValue placeholder="Due Date" />
             </SelectTrigger>
             <SelectContent>

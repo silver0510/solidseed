@@ -41,7 +41,7 @@ export default function DashboardLayout({
 
               {/* Page content */}
               <main className="pb-20 lg:pb-6">
-                <div className="mx-auto max-w-[1000px]">
+                <div className="mx-auto max-w-container">
                   {children}
                 </div>
               </main>

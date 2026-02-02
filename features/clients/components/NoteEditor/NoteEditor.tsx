@@ -168,7 +168,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             className={cn(
               // Base styles with accessible touch target
               'flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm',
-              'min-h-[44px] transition-colors',
+              'min-h-interactive transition-colors',
               // Active/inactive states
               isImportant
                 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 active:bg-amber-500/30'
@@ -192,7 +192,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                 disabled={isSubmitting}
                 className={cn(
                   // Base styles with accessible touch target
-                  'rounded-lg px-4 py-2 text-sm font-medium min-h-[44px]',
+                  'rounded-lg px-4 py-2 text-sm font-medium min-h-button',
                   'text-muted-foreground hover:bg-muted active:bg-muted/80',
                   'transition-colors',
                   'disabled:cursor-not-allowed disabled:opacity-50'
@@ -206,7 +206,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               disabled={!isValid || isSubmitting}
               className={cn(
                 // Base styles with accessible touch target
-                'flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium min-h-[44px]',
+                'flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium min-h-button',
                 'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80',
                 'transition-colors shadow-sm',
                 // Disabled state

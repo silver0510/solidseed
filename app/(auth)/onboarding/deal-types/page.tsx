@@ -183,7 +183,7 @@ export default function DealTypeOnboardingPage() {
       <Button
         onClick={handleContinue}
         disabled={isSubmitting || (!residential && !mortgage)}
-        className="w-full min-h-[44px] text-base font-semibold"
+        className="w-full min-h-button text-base font-semibold"
         size="lg"
       >
         {isSubmitting ? (

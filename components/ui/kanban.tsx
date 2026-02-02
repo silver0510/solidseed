@@ -150,7 +150,7 @@ function KanbanColumnInternal<T extends { id: string }>({
   });
 
   return (
-    <div className={cn('flex min-w-[280px] flex-col md:min-w-[320px]', className)}>
+    <div className={cn('flex min-w-column flex-col md:min-w-column-md', className)}>
       {/* Column Header */}
       <div className={cn('mb-3 flex items-center justify-between', column.headerClassName)}>
         <div className="flex items-center gap-2">

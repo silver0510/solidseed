@@ -261,7 +261,7 @@ export function DealPipelineBoard({ dealTypeId, userId }: DealPipelineBoardProps
                 placeholder="Enter the reason why this deal was lost (minimum 10 characters)"
                 value={lostReason}
                 onChange={(e) => setLostReason(e.target.value)}
-                className="min-h-[100px]"
+                className="min-h-card-min"
               />
               {lostReason.length > 0 && lostReason.length < 10 && (
                 <p className="text-sm text-destructive">

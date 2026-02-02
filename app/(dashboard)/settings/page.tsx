@@ -166,7 +166,7 @@ export default function SettingsPage() {
 
   if (authLoading || isLoadingProfile) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-loading">
         <Spinner className="size-8 text-primary" />
       </div>
     );
