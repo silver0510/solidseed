@@ -23,6 +23,8 @@ import {
   PencilIcon,
   TrashIcon,
   ClipboardList,
+  SearchIcon,
+  XIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/ui/badge';
@@ -280,6 +282,9 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
   // View state
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Filter state
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | 'all'>('all');
@@ -301,11 +306,23 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
     updateTaskStatus,
   } = useAllTasks({ status: statusFilter, priority: priorityFilter });
 
-  // Filter tasks by due date and apply sorting
+  // Filter tasks by search, due date, and apply sorting
   const filteredTasks = useMemo(() => {
-    const filtered = filterTasksByDueDate(tasks, dueDateFilter);
+    let filtered = tasks;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((task) =>
+        task.title.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply due date filter
+    filtered = filterTasksByDueDate(filtered, dueDateFilter);
+
     return sortTasks(filtered, sortField, sortDirection);
-  }, [tasks, dueDateFilter, sortField, sortDirection]);
+  }, [tasks, searchQuery, dueDateFilter, sortField, sortDirection]);
 
   // Handle status change
   const handleStatusChange = useCallback(
@@ -403,101 +420,106 @@ export const TaskDashboard: React.FC<TaskDashboardProps> = ({
     <div className={cn('space-y-4', className)}>
       {/* Toolbar with Filters */}
       <div className="flex flex-col sm:flex-row gap-2 p-2 bg-muted/50 rounded-lg">
-        {/* Task Count Summary */}
-        <div className="flex items-center gap-2 flex-1">
-          <Badge variant="destructive" className="text-xs">
-            {overdueTasksCount} overdue
-          </Badge>
-          <Badge variant="outline" className="text-xs bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
-            {todayTasksCount} today
-          </Badge>
-          <Badge variant="secondary" className="text-xs">
-            {upcomingTasksCount} upcoming
-          </Badge>
-        </div>
-
-        {/* Filter Controls */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* View Mode Toggle */}
-          <div className="flex items-center border rounded-md overflow-hidden">
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="h-9 rounded-none px-3"
-              aria-label="List view"
+        {/* Search Input */}
+        <div className="relative flex-2">
+          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="search"
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-8 pr-8 h-9 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-search-cancel-button]:hidden"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              <LayoutListIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('kanban')}
-              className="h-9 rounded-none px-3"
-              aria-label="Kanban view"
-            >
-              <LayoutGridIcon className="h-4 w-4" />
-            </Button>
-          </div>
-          {/* Status Filter */}
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => setStatusFilter(value as TaskStatus | 'all')}
-          >
-            <SelectTrigger className="w-full sm:min-w-select-sm h-9" aria-label="Filter by status">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Priority Filter */}
-          <Select
-            value={priorityFilter}
-            onValueChange={(value) => setPriorityFilter(value as TaskPriority | 'all')}
-          >
-            <SelectTrigger className="w-full sm:min-w-select-sm h-9" aria-label="Filter by priority">
-              <SelectValue placeholder="Priority" />
-            </SelectTrigger>
-            <SelectContent>
-              {PRIORITY_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Due Date Filter */}
-          <Select
-            value={dueDateFilter}
-            onValueChange={(value) => setDueDateFilter(value as DueDateFilter)}
-          >
-            <SelectTrigger className="w-full sm:min-w-select-sm h-9" aria-label="Filter by due date">
-              <SelectValue placeholder="Due Date" />
-            </SelectTrigger>
-            <SelectContent>
-              {DUE_DATE_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Add Task Button */}
-          {onAddTask && (
-            <Button onClick={onAddTask} variant="outline" size="sm" className="h-9 shrink-0">
-              <PlusIcon className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Add Task</span>
-            </Button>
+              <XIcon className="h-4 w-4" />
+            </button>
           )}
         </div>
+
+        {/* View Mode Toggle */}
+        <div className="flex items-center border rounded-md overflow-hidden shrink-0">
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+            className="h-9 rounded-none px-2"
+            aria-label="List view"
+          >
+            <LayoutListIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('kanban')}
+            className="h-9 rounded-none px-2"
+            aria-label="Kanban view"
+          >
+            <LayoutGridIcon className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Status Filter */}
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => setStatusFilter(value as TaskStatus | 'all')}
+        >
+          <SelectTrigger className="w-25 h-9 shrink-0" aria-label="Filter by status">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Priority Filter */}
+        <Select
+          value={priorityFilter}
+          onValueChange={(value) => setPriorityFilter(value as TaskPriority | 'all')}
+        >
+          <SelectTrigger className="w-25 h-9 shrink-0" aria-label="Filter by priority">
+            <SelectValue placeholder="Priority" />
+          </SelectTrigger>
+          <SelectContent>
+            {PRIORITY_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Due Date Filter */}
+        <Select
+          value={dueDateFilter}
+          onValueChange={(value) => setDueDateFilter(value as DueDateFilter)}
+        >
+          <SelectTrigger className="w-25 h-9 shrink-0" aria-label="Filter by due date">
+            <SelectValue placeholder="Due Date" />
+          </SelectTrigger>
+          <SelectContent>
+            {DUE_DATE_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Add Task Button */}
+        {onAddTask && (
+          <Button onClick={onAddTask} variant="outline" size="sm" className="h-9 shrink-0">
+            <PlusIcon className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline">Add Task</span>
+          </Button>
+        )}
       </div>
 
       {/* Loading State */}

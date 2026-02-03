@@ -36,8 +36,9 @@ import {
   SearchIcon,
   XIcon,
   PlusIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ArrowUpDownIcon,
   PencilIcon,
   Trash2Icon,
 } from 'lucide-react';
@@ -116,15 +117,6 @@ function useDebouncedValue<T>(value: T, delay: number): T {
 
   return debouncedValue;
 }
-
-/**
- * Sort options configuration
- */
-const SORT_OPTIONS: Array<{ value: ClientSortField; label: string }> = [
-  { value: 'created_at', label: 'Date Added' },
-  { value: 'name', label: 'Name' },
-  { value: 'updated_at', label: 'Last Updated' },
-];
 
 /**
  * ClientList displays a searchable, filterable, and sortable table of clients
@@ -243,13 +235,33 @@ export const ClientList: React.FC<ClientListProps> = ({
     setStatusFilter(value === 'all' ? '' : value);
   }, []);
 
-  const handleSortChange = useCallback((value: string) => {
-    setSortBy(value as ClientSortField);
-  }, []);
+  // Handle column sort
+  const handleSort = useCallback((field: ClientSortField) => {
+    if (sortBy === field) {
+      // Toggle direction or clear sort
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortBy('created_at');
+        setSortDirection('desc');
+      }
+    } else {
+      // New field, start with ascending
+      setSortBy(field);
+      setSortDirection('asc');
+    }
+  }, [sortBy, sortDirection]);
 
-  const handleToggleSortDirection = useCallback(() => {
-    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-  }, []);
+  // Get sort icon for column
+  const getSortIcon = (field: ClientSortField) => {
+    if (sortBy !== field) {
+      return <ArrowUpDownIcon className="h-3.5 w-3.5 opacity-40" />;
+    }
+    if (sortDirection === 'asc') {
+      return <ArrowUpIcon className="h-3.5 w-3.5" />;
+    }
+    return <ArrowDownIcon className="h-3.5 w-3.5" />;
+  };
 
   const handleRetry = useCallback(() => {
     refetch();
@@ -313,14 +325,14 @@ export const ClientList: React.FC<ClientListProps> = ({
       {/* Toolbar: Search, Filter, Sort, Add */}
       <div className="flex flex-col sm:flex-row gap-2 p-2 bg-muted/50 rounded-lg">
         {/* Search Input */}
-        <div className="relative flex-1">
+        <div className="relative flex-2">
           <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search clients..."
             value={searchInput}
             onChange={handleSearchChange}
-            className="pl-8 pr-8 h-9"
+            className="pl-8 pr-8 h-9 [&::-webkit-search-cancel-button]:hidden"
           />
           {searchInput && (
             <button
@@ -334,7 +346,7 @@ export const ClientList: React.FC<ClientListProps> = ({
 
         {/* Tag Filter */}
         <Select value={tagFilter || 'all'} onValueChange={handleTagChange}>
-          <SelectTrigger className="w-full sm:min-w-select-sm h-9">
+          <SelectTrigger className="w-25 h-9 shrink-0">
             <SelectValue placeholder="All Tags" />
           </SelectTrigger>
           <SelectContent>
@@ -355,7 +367,7 @@ export const ClientList: React.FC<ClientListProps> = ({
 
         {/* Status Filter */}
         <Select value={statusFilter || 'all'} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-full sm:min-w-select h-9">
+          <SelectTrigger className="w-32 h-9 shrink-0">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
@@ -375,7 +387,7 @@ export const ClientList: React.FC<ClientListProps> = ({
         </Select>
 
         {/* Active Deals Filter */}
-        <div className="flex items-center gap-2 px-3 h-9 border rounded-md bg-background shadow-sm whitespace-nowrap">
+        <div className="flex items-center gap-2 px-3 h-9 border rounded-md bg-background shadow-sm whitespace-nowrap shrink-0">
           <Checkbox
             id="has-active-deals"
             checked={hasActiveDealsFilter}
@@ -389,35 +401,6 @@ export const ClientList: React.FC<ClientListProps> = ({
             Has Active Deals
           </label>
         </div>
-
-        {/* Sort By */}
-        <Select value={sortBy} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-full sm:min-w-select-sm h-9">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            {SORT_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Sort Direction */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleToggleSortDirection}
-          className="h-9 w-9 shrink-0 bg-transparent border border-input shadow-sm"
-          title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
-        >
-          {sortDirection === 'asc' ? (
-            <ChevronUpIcon className="h-4 w-4" />
-          ) : (
-            <ChevronDownIcon className="h-4 w-4" />
-          )}
-        </Button>
 
         {/* Add Client Button */}
         {onAddClient && (
@@ -460,12 +443,43 @@ export const ClientList: React.FC<ClientListProps> = ({
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow className="hover:bg-transparent">
-                <TableHead>NAME</TableHead>
-                <TableHead className="hidden sm:table-cell">EMAIL</TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort('name')}
+                    className={`flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider hover:text-foreground transition-colors ${
+                      sortBy === 'name' ? 'text-foreground' : 'text-muted-foreground'
+                    }`}
+                  >
+                    NAME
+                    {getSortIcon('name')}
+                  </button>
+                </TableHead>
+                <TableHead className="hidden sm:table-cell">
+                  <button
+                    onClick={() => handleSort('email')}
+                    className={`flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider hover:text-foreground transition-colors ${
+                      sortBy === 'email' ? 'text-foreground' : 'text-muted-foreground'
+                    }`}
+                  >
+                    EMAIL
+                    {getSortIcon('email')}
+                  </button>
+                </TableHead>
                 <TableHead className="hidden md:table-cell">PHONE</TableHead>
                 <TableHead className="hidden lg:table-cell">STATUS</TableHead>
                 <TableHead className="hidden xl:table-cell">TAGS</TableHead>
-                <TableHead className="w-[100px] text-right">ACTIONS</TableHead>
+                <TableHead className="hidden xl:table-cell">
+                  <button
+                    onClick={() => handleSort('updated_at')}
+                    className={`flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider hover:text-foreground transition-colors ${
+                      sortBy === 'updated_at' ? 'text-foreground' : 'text-muted-foreground'
+                    }`}
+                  >
+                    UPDATED
+                    {getSortIcon('updated_at')}
+                  </button>
+                </TableHead>
+                <TableHead className="w-25 text-right">ACTIONS</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -549,6 +563,13 @@ export const ClientList: React.FC<ClientListProps> = ({
                           Add tags
                         </button>
                       )}
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      <span className="text-sm text-muted-foreground">
+                        {client.updated_at
+                          ? new Date(client.updated_at).toLocaleDateString()
+                          : '—'}
+                      </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">

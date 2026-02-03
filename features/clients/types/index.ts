@@ -105,7 +105,7 @@ export interface PaginatedClientsWithTags {
 /**
  * Sort options for client list
  */
-export type ClientSortField = 'created_at' | 'name' | 'updated_at';
+export type ClientSortField = 'created_at' | 'name' | 'email' | 'updated_at';
 
 /**
  * Sort direction
