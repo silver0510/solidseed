@@ -31,7 +31,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
           ref={ref}
           id={id}
           className={cn(
-            'min-h-input text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
+            'min-h-touch text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
             error && 'border-red-500 focus-visible:border-red-500',
             className
           )}

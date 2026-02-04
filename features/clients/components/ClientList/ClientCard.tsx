@@ -74,7 +74,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onClick, dealCou
   return (
     <Card
       className={cn(
-        'min-h-interactive transition-all duration-200 relative',
+        'min-h-touch transition-all duration-200 relative',
         isClickable && 'cursor-pointer hover:bg-accent hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
       )}
       onClick={isClickable ? handleClick : undefined}

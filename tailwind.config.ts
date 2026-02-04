@@ -43,33 +43,25 @@ const config: Config = {
         heading: ['var(--font-poppins)', 'sans-serif'],
         body: ['var(--font-open-sans)', 'sans-serif'],
       },
-      // Touch Target & Interactive Element Heights
+      // Design Tokens - Sizing
+      // Using semantic names that map to actual use cases
       minHeight: {
-        'touch': '44px',          // Minimum touch target (iOS HIG)
-        'interactive': '44px',    // Standard interactive element
-        'button': '44px',         // Button minimum
-        'button-lg': '52px',      // Large button (social login)
-        'input': '44px',          // Form input minimum
+        'touch': '44px',          // Base touch target (iOS HIG) - use for buttons, inputs, interactive elements
+        'touch-lg': '52px',       // Large touch target (social login buttons)
         'textarea': '60px',       // Textarea minimum
         'nav-item': '56px',       // Bottom navigation item
-        'card-min': '100px',      // Minimum card content area
+        'card-min': '100px',      // Minimum card/textarea content area
         'loading': '400px',       // Loading state container
       },
       height: {
         'touch': '44px',
-        'interactive': '44px',
-        'button': '44px',
-        'button-lg': '52px',
-        'input': '44px',
-        'textarea': '60px',
+        'touch-lg': '52px',
         'nav-item': '56px',
-        'separator': '1px',       // Horizontal separator
-        'drawer-handle': '0.5rem', // Drawer drag handle
+        'separator': '1px',
+        'drawer-handle': '0.5rem',
       },
-      // Touch Target & Interactive Element Widths
       minWidth: {
-        'touch': '44px',
-        'interactive': '44px',
+        'touch': '44px',          // Base touch target
         'button': '100px',        // Minimum button width
         'nav-item': '64px',       // Bottom navigation item
         'column': '280px',        // Kanban/Pipeline column (mobile)
@@ -79,9 +71,10 @@ const config: Config = {
         'select-lg': '200px',     // Large select dropdown
       },
       width: {
-        'separator': '1px',       // Vertical separator
-        'drawer-handle': '100px', // Drawer drag handle
-        'container-max': '1000px', // Maximum content container
+        'separator': '1px',
+        'drawer-handle': '100px',
+        'select': '150px',        // Fixed width select
+        'select-lg': '200px',     // Fixed width large select
       },
       maxWidth: {
         'container': '1000px',    // Maximum content width

@@ -6,6 +6,51 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* ==============================================
+     Custom Spacing Values (from tailwind.config.ts)
+     These create utilities like: h-*, w-*, min-h-*, max-w-*, etc.
+     ============================================== */
+
+  /* Touch Targets & Interactive Elements */
+  --spacing-touch: 44px;
+  --spacing-interactive: 44px;
+  --spacing-button: 44px;
+  --spacing-button-lg: 52px;
+  --spacing-input: 44px;
+  --spacing-textarea: 60px;
+  --spacing-nav-item: 56px;
+
+  /* Container & Layout */
+  --spacing-container: 1000px;
+  --spacing-container-max: 1000px;
+  --spacing-card-min: 100px;
+  --spacing-loading: 400px;
+  --spacing-dropdown: 300px;
+  --spacing-card-expanded: 2000px;
+
+  /* Separators & Handles */
+  --spacing-separator: 1px;
+  --spacing-drawer-handle-h: 0.5rem;   /* h-drawer-handle-h (height) */
+  --spacing-drawer-handle-w: 100px;    /* w-drawer-handle-w (width) */
+
+  /* Kanban/Pipeline Columns */
+  --spacing-column: 280px;
+  --spacing-column-md: 320px;
+
+  /* Select Dropdowns */
+  --spacing-select-sm: 120px;
+  --spacing-select: 150px;
+  --spacing-select-lg: 200px;
+
+  /* Tags */
+  --spacing-tag: 80px;
+
+  /* ==============================================
+     Custom Box Shadows
+     ============================================== */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
