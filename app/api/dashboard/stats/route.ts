@@ -105,6 +105,29 @@ export async function GET() {
       throw new Error(`Failed to fetch closed deals: ${closedError.message}`);
     }
 
+    // Get won deals this month
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const { data: wonThisMonth, error: wonError } = await supabase
+      .from('deals')
+      .select('deal_value, agent_commission')
+      .eq('assigned_to', user.id)
+      .eq('is_deleted', false)
+      .eq('status', 'closed_won')
+      .gte('closed_at', firstDayOfMonth.toISOString())
+      .lte('closed_at', lastDayOfMonth.toISOString());
+
+    if (wonError) {
+      throw new Error(`Failed to fetch won deals this month: ${wonError.message}`);
+    }
+
+    const wonThisMonthValue = (wonThisMonth || []).reduce((sum, deal) => {
+      return sum + (deal.deal_value || 0);
+    }, 0);
+
+    const wonThisMonthCount = (wonThisMonth || []).length;
+
     // Calculate won/lost deals for comparison
     const wonDeals = (closedDeals || []).filter((d) => d.status === 'closed_won').length;
     const totalClosed = (closedDeals || []).length;
@@ -153,6 +176,11 @@ export async function GET() {
           comparison: {
             won_last_90_days: wonDeals,
             lost_last_90_days: totalClosed - wonDeals,
+          },
+          // Won deals this month
+          won_this_month: {
+            value: wonThisMonthValue,
+            count: wonThisMonthCount,
           },
         },
       },

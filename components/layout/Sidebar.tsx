@@ -15,6 +15,7 @@ import {
   Users,
   Briefcase,
   CheckCircle2,
+  BarChart3,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -65,6 +66,11 @@ const navigation: NavItem[] = [
     name: 'Tasks',
     href: '/tasks',
     icon: <CheckCircle2 className="h-5 w-5" />,
+  },
+  {
+    name: 'Reports',
+    href: '/reports',
+    icon: <BarChart3 className="h-5 w-5" />,
   },
 ];
 

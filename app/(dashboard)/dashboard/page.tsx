@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, StickyNote, Briefcase, DollarSign, CheckCircle2, ChevronRight, Plus, Users, Star, Home, Calendar, Clock } from 'lucide-react';
+import { CheckCircle, StickyNote, Briefcase, DollarSign, CheckCircle2, ChevronRight, Plus, Users, Star, Home, Clock, Trophy, AlertCircle } from 'lucide-react';
 
 /**
  * Dashboard Page
@@ -32,25 +32,25 @@ interface DashboardStats {
     won_last_90_days: number;
     lost_last_90_days: number;
   };
+  won_this_month: {
+    value: number;
+    count: number;
+  };
 }
 
-interface ClosingSoonDeal {
+interface UpcomingTask {
   id: string;
-  deal_name: string;
-  deal_value: number | null;
-  expected_close_date: string;
-  current_stage: string;
-  status: string;
+  title: string;
+  description: string | null;
+  due_date: string;
+  priority: 'low' | 'medium' | 'high';
+  status: 'open' | 'in_progress';
+  is_overdue: boolean;
+  is_today: boolean;
   client: {
     id: string;
     name: string;
-    email: string;
-  };
-  deal_type: {
-    type_name: string;
-    icon: string | null;
-    color: string;
-  };
+  } | null;
 }
 
 interface Activity {
@@ -163,25 +163,18 @@ function QuickActionCard({
   );
 }
 
-// Deal closing soon item component
-function ClosingDealItem({
-  deal,
+// Upcoming task item component
+function UpcomingTaskItem({
+  task,
   onClick,
 }: {
-  deal: ClosingSoonDeal;
+  task: UpcomingTask;
   onClick?: () => void;
 }) {
-  const formatCurrency = (value: number | null) => {
-    if (!value) return 'N/A';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  const formatDueDate = (dateString: string, isOverdue: boolean, isToday: boolean) => {
+    if (isOverdue) return 'Overdue';
+    if (isToday) return 'Today';
 
-  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -190,11 +183,21 @@ function ClosingDealItem({
     const diffTime = date.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Tomorrow';
     if (diffDays < 7) return `In ${diffDays} days`;
 
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      case 'medium':
+        return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+      default:
+        return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400';
+    }
   };
 
   return (
@@ -203,13 +206,38 @@ function ClosingDealItem({
       onClick={onClick}
       className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-muted transition-colors cursor-pointer text-left"
     >
+      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+        task.is_overdue
+          ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+          : task.is_today
+          ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
+          : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+      }`}>
+        {task.is_overdue ? (
+          <AlertCircle className="h-4 w-4" strokeWidth={2} />
+        ) : (
+          <CheckCircle2 className="h-4 w-4" strokeWidth={2} />
+        )}
+      </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium truncate">{deal.deal_name}</p>
-        <p className="text-sm text-muted-foreground truncate">{deal.client.name}</p>
+        <p className={`font-medium truncate ${task.is_overdue ? 'text-red-600 dark:text-red-400' : ''}`}>
+          {task.title}
+        </p>
+        <p className="text-sm text-muted-foreground truncate">
+          {task.client?.name || 'No client'}
+        </p>
       </div>
       <div className="flex flex-col items-end gap-1 shrink-0">
-        <span className="text-sm font-medium">{formatCurrency(deal.deal_value)}</span>
-        <span className="text-xs text-muted-foreground">{formatDate(deal.expected_close_date)}</span>
+        <span className={`text-xs font-medium ${
+          task.is_overdue ? 'text-red-600 dark:text-red-400' :
+          task.is_today ? 'text-amber-600 dark:text-amber-400' :
+          'text-muted-foreground'
+        }`}>
+          {formatDueDate(task.due_date, task.is_overdue, task.is_today)}
+        </span>
+        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${getPriorityColor(task.priority)}`}>
+          {task.priority}
+        </span>
       </div>
     </button>
   );
@@ -324,14 +352,14 @@ export default function DashboardPage() {
     },
   });
 
-  // Fetch deals closing soon
-  const { data: closingDeals, isLoading: closingLoading } = useQuery({
-    queryKey: ['dashboard', 'closing-soon'],
+  // Fetch upcoming tasks
+  const { data: upcomingTasks, isLoading: tasksLoading } = useQuery({
+    queryKey: ['dashboard', 'upcoming-tasks'],
     queryFn: async () => {
-      const res = await fetch('/api/dashboard/closing-soon');
-      if (!res.ok) throw new Error('Failed to fetch closing deals');
+      const res = await fetch('/api/dashboard/upcoming-tasks');
+      if (!res.ok) throw new Error('Failed to fetch upcoming tasks');
       const json = await res.json();
-      return json.data as ClosingSoonDeal[];
+      return json.data as UpcomingTask[];
     },
   });
 
@@ -346,8 +374,8 @@ export default function DashboardPage() {
     },
   });
 
-  const handleDealClick = (dealId: string) => {
-    router.push(`/deals/${dealId}`);
+  const handleTaskClick = (taskId: string) => {
+    router.push(`/tasks?task=${taskId}`);
   };
 
   const handleAddDeal = () => {
@@ -372,36 +400,44 @@ export default function DashboardPage() {
     <div className="p-4 lg:p-6 space-y-6">
       {/* Metrics grid */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+        {/* Won This Month - Primary success indicator */}
         <MetricCard
-          title="Total Deal Value"
-          value={statsLoading ? '...' : formatCurrency(statsData?.pipeline_value || 0)}
-          change={statsData?.active_deals_count ? `${statsData.active_deals_count} active deals` : undefined}
-          changeType="neutral"
+          title="Won This Month"
+          value={statsLoading ? '...' : formatCurrency(statsData?.won_this_month?.value || 0)}
+          change={statsData?.won_this_month?.count
+            ? `${statsData.won_this_month.count} deal${statsData.won_this_month.count > 1 ? 's' : ''} closed`
+            : 'No deals yet'}
+          changeType={statsData?.won_this_month?.count && statsData.won_this_month.count > 0 ? 'positive' : 'neutral'}
           variant="success"
-          icon={<DollarSign className="h-5 w-5" strokeWidth={1.5} />}
+          icon={<Trophy className="h-5 w-5" strokeWidth={1.5} />}
         />
+        {/* Active Pipeline - Future potential */}
         <MetricCard
-          title="Active Deals"
-          value={statsLoading ? '...' : statsData?.active_deals_count || 0}
-          change={statsData?.hot_deals_count ? `${statsData.hot_deals_count} closing soon` : undefined}
+          title="Active Pipeline"
+          value={statsLoading ? '...' : formatCurrency(statsData?.pipeline_value || 0)}
+          change={statsData?.active_deals_count
+            ? `${statsData.active_deals_count} active deal${statsData.active_deals_count > 1 ? 's' : ''}`
+            : 'No active deals'}
           changeType="neutral"
           variant="info"
           icon={<Briefcase className="h-5 w-5" strokeWidth={1.5} />}
         />
+        {/* Expected Commission - Personal motivation */}
         <MetricCard
-          title="Total Clients"
-          value={statsLoading ? '...' : statsData?.total_clients || 0}
-          change="All clients"
+          title="Expected Commission"
+          value={statsLoading ? '...' : formatCurrency(statsData?.expected_commission || 0)}
+          change="From active deals"
           changeType="neutral"
           variant="default"
-          icon={<Users className="h-5 w-5" strokeWidth={1.5} />}
+          icon={<DollarSign className="h-5 w-5" strokeWidth={1.5} />}
         />
+        {/* Tasks Due - Action urgency */}
         <MetricCard
-          title="Today's Tasks"
+          title="Tasks Due"
           value={statsLoading ? '...' : (statsData?.tasks_due_today || 0) + (statsData?.overdue_tasks || 0)}
           change={statsData?.overdue_tasks ? `${statsData.overdue_tasks} overdue` : 'All caught up'}
           changeType={statsData && statsData.overdue_tasks > 0 ? 'negative' : 'positive'}
-          variant={statsData && statsData.overdue_tasks > 0 ? 'danger' : statsData && statsData.tasks_due_today > 3 ? 'warning' : 'default'}
+          variant={statsData && statsData.overdue_tasks > 0 ? 'danger' : 'default'}
           icon={<CheckCircle2 className="h-5 w-5" strokeWidth={1.5} />}
         />
       </div>
@@ -433,38 +469,38 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Two column layout for closing deals and activity */}
+      {/* Two column layout for upcoming tasks and activity */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Deals closing soon */}
+        {/* Upcoming tasks */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-base font-semibold">
-              Closing This Month
+              Upcoming Tasks
             </CardTitle>
             <Button variant="link" asChild className="px-0 text-sm">
-              <Link href="/deals">View all</Link>
+              <Link href="/tasks">View all</Link>
             </Button>
           </CardHeader>
           <Separator />
           <CardContent className="p-0">
-            {closingLoading ? (
+            {tasksLoading ? (
               <div className="p-8 text-center text-sm text-muted-foreground">
                 Loading...
               </div>
-            ) : closingDeals && closingDeals.length > 0 ? (
+            ) : upcomingTasks && upcomingTasks.length > 0 ? (
               <div className="divide-y divide-border">
-                {closingDeals.map((deal) => (
-                  <ClosingDealItem
-                    key={deal.id}
-                    deal={deal}
-                    onClick={() => handleDealClick(deal.id)}
+                {upcomingTasks.map((task) => (
+                  <UpcomingTaskItem
+                    key={task.id}
+                    task={task}
+                    onClick={() => handleTaskClick(task.id)}
                   />
                 ))}
               </div>
             ) : (
               <div className="p-8 text-center">
-                <Calendar className="mx-auto h-12 w-12 text-muted-foreground/50" strokeWidth={1.5} />
-                <p className="mt-2 text-sm text-muted-foreground">No deals closing soon</p>
+                <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground/50" strokeWidth={1.5} />
+                <p className="mt-2 text-sm text-muted-foreground">No upcoming tasks</p>
               </div>
             )}
           </CardContent>
