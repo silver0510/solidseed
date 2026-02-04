@@ -97,8 +97,8 @@ function LoginForm() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Welcome Back</h2>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+        <h2 className="text-3xl font-bold text-foreground">Welcome Back</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
           Sign in to your account to continue
         </p>
       </div>
@@ -133,12 +133,12 @@ function LoginForm() {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-sm font-medium text-slate-900 dark:text-slate-100">
+            <Label htmlFor="password" className="text-sm font-medium text-foreground">
               Password <span className="text-red-500">*</span>
             </Label>
             <Link
               href="/forgot-password"
-              className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              className="text-sm font-medium text-primary hover:text-primary/80"
             >
               Forgot password?
             </Link>
@@ -151,7 +151,7 @@ function LoginForm() {
             value={formData.password}
             onChange={(e) => handleInputChange('password', e.target.value)}
             className={cn(
-              'min-h-touch text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
+              'min-h-touch text-foreground placeholder:text-muted-foreground',
               errors.password && 'border-red-500 focus-visible:border-red-500'
             )}
             placeholder="••••••••"
@@ -167,7 +167,7 @@ function LoginForm() {
             checked={formData.rememberMe}
             onCheckedChange={(checked) => handleInputChange('rememberMe', checked as boolean)}
           />
-          <Label htmlFor="remember-me" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
+          <Label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer">
             Remember me for 30 days
           </Label>
         </div>
@@ -178,9 +178,9 @@ function LoginForm() {
       </form>
 
       <div className="text-center">
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-muted-foreground">
           Don&apos;t have an account?{' '}
-          <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+          <Link href="/register" className="font-medium text-primary hover:text-primary/80">
             Sign up for free
           </Link>
         </p>
@@ -194,8 +194,8 @@ export default function LoginPage() {
     <Suspense fallback={
       <div className="space-y-6">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Welcome Back</h2>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          <h2 className="text-3xl font-bold text-foreground">Welcome Back</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
             Loading...
           </p>
         </div>

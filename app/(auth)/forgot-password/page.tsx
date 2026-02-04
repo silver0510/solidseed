@@ -64,18 +64,18 @@ export default function ForgotPasswordPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
             <Check className="h-8 w-8 text-green-600" strokeWidth={2} />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Check Your Email</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-2xl font-bold text-foreground">Check Your Email</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
             If an account exists for{' '}
-            <span className="font-medium text-gray-900">{submittedEmail}</span>, you will
+            <span className="font-medium text-foreground">{submittedEmail}</span>, you will
             receive a password reset link shortly.
           </p>
         </div>
 
-        <div className="rounded-md bg-blue-50 p-4">
-          <p className="text-sm text-blue-800">
+        <div className="rounded-md bg-primary/10 p-4">
+          <p className="text-sm text-primary">
             <strong>Next steps:</strong>
-            <ul className="mt-2 list-inside list-disc space-y-1 text-blue-700">
+            <ul className="mt-2 list-inside list-disc space-y-1 text-primary/80">
               <li>Check your inbox for the reset link</li>
               <li>The link will expire in 1 hour</li>
               <li>Click the link to create a new password</li>
@@ -83,8 +83,8 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        <div className="rounded-md bg-yellow-50 p-4">
-          <p className="text-sm text-yellow-800">
+        <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-4">
+          <p className="text-sm text-yellow-800 dark:text-yellow-400">
             <strong>Didn't receive the email?</strong> Check your spam folder or request a
             new link.
           </p>
@@ -97,14 +97,14 @@ export default function ForgotPasswordPage() {
               setSuccess(false);
               setEmail('');
             }}
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-md border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
             Request Another Reset Link
           </button>
 
           <Link
             href="/login"
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-md border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
             Back to Login
           </Link>
@@ -117,8 +117,8 @@ export default function ForgotPasswordPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900">Forgot Your Password?</h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <h2 className="text-3xl font-bold text-foreground">Forgot Your Password?</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
           Enter your email address and we'll send you a link to reset your password.
         </p>
       </div>
@@ -126,8 +126,8 @@ export default function ForgotPasswordPage() {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="rounded-md bg-red-50 p-4">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+            <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
           </div>
         )}
 
@@ -155,7 +155,7 @@ export default function ForgotPasswordPage() {
       <div className="text-center">
         <Link
           href="/login"
-          className="text-sm font-medium text-blue-600 hover:text-blue-500"
+          className="text-sm font-medium text-primary hover:text-primary/80"
         >
           Back to Login
         </Link>

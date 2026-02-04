@@ -123,8 +123,8 @@ function ResetPasswordForm() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
             <XCircle className="h-8 w-8 text-red-600" strokeWidth={2} />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Invalid Reset Link</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-2xl font-bold text-foreground">Invalid Reset Link</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
             {apiError || 'This password reset link is invalid or has expired.'}
           </p>
         </div>
@@ -132,14 +132,14 @@ function ResetPasswordForm() {
         <div className="flex flex-col gap-3">
           <Link
             href="/forgot-password"
-            className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
             Request New Reset Link
           </Link>
 
           <Link
             href="/login"
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-md border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
             Back to Login
           </Link>
@@ -156,15 +156,15 @@ function ResetPasswordForm() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
             <Check className="h-8 w-8 text-green-600" strokeWidth={2} />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Password Reset Successful!</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-2xl font-bold text-foreground">Password Reset Successful!</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
             Your password has been reset successfully. You can now login with your new
             password.
           </p>
         </div>
 
-        <div className="rounded-md bg-blue-50 p-4">
-          <p className="text-sm text-blue-800">
+        <div className="rounded-md bg-primary/10 p-4">
+          <p className="text-sm text-primary">
             Redirecting to login page... Or click the button below to continue.
           </p>
         </div>
@@ -172,7 +172,7 @@ function ResetPasswordForm() {
         <div className="text-center">
           <Link
             href="/login"
-            className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
             Go to Login
           </Link>
@@ -188,8 +188,8 @@ function ResetPasswordForm() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
           <Spinner className="size-8 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">Validating Reset Link</h2>
-        <p className="mt-2 text-sm text-gray-600">Please wait...</p>
+        <h2 className="text-2xl font-bold text-foreground">Validating Reset Link</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Please wait...</p>
       </div>
     );
   }
@@ -198,8 +198,8 @@ function ResetPasswordForm() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900">Reset Your Password</h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <h2 className="text-3xl font-bold text-foreground">Reset Your Password</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
           Enter your new password below. Make sure it's strong and secure.
         </p>
       </div>
@@ -207,8 +207,8 @@ function ResetPasswordForm() {
       {/* Reset Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         {apiError && (
-          <div className="rounded-md bg-red-50 p-4">
-            <p className="text-sm text-red-800">{apiError}</p>
+          <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+            <p className="text-sm text-red-700 dark:text-red-400">{apiError}</p>
           </div>
         )}
 
@@ -249,7 +249,7 @@ function ResetPasswordForm() {
       <div className="text-center">
         <Link
           href="/login"
-          className="text-sm font-medium text-blue-600 hover:text-blue-500"
+          className="text-sm font-medium text-primary hover:text-primary/80"
         >
           Back to Login
         </Link>
@@ -265,8 +265,8 @@ export default function ResetPasswordPage() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
           <Spinner className="size-8 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">Loading...</h2>
-        <p className="mt-2 text-sm text-gray-600">Please wait...</p>
+        <h2 className="text-2xl font-bold text-foreground">Loading...</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Please wait...</p>
       </div>
     }>
       <ResetPasswordForm />

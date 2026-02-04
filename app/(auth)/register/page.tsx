@@ -171,10 +171,10 @@ export default function RegisterPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
             <Check className="h-8 w-8 text-emerald-600 dark:text-emerald-400" strokeWidth={2} />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Check Your Email</h2>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          <h2 className="text-2xl font-bold text-foreground">Check Your Email</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
             We&apos;ve sent a verification link to{' '}
-            <span className="font-medium text-slate-900 dark:text-slate-100">{formData.email}</span>
+            <span className="font-medium text-foreground">{formData.email}</span>
           </p>
         </div>
 
@@ -198,13 +198,13 @@ export default function RegisterPage() {
         )}
 
         <div className="text-center">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-muted-foreground">
             Didn&apos;t receive the email?{' '}
             <button
               type="button"
               onClick={handleResendVerification}
               disabled={resendLoading}
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 disabled:text-slate-400 disabled:cursor-not-allowed"
+              className="font-medium text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:cursor-not-allowed"
             >
               {resendLoading ? 'Sending...' : 'Resend verification email'}
             </button>
@@ -214,7 +214,7 @@ export default function RegisterPage() {
         <div className="text-center">
           <Link
             href="/login"
-            className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            className="text-sm font-medium text-primary hover:text-primary/80"
           >
             Go to login page
           </Link>
@@ -227,8 +227,8 @@ export default function RegisterPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Create Your Account</h2>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+        <h2 className="text-3xl font-bold text-foreground">Create Your Account</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
           Start your 14-day free trial. No credit card required.
         </p>
       </div>
@@ -308,9 +308,9 @@ export default function RegisterPage() {
               onCheckedChange={(checked) => handleInputChange('agreeToTerms', checked as boolean)}
               className="mt-0.5"
             />
-            <Label htmlFor="agreeToTerms" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer leading-relaxed">
+            <Label htmlFor="agreeToTerms" className="text-sm text-muted-foreground cursor-pointer leading-relaxed">
               I agree to the{' '}
-              <Link href="/terms" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+              <Link href="/terms" className="font-medium text-primary hover:text-primary/80">
                 Terms of Service
               </Link>
             </Label>
@@ -328,9 +328,9 @@ export default function RegisterPage() {
               onCheckedChange={(checked) => handleInputChange('agreeToPrivacy', checked as boolean)}
               className="mt-0.5"
             />
-            <Label htmlFor="agreeToPrivacy" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer leading-relaxed">
+            <Label htmlFor="agreeToPrivacy" className="text-sm text-muted-foreground cursor-pointer leading-relaxed">
               I agree to the{' '}
-              <Link href="/privacy" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+              <Link href="/privacy" className="font-medium text-primary hover:text-primary/80">
                 Privacy Policy
               </Link>
             </Label>
@@ -346,9 +346,9 @@ export default function RegisterPage() {
       </form>
 
       <div className="text-center">
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-muted-foreground">
           Already have an account?{' '}
-          <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+          <Link href="/login" className="font-medium text-primary hover:text-primary/80">
             Sign in
           </Link>
         </p>

@@ -66,8 +66,8 @@ function VerifyEmailContent() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Spinner className="size-8 text-primary" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Verifying Your Email</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-2xl font-bold text-foreground">Verifying Your Email</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
             Please wait while we verify your email address...
           </p>
         </div>
@@ -80,12 +80,12 @@ function VerifyEmailContent() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
               <Check className="h-8 w-8 text-green-600" strokeWidth={2} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Email Verified!</h2>
-            <p className="mt-2 text-sm text-gray-600">{message}</p>
+            <h2 className="text-2xl font-bold text-foreground">Email Verified!</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{message}</p>
           </div>
 
-          <div className="rounded-md bg-blue-50 p-4">
-            <p className="text-sm text-blue-800">
+          <div className="rounded-md bg-primary/10 p-4">
+            <p className="text-sm text-primary">
               <strong>Your account is now active!</strong> You can now login to access your
               dashboard. Redirecting to login page...
             </p>
@@ -94,7 +94,7 @@ function VerifyEmailContent() {
           <div className="text-center">
             <Link
               href="/login"
-              className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               Go to Login
             </Link>
@@ -109,15 +109,15 @@ function VerifyEmailContent() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
               <XCircle className="h-8 w-8 text-red-600" strokeWidth={2} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Verification Failed</h2>
-            <p className="mt-2 text-sm text-gray-600">{message}</p>
+            <h2 className="text-2xl font-bold text-foreground">Verification Failed</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{message}</p>
           </div>
 
           <div className="space-y-3">
             {/* Show resend option for expired tokens */}
             {message.toLowerCase().includes('expired') && (
-              <div className="rounded-md bg-yellow-50 p-4">
-                <p className="text-sm text-yellow-800">
+              <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-4">
+                <p className="text-sm text-yellow-800 dark:text-yellow-400">
                   <strong>Verification link expired.</strong> No problem! Request a new one
                   below.
                 </p>
@@ -127,14 +127,14 @@ function VerifyEmailContent() {
             <div className="flex flex-col gap-3">
               <Link
                 href="/resend-verification"
-                className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 Resend Verification Email
               </Link>
 
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="inline-flex items-center justify-center rounded-md border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 Register Again
               </Link>
@@ -144,7 +144,7 @@ function VerifyEmailContent() {
           <div className="text-center">
             <Link
               href="/login"
-              className="text-sm font-medium text-blue-600 hover:text-blue-500"
+              className="text-sm font-medium text-primary hover:text-primary/80"
             >
               Back to Login
             </Link>
@@ -162,8 +162,8 @@ export default function VerifyEmailPage() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
           <Spinner className="size-8 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">Loading...</h2>
-        <p className="mt-2 text-sm text-gray-600">Please wait...</p>
+        <h2 className="text-2xl font-bold text-foreground">Loading...</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Please wait...</p>
       </div>
     }>
       <VerifyEmailContent />

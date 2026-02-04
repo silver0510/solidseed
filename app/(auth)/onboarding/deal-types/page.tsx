@@ -15,7 +15,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { fa } from 'zod/v4/locales';
 
 export default function DealTypeOnboardingPage() {
   const router = useRouter();
@@ -73,11 +72,11 @@ export default function DealTypeOnboardingPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           What type of deals do you work with?
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          Select the deal types you manage. You can change this later in{' '} <span className="font-semibold text-slate-900 dark:text-slate-100">Deal Settings</span>
+        <p className="text-sm text-muted-foreground">
+          Select the deal types you manage. You can change this later in{' '} <span className="font-semibold text-foreground">Deal Settings</span>
         </p>
       </div>
 
@@ -85,10 +84,10 @@ export default function DealTypeOnboardingPage() {
       <div className="space-y-4">
         {/* Residential Sales Option */}
         <div
-          className={`relative border-2 rounded-lg p-4 transition-all cursor-pointer hover:border-slate-400 dark:hover:border-slate-600 ${
+          className={`relative border-2 rounded-lg p-4 transition-all cursor-pointer hover:border-muted-foreground/50 ${
             residential
-              ? 'border-slate-900 dark:border-slate-100 bg-slate-50 dark:bg-slate-800/50'
-              : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
+              ? 'border-foreground bg-muted'
+              : 'border-border bg-card'
           }`}
           onClick={() => setResidential(!residential)}
         >
@@ -103,23 +102,23 @@ export default function DealTypeOnboardingPage() {
               <div className="flex items-center gap-3 mb-2">
                 <div className={`p-2 rounded-lg ${
                   residential
-                    ? 'bg-slate-200 dark:bg-slate-700'
-                    : 'bg-slate-100 dark:bg-slate-800'
+                    ? 'bg-secondary'
+                    : 'bg-muted'
                 }`}>
                   <Home className={`h-5 w-5 ${
                     residential
-                      ? 'text-slate-900 dark:text-slate-100'
-                      : 'text-slate-600 dark:text-slate-400'
+                      ? 'text-foreground'
+                      : 'text-muted-foreground'
                   }`} />
                 </div>
                 <Label
                   htmlFor="residential"
-                  className="text-base font-semibold cursor-pointer text-slate-900 dark:text-slate-100"
+                  className="text-base font-semibold cursor-pointer text-foreground"
                 >
                   Residential Sales
                 </Label>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 pl-11">
+              <p className="text-sm text-muted-foreground pl-11">
                 Track residential property transactions from showing through closing
               </p>
             </div>
@@ -128,10 +127,10 @@ export default function DealTypeOnboardingPage() {
 
         {/* Mortgage Loans Option */}
         <div
-          className={`relative border-2 rounded-lg p-4 transition-all cursor-pointer hover:border-slate-400 dark:hover:border-slate-600 ${
+          className={`relative border-2 rounded-lg p-4 transition-all cursor-pointer hover:border-muted-foreground/50 ${
             mortgage
-              ? 'border-slate-900 dark:border-slate-100 bg-slate-50 dark:bg-slate-800/50'
-              : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
+              ? 'border-foreground bg-muted'
+              : 'border-border bg-card'
           }`}
           onClick={() => setMortgage(!mortgage)}
         >
@@ -146,23 +145,23 @@ export default function DealTypeOnboardingPage() {
               <div className="flex items-center gap-3 mb-2">
                 <div className={`p-2 rounded-lg ${
                   mortgage
-                    ? 'bg-slate-200 dark:bg-slate-700'
-                    : 'bg-slate-100 dark:bg-slate-800'
+                    ? 'bg-secondary'
+                    : 'bg-muted'
                 }`}>
                   <Calculator className={`h-5 w-5 ${
                     mortgage
-                      ? 'text-slate-900 dark:text-slate-100'
-                      : 'text-slate-600 dark:text-slate-400'
+                      ? 'text-foreground'
+                      : 'text-muted-foreground'
                   }`} />
                 </div>
                 <Label
                   htmlFor="mortgage"
-                  className="text-base font-semibold cursor-pointer text-slate-900 dark:text-slate-100"
+                  className="text-base font-semibold cursor-pointer text-foreground"
                 >
                   Mortgage Loans
                 </Label>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 pl-11">
+              <p className="text-sm text-muted-foreground pl-11">
                 Manage mortgage loan applications through underwriting and funding
               </p>
             </div>

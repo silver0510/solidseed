@@ -322,15 +322,26 @@ function SidebarContent({ onClose, isCollapsed }: { onClose?: () => void; isColl
         "flex h-16 items-center",
         isCollapsed ? "justify-center px-2" : "gap-3 px-6"
       )}>
-        <div className="relative h-9 shrink-0">
-          <Image
-            src={isDark ? "/icons/icon.png" : "/icons/icon-dark.png"}
-            alt="Korella Logo"
-            width={140}
-            height={54}
-            className="rounded-lg"
-            priority
-          />
+        <div className="relative shrink-0">
+          {isCollapsed ? (
+            <Image
+              src="/icons/icon-500x500.png"
+              alt="Korella Logo"
+              width={40}
+              height={40}
+              className="rounded-lg"
+              priority
+            />
+          ) : (
+            <Image
+              src={isDark ? "/icons/icon.png" : "/icons/icon-dark.png"}
+              alt="Korella Logo"
+              width={140}
+              height={54}
+              // className="h-9 w-auto"
+              priority
+            />
+          )}
         </div>
       </div>
 
