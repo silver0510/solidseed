@@ -8,15 +8,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DealPipelineBoard } from '@/features/deals/components/DealPipelineBoard';
 import { DealListView } from '@/features/deals/components/DealListView';
 import { LostDealsView } from '@/features/deals/components/LostDealsView';
+import { WonDealsView } from '@/features/deals/components/WonDealsView';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { QuickDealAddSheet } from '@/features/deals/components/QuickDealAddSheet';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
-import { Home, DollarSign, TrendingUp, LayoutGrid, LayoutList, XCircle, Plus } from 'lucide-react';
+import { Home, DollarSign, TrendingUp, LayoutGrid, LayoutList, XCircle, CheckCircle2, Trophy, Plus } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
+import { useQuery } from '@tanstack/react-query';
 import { useDealTypes } from '@/features/deals/hooks/useDealTypes';
 import { usePipelineDeals } from '@/features/deals/hooks/usePipelineDeals';
 
-type ViewMode = 'pipeline' | 'list' | 'lost';
+type ViewMode = 'pipeline' | 'list' | 'won' | 'lost';
 
 // Format currency helper
 const formatCurrency = (value: number) => {
@@ -42,6 +44,33 @@ function DealViewWrapper({
 }) {
   const router = useRouter();
   const { data } = usePipelineDeals({ dealTypeId });
+
+  // Fetch won deals this month for the metric card
+  const { data: wonDeals = [] } = useQuery({
+    queryKey: ['deals', 'won', dealTypeId],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        status: 'closed_won',
+        ...(dealTypeId && { deal_type_id: dealTypeId }),
+        limit: '1000',
+      });
+      const response = await fetch(`/api/deals?${params.toString()}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) return [];
+      const result = await response.json();
+      return result.data?.deals || [];
+    },
+  });
+
+  // Filter to this month and calculate totals
+  const wonThisMonth = wonDeals.filter((deal: { closed_at: string | null }) => {
+    if (!deal.closed_at) return false;
+    const closedDate = new Date(deal.closed_at);
+    const now = new Date();
+    return closedDate.getFullYear() === now.getFullYear() && closedDate.getMonth() === now.getMonth();
+  });
+  const wonThisMonthValue = wonThisMonth.reduce((sum: number, deal: { deal_value: number | null }) => sum + (deal.deal_value || 0), 0);
 
   if (!data || !data.summary || !data.stages) {
     return (
@@ -91,13 +120,16 @@ function DealViewWrapper({
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground">Active Deals</p>
+                <p className="text-sm font-medium text-muted-foreground">Won This Month</p>
                 <p className="mt-1 text-2xl font-semibold">
-                  {data.summary.active_deals}
+                  {formatCurrency(wonThisMonthValue)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {wonThisMonth.length} {wonThisMonth.length === 1 ? 'deal' : 'deals'}
                 </p>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                <LayoutGrid className="h-5 w-5" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                <Trophy className="h-5 w-5" />
               </div>
             </div>
           </CardContent>
@@ -127,13 +159,22 @@ function DealViewWrapper({
           </Button>
         </div>
         <Button
+          variant={viewMode === 'won' ? 'default' : 'outline'}
+          size="sm"
+          className={viewMode === 'won' ? 'h-9 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800' : 'h-9'}
+          onClick={() => onViewModeChange('won')}
+        >
+          <CheckCircle2 className="h-4 w-4 mr-2" />
+          Won
+        </Button>
+        <Button
           variant={viewMode === 'lost' ? 'default' : 'outline'}
           size="sm"
           className="h-9"
           onClick={() => onViewModeChange('lost')}
         >
           <XCircle className="h-4 w-4 mr-2" />
-          Lost Deals
+          Lost
         </Button>
         <Button variant="outline" size="sm" className="h-9" onClick={() => router.push('/deals/new')}>
           <Plus className="h-4 w-4 mr-2" strokeWidth={1.5} />
@@ -263,6 +304,10 @@ function DealsContent() {
                 <Suspense fallback={<SectionLoader message="Loading deals..." />}>
                   <DealListView dealTypeId={dealTypeMap.residential_sale.id} />
                 </Suspense>
+              ) : viewMode === 'won' ? (
+                <Suspense fallback={<SectionLoader message="Loading won deals..." />}>
+                  <WonDealsView dealTypeId={dealTypeMap.residential_sale.id} />
+                </Suspense>
               ) : (
                 <Suspense fallback={<SectionLoader message="Loading lost deals..." />}>
                   <LostDealsView dealTypeId={dealTypeMap.residential_sale.id} />
@@ -287,6 +332,10 @@ function DealsContent() {
               ) : viewMode === 'list' ? (
                 <Suspense fallback={<SectionLoader message="Loading deals..." />}>
                   <DealListView dealTypeId={dealTypeMap.mortgage.id} />
+                </Suspense>
+              ) : viewMode === 'won' ? (
+                <Suspense fallback={<SectionLoader message="Loading won deals..." />}>
+                  <WonDealsView dealTypeId={dealTypeMap.mortgage.id} />
                 </Suspense>
               ) : (
                 <Suspense fallback={<SectionLoader message="Loading lost deals..." />}>
