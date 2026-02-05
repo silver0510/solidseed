@@ -69,9 +69,9 @@ export default function HomePage() {
             <Link href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
               How It Works
             </Link>
-            <Link href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+            {/* <Link href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
               Pricing
-            </Link>
+            </Link> */}
           </div>
           <div className="flex items-center gap-2">
             <Button

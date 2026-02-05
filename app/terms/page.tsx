@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Metadata } from "next";
+import LegalNav from "@/components/LegalNav";
 
 export const metadata: Metadata = {
   title: "Terms of Service | SolidSeed CRM",
@@ -181,28 +182,7 @@ Email: ${CONTACT_EMAIL}`,
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold text-foreground">
-            SolidSeed
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/privacy"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Privacy
-            </Link>
-            <Link
-              href="/"
-              className="text-sm text-primary font-medium hover:underline transition-colors"
-            >
-              Back to Home
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <LegalNav activePage="terms" />
 
       {/* Page Header */}
       <div className="border-b bg-muted/40">
