@@ -148,7 +148,7 @@ export default function HomePage() {
               {/* Main Dashboard Preview */}
               <div className="relative mx-auto max-w-4xl">
                 <div className="rounded-xl border bg-card shadow-2xl overflow-hidden">
-                  <div className="border-b bg-muted/50 px-4 py-3 flex items-center gap-2">
+                  <div className="border-b bg-muted/50 px-4 py-1 flex items-center gap-2">
                     <div className="flex gap-1.5">
                       <div className="h-3 w-3 rounded-full bg-red-500" />
                       <div className="h-3 w-3 rounded-full bg-yellow-500" />
@@ -160,12 +160,15 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                  <div className="aspect-[16/9] flex items-center justify-center bg-muted/30">
-                    <div className="text-center text-muted-foreground">
-                      <BarChart3 className="h-20 w-20 mx-auto mb-4 opacity-30" />
-                      <p className="text-lg font-medium">Main Dashboard Screenshot</p>
-                      <p className="text-sm max-w-md">Overview with metrics cards, recent activity feed, upcoming tasks, and deal pipeline summary</p>
-                    </div>
+                  <div className="aspect-[16/9]">
+                    <Image
+                      src="/homepage/main-dashboard.png"
+                      alt="SolidSeed main dashboard"
+                      width={1280}
+                      height={720}
+                      className="w-full h-full object-cover"
+                      priority
+                    />
                   </div>
                 </div>
 
@@ -216,15 +219,15 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-primary">500+</p>
+              <p className="text-3xl md:text-4xl font-bold text-primary">100+</p>
               <p className="text-muted-foreground">Active Agents</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-primary">$2.5B</p>
+              <p className="text-3xl md:text-4xl font-bold text-primary">$250M</p>
               <p className="text-muted-foreground">Deals Managed</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-primary">50K+</p>
+              <p className="text-3xl md:text-4xl font-bold text-primary">10K+</p>
               <p className="text-muted-foreground">Clients Organized</p>
             </div>
             <div className="text-center">
@@ -300,11 +303,27 @@ export default function HomePage() {
                       </li>
                     </ul>
                   </div>
-                  <div className="rounded-xl border bg-muted/30 aspect-video flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="font-medium">Client List View</p>
-                      <p className="text-sm">Table view with search, filters, tags, and quick actions</p>
+                  <div className="rounded-xl border bg-card shadow-xl overflow-hidden">
+                    <div className="border-b bg-muted/50 px-4 flex items-center gap-2">
+                      <div className="flex gap-1.5">
+                        <div className="h-2 w-2 rounded-full bg-red-500" />
+                        <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                        <div className="h-2 w-2 rounded-full bg-green-500" />
+                      </div>
+                      <div className="flex-1 flex justify-center">
+                        <div className="bg-background rounded px-3 py-1 text-xs text-muted-foreground">
+                          solidseed.app/clients
+                        </div>
+                      </div>
+                    </div>
+                    <div className="aspect-video">
+                      <Image
+                        src="/homepage/cliens-page.png"
+                        alt="Client list view"
+                        width={800}
+                        height={450}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   </div>
                 </div>
@@ -337,11 +356,27 @@ export default function HomePage() {
                       </li>
                     </ul>
                   </div>
-                  <div className="rounded-xl border bg-muted/30 aspect-video flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <Target className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="font-medium">Pipeline Kanban Board</p>
-                      <p className="text-sm">Columns for Lead, Contacted, Showing, Offer, Under Contract, Closed</p>
+                  <div className="rounded-xl border bg-card shadow-xl overflow-hidden">
+                    <div className="border-b bg-muted/50 px-4 flex items-center gap-2">
+                      <div className="flex gap-1.5">
+                        <div className="h-2 w-2 rounded-full bg-red-500" />
+                        <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                        <div className="h-2 w-2 rounded-full bg-green-500" />
+                      </div>
+                      <div className="flex-1 flex justify-center">
+                        <div className="bg-background rounded px-3 py-1 text-xs text-muted-foreground">
+                          solidseed.app/pipeline
+                        </div>
+                      </div>
+                    </div>
+                    <div className="aspect-video">
+                      <Image
+                        src="/homepage/pipeline-kanban.png"
+                        alt="Deal pipeline kanban board"
+                        width={800}
+                        height={450}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   </div>
                 </div>
@@ -374,11 +409,27 @@ export default function HomePage() {
                       </li>
                     </ul>
                   </div>
-                  <div className="rounded-xl border bg-muted/30 aspect-video flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="font-medium">Task Calendar View</p>
-                      <p className="text-sm">Monthly calendar with tasks, showings, and deadlines highlighted</p>
+                  <div className="rounded-xl border bg-card shadow-xl overflow-hidden">
+                    <div className="border-b bg-muted/50 px-4 flex items-center gap-2">
+                      <div className="flex gap-1.5">
+                        <div className="h-2 w-2 rounded-full bg-red-500" />
+                        <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                        <div className="h-2 w-2 rounded-full bg-green-500" />
+                      </div>
+                      <div className="flex-1 flex justify-center">
+                        <div className="bg-background rounded px-3 py-1 text-xs text-muted-foreground">
+                          solidseed.app/tasks
+                        </div>
+                      </div>
+                    </div>
+                    <div className="aspect-video">
+                      <Image
+                        src="/homepage/tasks-page.png"
+                        alt="Task management view"
+                        width={800}
+                        height={450}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   </div>
                 </div>
@@ -411,12 +462,14 @@ export default function HomePage() {
                       </li>
                     </ul>
                   </div>
-                  <div className="rounded-xl border bg-muted/30 aspect-video flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="font-medium">Document Manager</p>
-                      <p className="text-sm">File grid showing contracts, IDs, and property documents with upload button</p>
-                    </div>
+                  <div className="rounded-xl border overflow-hidden aspect-video">
+                    <Image
+                      src="/homepage/document-manage.png"
+                      alt="Document management view"
+                      width={800}
+                      height={450}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </div>
               </TabsContent>
@@ -448,11 +501,27 @@ export default function HomePage() {
                       </li>
                     </ul>
                   </div>
-                  <div className="rounded-xl border bg-muted/30 aspect-video flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <BarChart3 className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="font-medium">Analytics Dashboard</p>
-                      <p className="text-sm">Charts showing deals closed, revenue trends, and conversion rates</p>
+                  <div className="rounded-xl border bg-card shadow-xl overflow-hidden">
+                    <div className="border-b bg-muted/50 px-4 flex items-center gap-2">
+                      <div className="flex gap-1.5">
+                        <div className="h-2 w-2 rounded-full bg-red-500" />
+                        <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                        <div className="h-2 w-2 rounded-full bg-green-500" />
+                      </div>
+                      <div className="flex-1 flex justify-center">
+                        <div className="bg-background rounded px-3 py-1 text-xs text-muted-foreground">
+                          solidseed.app/reports
+                        </div>
+                      </div>
+                    </div>
+                    <div className="aspect-video">
+                      <Image
+                        src="/homepage/report-page.png"
+                        alt="Analytics and reports dashboard"
+                        width={800}
+                        height={450}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   </div>
                 </div>
@@ -580,12 +649,14 @@ export default function HomePage() {
 
             <div className="relative">
               <div className="rounded-xl border bg-card shadow-xl overflow-hidden">
-                <div className="aspect-square flex items-center justify-center bg-muted/30">
-                  <div className="text-center text-muted-foreground p-8">
-                    <Smartphone className="h-20 w-20 mx-auto mb-4 opacity-30" />
-                    <p className="text-lg font-medium">Mobile App Preview</p>
-                    <p className="text-sm">Phone mockup showing the mobile dashboard with quick actions and client list</p>
-                  </div>
+                <div className="aspect-square">
+                  <Image
+                    src="/homepage/mobile-view.png"
+                    alt="SolidSeed mobile app view"
+                    width={600}
+                    height={600}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
             </div>
