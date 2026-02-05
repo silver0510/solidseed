@@ -78,32 +78,36 @@ function NavLink({ item, onClick, isCollapsed }: { item: NavItem; onClick?: () =
   const pathname = usePathname();
   const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
+  const link = (
+    <Link
+      href={item.href}
+      onClick={onClick}
+      className={cn(
+        'flex items-center rounded-lg text-sm font-medium transition-colors min-h-11',
+        isCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5',
+        isActive
+          ? 'bg-accent text-accent-foreground'
+          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+      )}
+    >
+      <span className={cn(isActive ? 'text-primary' : 'text-muted-foreground')}>
+        {item.icon}
+      </span>
+      {!isCollapsed && item.name}
+    </Link>
+  );
+
+  if (!isCollapsed) {
+    return link;
+  }
+
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Link
-            href={item.href}
-            onClick={onClick}
-            className={cn(
-              'flex items-center rounded-lg text-sm font-medium transition-colors min-h-11',
-              isCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5',
-              isActive
-                ? 'bg-accent text-accent-foreground'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-            )}
-          >
-            <span className={cn(isActive ? 'text-primary' : 'text-muted-foreground')}>
-              {item.icon}
-            </span>
-            {!isCollapsed && item.name}
-          </Link>
-        </TooltipTrigger>
-        {isCollapsed && (
-          <TooltipContent side="right">
-            {item.name}
-          </TooltipContent>
-        )}
+        <TooltipTrigger asChild>{link}</TooltipTrigger>
+        <TooltipContent side="right">
+          {item.name}
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -333,9 +337,8 @@ function SidebarContent({ onClose, isCollapsed }: { onClose?: () => void; isColl
             <Image
               src="/icons/icon-500x500.png"
               alt="SolidSeed Logo"
-              width={40}
-              height={40}
-              className="rounded-lg"
+              width={32}
+              height={32}
               priority
             />
           ) : (
