@@ -48,7 +48,7 @@ export async function GET() {
     // Get all active deals for pipeline value and count
     const { data: activeDeals, error: activeError } = await supabase
       .from('deals')
-      .select('deal_value, commission_amount, expected_close_date')
+      .select('deal_value, commission_amount, agent_commission, expected_close_date')
       .eq('assigned_to', user.id)
       .eq('is_deleted', false)
       .eq('status', 'active');
@@ -62,9 +62,9 @@ export async function GET() {
       return sum + (deal.deal_value || 0);
     }, 0);
 
-    // Calculate expected commission
+    // Calculate expected commission (use agent_commission when available, fall back to commission_amount)
     const expectedCommission = (activeDeals || []).reduce((sum, deal) => {
-      return sum + (deal.commission_amount || 0);
+      return sum + (deal.agent_commission || deal.commission_amount || 0);
     }, 0);
 
     // Count hot deals (closing in next 30 days)

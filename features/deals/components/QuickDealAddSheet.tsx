@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { Client } from '@/features/clients/types';
 import { DealType } from '@/features/deals/types';
 import { CreateDealInput } from '@/features/deals/types';
+import { pipelineKeys } from '../hooks/usePipelineDeals';
 
 interface QuickDealAddSheetProps {
   open: boolean;
@@ -77,7 +78,8 @@ export function QuickDealAddSheet({ open, onOpenChange }: QuickDealAddSheetProps
         await uploadPhotos(data.data.id);
       }
 
-      queryClient.invalidateQueries({ queryKey: ['deals'] });
+      queryClient.invalidateQueries({ queryKey: pipelineKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
       toast.success('Deal created successfully');
       onOpenChange(false);
       resetForm();

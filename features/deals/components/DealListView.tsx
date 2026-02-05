@@ -106,6 +106,8 @@ export function DealListView({ dealTypeId }: DealListViewProps) {
     onSuccess: () => {
       toast.success('Stage updated');
       queryClient.invalidateQueries({ queryKey: pipelineKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['deals', 'won'] });
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : 'Failed to update stage');

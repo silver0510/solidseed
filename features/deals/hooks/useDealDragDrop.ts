@@ -188,6 +188,8 @@ export function useDealDragDrop(options: UseDealDragDropOptions = {}) {
     onSettled: () => {
       // Refetch after error or success
       queryClient.invalidateQueries({ queryKey: pipelineKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['deals', 'won'] });
     },
   });
 

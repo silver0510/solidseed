@@ -7,6 +7,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { dealQueryKeys } from './useDealDetail';
+import { pipelineKeys } from './usePipelineDeals';
 import type {
   UpdateDealInput,
   UpdateDealStageInput,
@@ -64,6 +65,9 @@ export function useDealMutations(dealId: string) {
     onSettled: () => {
       // Refetch after error or success
       queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
+      // Refresh pipeline summary and dashboard metrics
+      queryClient.invalidateQueries({ queryKey: pipelineKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
     },
   });
 
@@ -124,9 +128,11 @@ export function useDealMutations(dealId: string) {
       }
     },
     onSuccess: () => {
-      // Only invalidate to refetch the deal (includes new activity)
-      // Don't invalidate activities separately - they're part of the deal
       queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
+      // Stage change affects pipeline board layout and may change status to closed_won
+      queryClient.invalidateQueries({ queryKey: pipelineKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['deals', 'won'] });
     },
   });
 
@@ -303,8 +309,10 @@ export function useDealMutations(dealId: string) {
       }
     },
     onSuccess: () => {
-      // Refetch to get the new activity entry
       queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
+      // Lost deal drops out of active pipeline and dashboard metrics
+      queryClient.invalidateQueries({ queryKey: pipelineKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
     },
   });
 

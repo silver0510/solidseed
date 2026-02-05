@@ -9,6 +9,7 @@ import type { Deal } from '@/lib/types/deals';
 import { cn } from '@/lib/utils';
 import { useSwipe } from '@/hooks/use-swipe';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { pipelineKeys } from '../hooks/usePipelineDeals';
 import { toast } from 'sonner';
 
 interface SwipeableDealCardProps {
@@ -48,7 +49,9 @@ export function SwipeableDealCard({
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipeline-deals'] });
+      queryClient.invalidateQueries({ queryKey: pipelineKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['deals', 'won'] });
       toast.success(`Deal moved to ${stages[currentStageIndex]}`);
     },
     onError: (error: Error) => {
