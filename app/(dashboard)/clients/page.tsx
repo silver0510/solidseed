@@ -25,7 +25,9 @@ import {
 } from '@/components/ui/dialog';
 import { clientApi, clientQueryKeys } from '@/features/clients/api/clientApi';
 import type { ClientWithTags, ClientFormData } from '@/features/clients';
-import { Users, Star, Home, DollarSign } from 'lucide-react';
+import { Users, UserPlus, Clock, Cake, X } from 'lucide-react';
+
+export type SpecialFilter = 'need-followup' | 'birthdays-soon' | null;
 
 // Metric card component matching dashboard design
 function MetricCard({
@@ -34,12 +36,16 @@ function MetricCard({
   subtitle,
   icon,
   variant = 'default',
+  onAction,
+  actionLabel,
 }: {
   title: string;
   value: string | number;
   subtitle?: string;
   icon: React.ReactNode;
-  variant?: 'default' | 'warning' | 'danger' | 'info' | 'success';
+  variant?: 'default' | 'warning' | 'danger' | 'info' | 'success' | 'pink';
+  onAction?: () => void;
+  actionLabel?: string;
 }) {
   return (
     <Card className="transition-shadow hover:shadow-md">
@@ -53,12 +59,23 @@ function MetricCard({
                 {subtitle}
               </p>
             )}
+            {onAction && actionLabel && Number(value) > 0 && (
+              <Button
+                variant="link"
+                size="sm"
+                className="h-auto p-0 mt-1 text-xs"
+                onClick={onAction}
+              >
+                {actionLabel}
+              </Button>
+            )}
           </div>
           <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
             variant === 'danger' ? 'bg-destructive/10 text-destructive' :
             variant === 'warning' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' :
             variant === 'info' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
             variant === 'success' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' :
+            variant === 'pink' ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400' :
             'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
           }`}>
             {icon}
@@ -78,6 +95,7 @@ export default function ClientsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [clientToDelete, setClientToDelete] = useState<ClientWithTags | null>(null);
+  const [specialFilter, setSpecialFilter] = useState<SpecialFilter>(null);
 
   // Check for action=new query parameter to open dialog
   useEffect(() => {
@@ -90,9 +108,9 @@ export default function ClientsPage() {
   }, [searchParams, router]);
 
   // Fetch client stats for metrics
-  const { data: clientsData } = useQuery({
-    queryKey: clientQueryKeys.list({ limit: 1 }),
-    queryFn: () => clientApi.listClients({ limit: 1 }),
+  const { data: clientStats } = useQuery({
+    queryKey: clientQueryKeys.stats(),
+    queryFn: () => clientApi.getClientStats(),
   });
 
   // Fetch full client data for editing
@@ -101,8 +119,6 @@ export default function ClientsPage() {
     queryFn: () => clientApi.getClient(selectedClientId!),
     enabled: !!selectedClientId && isEditDialogOpen,
   });
-
-  const totalClients = clientsData?.total_count ?? 0;
 
   const createClientMutation = useMutation({
     mutationFn: (data: ClientFormData) => clientApi.createClient(data),
@@ -189,42 +205,64 @@ export default function ClientsPage() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <MetricCard
           title="Total Clients"
-          value={totalClients}
+          value={clientStats?.total_clients ?? 0}
           variant="info"
           icon={<Users className="h-5 w-5" strokeWidth={1.5} />}
         />
         <MetricCard
-          title="VIP Clients"
-          value="—"
-          subtitle="Premium tier"
-          variant="warning"
-          icon={<Star className="h-5 w-5" strokeWidth={1.5} />}
-        />
-        <MetricCard
-          title="Active Buyers"
-          value="—"
-          subtitle="Looking for property"
+          title="New This Month"
+          value={clientStats?.new_this_month ?? 0}
+          subtitle="Added recently"
           variant="success"
-          icon={<Home className="h-5 w-5" strokeWidth={1.5} />}
+          icon={<UserPlus className="h-5 w-5" strokeWidth={1.5} />}
         />
         <MetricCard
-          title="Active Sellers"
-          value="—"
-          subtitle="Listing property"
-          variant="default"
-          icon={<DollarSign className="h-5 w-5" strokeWidth={1.5} />}
+          title="Need Follow-up"
+          value={clientStats?.need_followup.count ?? 0}
+          subtitle="No contact in 30+ days"
+          variant="warning"
+          icon={<Clock className="h-5 w-5" strokeWidth={1.5} />}
+          onAction={() => setSpecialFilter('need-followup')}
+          actionLabel="View list"
+        />
+        <MetricCard
+          title="Birthdays Soon"
+          value={clientStats?.birthdays_soon.count ?? 0}
+          subtitle="Next 30 days"
+          variant="pink"
+          icon={<Cake className="h-5 w-5" strokeWidth={1.5} />}
+          onAction={() => setSpecialFilter('birthdays-soon')}
+          actionLabel="View list"
         />
       </div>
 
       {/* Client List Section */}
       <div>
-        <h2 className="text-lg font-semibold mb-3">All Clients</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">
+            {specialFilter === 'need-followup' ? 'Clients Needing Follow-up' :
+             specialFilter === 'birthdays-soon' ? 'Clients with Upcoming Birthdays' :
+             'All Clients'}
+          </h2>
+          {specialFilter && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSpecialFilter(null)}
+              className="text-muted-foreground"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Clear filter
+            </Button>
+          )}
+        </div>
         <Suspense fallback={<SectionLoader message="Loading clients..." />}>
           <ClientList
             onClientClick={handleClientClick}
             onAddClient={handleAddClient}
             onEditClient={handleEditClient}
             onDeleteClient={handleDeleteClient}
+            specialFilter={specialFilter}
           />
         </Suspense>
       </div>
@@ -310,6 +348,7 @@ export default function ClientsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }

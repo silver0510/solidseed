@@ -100,6 +100,8 @@ export interface ListClientsParams {
   status?: string;
   /** Sort order */
   sort?: 'created_at' | 'name' | 'updated_at';
+  /** Special filter for metrics (need-followup, birthdays-soon) */
+  special_filter?: 'need-followup' | 'birthdays-soon';
 }
 
 /**

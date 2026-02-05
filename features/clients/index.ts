@@ -103,6 +103,9 @@ export type {
   ApiError,
   CSVImportResult,
   CSVExportOptions,
+  ClientForFollowup,
+  ClientForBirthday,
+  ClientStats,
 } from './types';
 
 // Constants
@@ -199,12 +202,17 @@ export type { ClientDealsWidgetProps } from './components/ClientDealsWidget';
 export { DealBadge } from './components/DealBadge';
 export type { DealBadgeProps } from './components/DealBadge';
 
+// Metric Sheets
+export { NeedFollowupSheet } from './components/NeedFollowupSheet';
+export { BirthdaysSoonSheet } from './components/BirthdaysSoonSheet';
+
 // =============================================================================
 // HOOK EXPORTS
 // =============================================================================
 
 export { useClient } from './hooks/useClient';
 export { useClientsInfinite } from './hooks/useClientsInfinite';
+export type { SpecialFilter } from './hooks/useClientsInfinite';
 export { useDocumentUpload } from './hooks/useDocumentUpload';
 export { useAllTasks } from './hooks/useAllTasks';
 export { useClientDeals } from './hooks/useClientDeals';

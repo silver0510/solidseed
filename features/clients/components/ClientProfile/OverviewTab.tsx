@@ -10,9 +10,9 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils/cn';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle, StickyNote, Briefcase, Mail, Phone, MapPin, Cake } from 'lucide-react';
+import { CheckCircle, StickyNote, Briefcase, Mail, Phone, MapPin, Cake, CheckSquare, Calendar, FileText } from 'lucide-react';
 import { useClientDeals } from '../../hooks/useClientDeals';
-import { taskApi, noteApi } from '../../api/clientApi';
+import { taskApi, noteApi, documentApi } from '../../api/clientApi';
 import type { ClientWithCounts } from '../../types';
 
 // =============================================================================
@@ -128,7 +128,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   // Calculate total deal value from active deals
   const totalDealValue = deals.reduce((sum, deal) => sum + (deal.deal_value || 0), 0);
 
-  // Fetch tasks and notes to calculate last contact
+  // Fetch tasks and notes
   const { data: tasks } = useQuery({
     queryKey: ['clients', client.id, 'tasks'],
     queryFn: () => taskApi.getClientTasks(client.id),
@@ -139,48 +139,57 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     queryFn: () => noteApi.getClientNotes(client.id),
   });
 
-  // Calculate last contact (most recent task or note)
-  const lastContactDate = React.useMemo(() => {
-    const allDates: Date[] = [];
+  const { data: documents } = useQuery({
+    queryKey: ['clients', client.id, 'documents'],
+    queryFn: () => documentApi.getClientDocuments(client.id),
+  });
 
-    if (tasks && tasks.length > 0) {
-      tasks.forEach(task => {
-        allDates.push(new Date(task.updated_at));
-      });
+  // Calculate open and overdue tasks
+  const { openTasksCount, overdueTasksCount } = React.useMemo(() => {
+    if (!tasks || tasks.length === 0) {
+      return { openTasksCount: 0, overdueTasksCount: 0 };
     }
-
-    if (notes && notes.length > 0) {
-      notes.forEach(note => {
-        allDates.push(new Date(note.created_at));
-      });
-    }
-
-    if (allDates.length === 0) return null;
-
-    return new Date(Math.max(...allDates.map(d => d.getTime())));
-  }, [tasks, notes]);
-
-  // Calculate days since last contact
-  const daysSinceLastContact = lastContactDate
-    ? Math.floor((Date.now() - lastContactDate.getTime()) / (1000 * 60 * 60 * 24))
-    : null;
-
-  // Get next upcoming task
-  const nextTask = React.useMemo(() => {
-    if (!tasks || tasks.length === 0) return null;
 
     const openTasks = tasks.filter(t => t.status !== 'closed');
-    if (openTasks.length === 0) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // Sort by due date (earliest first)
-    const sortedTasks = [...openTasks].sort((a, b) => {
-      if (!a.due_date) return 1;
-      if (!b.due_date) return -1;
-      return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+    const overdueTasks = openTasks.filter(t => {
+      if (!t.due_date) return false;
+      const dueDate = new Date(t.due_date);
+      dueDate.setHours(0, 0, 0, 0);
+      return dueDate < today;
     });
 
-    return sortedTasks[0];
+    return {
+      openTasksCount: openTasks.length,
+      overdueTasksCount: overdueTasks.length,
+    };
   }, [tasks]);
+
+  // Calculate days as client
+  const daysAsClient = React.useMemo(() => {
+    const createdDate = new Date(client.created_at);
+    const today = new Date();
+    return Math.floor((today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+  }, [client.created_at]);
+
+  // Format days as client for display
+  const formatDaysAsClient = () => {
+    if (daysAsClient === 0) return 'Today';
+    if (daysAsClient === 1) return '1 day';
+    if (daysAsClient < 30) return `${daysAsClient} days`;
+    if (daysAsClient < 365) {
+      const months = Math.floor(daysAsClient / 30);
+      return months === 1 ? '1 month' : `${months} months`;
+    }
+    const years = Math.floor(daysAsClient / 365);
+    const remainingMonths = Math.floor((daysAsClient % 365) / 30);
+    if (remainingMonths === 0) {
+      return years === 1 ? '1 year' : `${years} years`;
+    }
+    return years === 1 ? `1 year ${remainingMonths}mo` : `${years}y ${remainingMonths}mo`;
+  };
 
   // Format currency
   const formatCurrency = (value: number) => {
@@ -192,33 +201,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     }).format(value);
   };
 
-  // Format date for next action
-  const formatNextAction = () => {
-    if (!nextTask) return 'No tasks scheduled';
-
-    const dueDate = nextTask.due_date ? new Date(nextTask.due_date) : null;
-    if (!dueDate) return nextTask.title;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    dueDate.setHours(0, 0, 0, 0);
-
-    const diffTime = dueDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Tomorrow';
-    if (diffDays < 0) return `Overdue ${Math.abs(diffDays)}d`;
-    if (diffDays <= 7) return `In ${diffDays} days`;
-
-    return dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
-  // Combine all activities (tasks, notes, deals) into timeline
+  // Combine all activities (tasks, notes, deals, documents) into timeline
   const timelineItems = React.useMemo(() => {
     const items: Array<{
       id: string;
-      type: 'task' | 'note' | 'deal';
+      type: 'task' | 'note' | 'deal' | 'document';
       title: string;
       description?: string;
       date: Date;
@@ -266,6 +253,26 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       });
     }
 
+    // Add documents
+    if (documents && documents.length > 0) {
+      documents.slice(0, 5).forEach(doc => {
+        // Format file size for display
+        const formatFileSize = (bytes: number) => {
+          if (bytes < 1024) return `${bytes} B`;
+          if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+          return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+        };
+
+        items.push({
+          id: doc.id,
+          type: 'document',
+          title: 'Document uploaded',
+          description: `${doc.file_name} • ${formatFileSize(doc.file_size)}`,
+          date: new Date(doc.uploaded_at),
+        });
+      });
+    }
+
     // Add deals
     if (deals && deals.length > 0) {
       deals.slice(0, 3).forEach(deal => {
@@ -292,7 +299,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
     // Sort by date (most recent first)
     return items.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 10);
-  }, [tasks, notes, deals]);
+  }, [tasks, notes, documents, deals]);
 
   // Format relative time
   const formatRelativeTime = (date: Date) => {
@@ -315,6 +322,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     if (type === 'note') {
       return <StickyNote className="h-5 w-5" strokeWidth={2.5} />;
     }
+    if (type === 'document') {
+      return <FileText className="h-5 w-5" strokeWidth={2.5} />;
+    }
     if (type === 'deal') {
       return <Briefcase className="h-5 w-5" strokeWidth={2.5} />;
     }
@@ -323,23 +333,19 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   return (
     <div className={cn('space-y-6', className)}>
-      {/* Deal-Focused Metrics */}
+      {/* Client Metrics */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <MetricCard
           title="Active Deals"
           value={dealsLoading ? '...' : activeDealsCount}
           subtitle={activeDealsCount === 1 ? 'Open opportunity' : 'Open opportunities'}
           variant="default"
-          icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-            </svg>
-          }
+          icon={<Briefcase className="h-5 w-5" />}
         />
         <MetricCard
-          title="Total Value"
+          title="Pipeline Value"
           value={dealsLoading ? '...' : formatCurrency(totalDealValue)}
-          subtitle="Pipeline value"
+          subtitle="From active deals"
           variant="success"
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -348,26 +354,18 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           }
         />
         <MetricCard
-          title="Last Contact"
-          value={daysSinceLastContact === null ? 'Never' : daysSinceLastContact === 0 ? 'Today' : `${daysSinceLastContact}d ago`}
-          subtitle="Days since last touch"
-          variant={daysSinceLastContact === null || daysSinceLastContact > 14 ? 'danger' : daysSinceLastContact > 7 ? 'warning' : 'info'}
-          icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-            </svg>
-          }
+          title="Open Tasks"
+          value={openTasksCount}
+          subtitle={overdueTasksCount > 0 ? `${overdueTasksCount} overdue` : 'All on track'}
+          variant={overdueTasksCount > 0 ? 'danger' : openTasksCount > 0 ? 'warning' : 'info'}
+          icon={<CheckSquare className="h-5 w-5" />}
         />
         <MetricCard
-          title="Next Action"
-          value={formatNextAction()}
-          subtitle={nextTask ? nextTask.title : 'Schedule follow-up'}
+          title="Client Since"
+          value={formatDaysAsClient()}
+          subtitle={new Date(client.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           variant="info"
-          icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          }
+          icon={<Calendar className="h-5 w-5" />}
         />
       </div>
 
@@ -473,6 +471,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                       <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
                         item.type === 'task' ? 'bg-purple-200 text-purple-700 dark:bg-purple-800/50 dark:text-purple-200' :
                         item.type === 'note' ? 'bg-blue-200 text-blue-700 dark:bg-blue-800/50 dark:text-blue-200' :
+                        item.type === 'document' ? 'bg-amber-200 text-amber-700 dark:bg-amber-800/50 dark:text-amber-200' :
                         'bg-green-200 text-green-700 dark:bg-green-800/50 dark:text-green-200'
                       }`}>
                         {getTimelineIcon(item.type)}

@@ -26,6 +26,7 @@ import type {
   TaskFilters,
   ClientDocument,
   DocumentDownloadResponse,
+  ClientStats,
 } from '../types';
 import type { Deal } from '@/features/deals/types';
 import { getBaseUrl, handleResponse, buildQueryString } from '@/lib/api/utils';
@@ -113,6 +114,18 @@ export const clientApi = {
    */
   searchClients: async (query: string, limit: number = 10): Promise<Client[]> => {
     const result = await clientApi.listClients({ search: query, limit });
+    return result.data;
+  },
+
+  /**
+   * Get client statistics for metrics cards
+   */
+  getClientStats: async (): Promise<ClientStats> => {
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/stats`, {
+      credentials: 'include',
+    });
+    const result = await handleResponse<{ success: boolean; data: ClientStats }>(response);
     return result.data;
   },
 };
@@ -435,6 +448,9 @@ export const clientQueryKeys = {
 
   /** Key for client search queries */
   search: (query: string) => [...clientQueryKeys.all, 'search', query] as const,
+
+  /** Key for client stats/metrics */
+  stats: () => [...clientQueryKeys.all, 'stats'] as const,
 };
 
 /**

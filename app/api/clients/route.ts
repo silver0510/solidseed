@@ -88,6 +88,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Validate special_filter parameter
+    const specialFilterParam = searchParams.get('special_filter');
+    if (specialFilterParam && !['need-followup', 'birthdays-soon'].includes(specialFilterParam)) {
+      return NextResponse.json(
+        { error: 'Invalid special_filter parameter. Must be "need-followup" or "birthdays-soon".' },
+        { status: 400 }
+      );
+    }
+
     const params: ListClientsParams = {
       cursor: searchParams.get('cursor') || undefined,
       limit,
@@ -95,6 +104,7 @@ export async function GET(request: NextRequest) {
       tag: searchParams.get('tag') || undefined,
       status: searchParams.get('status') || undefined,
       sort: sortParam as 'created_at' | 'name' | undefined,
+      special_filter: specialFilterParam as 'need-followup' | 'birthdays-soon' | undefined,
     };
 
     // Get paginated clients for the authenticated user

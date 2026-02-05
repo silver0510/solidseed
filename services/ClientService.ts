@@ -152,6 +152,14 @@ export class ClientService {
       throw new Error('User ID is required');
     }
 
+    // Handle special filters with custom queries
+    if (params.special_filter === 'need-followup') {
+      return this.listClientsNeedFollowup(params, userId);
+    }
+    if (params.special_filter === 'birthdays-soon') {
+      return this.listClientsBirthdaysSoon(params, userId);
+    }
+
     // Validate and enforce limit: default 20, max 100
     const limit = Math.min(Math.max(params.limit || 20, 1), 100);
 
@@ -210,6 +218,156 @@ export class ClientService {
       data: data || [],
       next_cursor,
       total_count: count || 0,
+    };
+  }
+
+  /**
+   * List clients needing follow-up (no notes in 30+ days or no notes at all)
+   * Sorted by last note date (oldest first, null first)
+   */
+  private async listClientsNeedFollowup(params: ListClientsParams, userId: string): Promise<PaginatedClients> {
+    const limit = Math.min(Math.max(params.limit || 20, 1), 100);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Get all clients with their notes
+    const { data: clientsWithNotes, error } = await this.supabase
+      .from('clients')
+      .select(`
+        *,
+        client_tags(tag_name),
+        client_notes(created_at)
+      `)
+      .eq('assigned_to', userId)
+      .eq('is_deleted', false);
+
+    if (error) {
+      throw new Error(`Failed to list clients: ${error.message}`);
+    }
+
+    // Filter and process clients
+    const needFollowupClients: Array<Client & { last_note_date: string | null }> = [];
+
+    for (const client of clientsWithNotes || []) {
+      const notes = (client.client_notes as Array<{ created_at: string }>) || [];
+
+      if (notes.length === 0) {
+        // No notes at all - needs follow-up
+        needFollowupClients.push({ ...client, last_note_date: null });
+      } else {
+        // Find the most recent note
+        const sortedNotes = notes.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        const latestNote = sortedNotes[0];
+        if (latestNote) {
+          const lastNoteDate = new Date(latestNote.created_at);
+          if (lastNoteDate < thirtyDaysAgo) {
+            needFollowupClients.push({ ...client, last_note_date: latestNote.created_at });
+          }
+        }
+      }
+    }
+
+    // Sort by last_note_date (null first, then oldest)
+    needFollowupClients.sort((a, b) => {
+      if (a.last_note_date === null && b.last_note_date === null) return 0;
+      if (a.last_note_date === null) return -1;
+      if (b.last_note_date === null) return 1;
+      return new Date(a.last_note_date).getTime() - new Date(b.last_note_date).getTime();
+    });
+
+    // Apply cursor-based pagination using index
+    let startIndex = 0;
+    if (params.cursor) {
+      const cursorIndex = parseInt(params.cursor, 10);
+      if (!isNaN(cursorIndex)) {
+        startIndex = cursorIndex;
+      }
+    }
+
+    const paginatedClients = needFollowupClients.slice(startIndex, startIndex + limit);
+    const hasMore = startIndex + limit < needFollowupClients.length;
+
+    return {
+      data: paginatedClients,
+      next_cursor: hasMore ? String(startIndex + limit) : undefined,
+      total_count: needFollowupClients.length,
+    };
+  }
+
+  /**
+   * List clients with birthdays in the next 30 days
+   * Sorted by days until birthday (soonest first)
+   */
+  private async listClientsBirthdaysSoon(params: ListClientsParams, userId: string): Promise<PaginatedClients> {
+    const limit = Math.min(Math.max(params.limit || 20, 1), 100);
+    const today = new Date();
+
+    // Get all clients with birthdays
+    const { data: clientsWithBirthdays, error } = await this.supabase
+      .from('clients')
+      .select('*, client_tags(tag_name)')
+      .eq('assigned_to', userId)
+      .eq('is_deleted', false)
+      .not('birthday', 'is', null);
+
+    if (error) {
+      throw new Error(`Failed to list clients: ${error.message}`);
+    }
+
+    // Calculate days until birthday for each client
+    const birthdaySoonClients: Array<Client & { days_until: number }> = [];
+
+    for (const client of clientsWithBirthdays || []) {
+      if (!client.birthday) continue;
+
+      const birthday = new Date(client.birthday);
+      const thisYearBirthday = new Date(
+        today.getFullYear(),
+        birthday.getMonth(),
+        birthday.getDate()
+      );
+
+      // If birthday already passed this year, check next year
+      let nextBirthday = thisYearBirthday;
+      if (thisYearBirthday < today) {
+        nextBirthday = new Date(
+          today.getFullYear() + 1,
+          birthday.getMonth(),
+          birthday.getDate()
+        );
+      }
+
+      // Calculate days until birthday
+      const diffTime = nextBirthday.getTime() - today.getTime();
+      const daysUntil = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      // Include if within 30 days
+      if (daysUntil >= 0 && daysUntil <= 30) {
+        birthdaySoonClients.push({ ...client, days_until: daysUntil });
+      }
+    }
+
+    // Sort by days until birthday (soonest first)
+    birthdaySoonClients.sort((a, b) => a.days_until - b.days_until);
+
+    // Apply cursor-based pagination using index
+    let startIndex = 0;
+    if (params.cursor) {
+      const cursorIndex = parseInt(params.cursor, 10);
+      if (!isNaN(cursorIndex)) {
+        startIndex = cursorIndex;
+      }
+    }
+
+    const paginatedClients = birthdaySoonClients.slice(startIndex, startIndex + limit);
+    const hasMore = startIndex + limit < birthdaySoonClients.length;
+
+    return {
+      data: paginatedClients,
+      next_cursor: hasMore ? String(startIndex + limit) : undefined,
+      total_count: birthdaySoonClients.length,
     };
   }
 

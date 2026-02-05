@@ -130,6 +130,8 @@ export interface ListClientsOptions {
   sortBy?: ClientSortField;
   /** Sort direction */
   sortDirection?: SortDirection;
+  /** Special filter for metrics (need-followup, birthdays-soon) */
+  special_filter?: 'need-followup' | 'birthdays-soon';
 }
 
 /**
@@ -278,4 +280,56 @@ export interface CSVExportOptions {
   tags?: string[];
   /** Include deleted clients */
   includeDeleted?: boolean;
+}
+
+/**
+ * Client needing follow-up (no notes in 30+ days)
+ */
+export interface ClientForFollowup {
+  /** Client ID */
+  id: string;
+  /** Client name */
+  name: string;
+  /** Client email */
+  email: string;
+  /** Date of last note (null if no notes) */
+  last_note_date: string | null;
+}
+
+/**
+ * Client with upcoming birthday
+ */
+export interface ClientForBirthday {
+  /** Client ID */
+  id: string;
+  /** Client name */
+  name: string;
+  /** Client birthday (ISO date string) */
+  birthday: string;
+  /** Days until birthday */
+  days_until: number;
+}
+
+/**
+ * Client statistics for metrics cards
+ */
+export interface ClientStats {
+  /** Total number of clients */
+  total_clients: number;
+  /** Clients added this month */
+  new_this_month: number;
+  /** Clients needing follow-up */
+  need_followup: {
+    /** Count of clients needing follow-up */
+    count: number;
+    /** List of clients (limited to 10) */
+    clients: ClientForFollowup[];
+  };
+  /** Clients with birthdays in next 30 days */
+  birthdays_soon: {
+    /** Count of clients with upcoming birthdays */
+    count: number;
+    /** List of clients (limited to 10) */
+    clients: ClientForBirthday[];
+  };
 }

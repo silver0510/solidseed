@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { useClientsInfinite, getTotalCount, flattenClientPages } from '../../hooks/useClientsInfinite';
+import { useClientsInfinite, getTotalCount, flattenClientPages, type SpecialFilter } from '../../hooks/useClientsInfinite';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -97,6 +97,8 @@ export interface ClientListProps {
   initialSearch?: string;
   /** Initial tag filter */
   initialTag?: string;
+  /** Special filter for metrics (need-followup, birthdays-soon) */
+  specialFilter?: SpecialFilter;
 }
 
 /**
@@ -129,6 +131,7 @@ export const ClientList: React.FC<ClientListProps> = ({
   onDeleteClient,
   initialSearch = '',
   initialTag = '',
+  specialFilter,
 }) => {
   // Fetch client statuses for filter
   const { data: statuses } = useSuspenseQuery({
@@ -178,6 +181,7 @@ export const ClientList: React.FC<ClientListProps> = ({
     sortBy,
     sortDirection,
     limit: 20,
+    specialFilter,
   });
 
   // Flatten all pages of clients
@@ -318,7 +322,7 @@ export const ClientList: React.FC<ClientListProps> = ({
 
   // Empty state
   const isEmpty = clients.length === 0;
-  const hasActiveFilters = !!debouncedSearch || !!tagFilter || !!statusFilter || hasActiveDealsFilter;
+  const hasActiveFilters = !!debouncedSearch || !!tagFilter || !!statusFilter || hasActiveDealsFilter || !!specialFilter;
 
   return (
     <div className="space-y-4">

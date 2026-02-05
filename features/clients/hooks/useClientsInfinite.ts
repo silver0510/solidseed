@@ -16,6 +16,9 @@ import type {
   PaginatedClients,
 } from '../types';
 
+/** Special filter type for metrics-based filtering */
+export type SpecialFilter = 'need-followup' | 'birthdays-soon' | null;
+
 /**
  * Options for the useClientsInfinite hook
  */
@@ -32,6 +35,8 @@ export interface UseClientsInfiniteOptions {
   sortDirection?: SortDirection;
   /** Number of items per page */
   limit?: number;
+  /** Special filter for metrics (need-followup, birthdays-soon) */
+  specialFilter?: SpecialFilter;
 }
 
 /**
@@ -61,7 +66,7 @@ export interface UseClientsInfiniteOptions {
  * ```
  */
 export function useClientsInfinite(options: UseClientsInfiniteOptions = {}) {
-  const { search, tag, status, sortBy = 'created_at', sortDirection = 'desc', limit = 20 } = options;
+  const { search, tag, status, sortBy = 'created_at', sortDirection = 'desc', limit = 20, specialFilter } = options;
 
   return useSuspenseInfiniteQuery({
     queryKey: clientQueryKeys.list({
@@ -71,6 +76,7 @@ export function useClientsInfinite(options: UseClientsInfiniteOptions = {}) {
       sortBy,
       sortDirection,
       limit,
+      specialFilter,
     }),
     queryFn: async ({ pageParam }) => {
       const params: ListClientsOptions = {
@@ -81,6 +87,7 @@ export function useClientsInfinite(options: UseClientsInfiniteOptions = {}) {
         status: status || undefined,
         sortBy,
         sortDirection,
+        special_filter: specialFilter || undefined,
       };
 
       // Transform PaginatedClients to include tags
