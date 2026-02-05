@@ -1,7 +1,7 @@
 /**
  * Deal Management Feature
  *
- * Centralized deal management for Korella CRM.
+ * Centralized deal management for SolidSeed CRM.
  * Provides components, hooks, and utilities for managing deals,
  * milestones, documents, and activities.
  *

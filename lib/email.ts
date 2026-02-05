@@ -254,9 +254,9 @@ export class EmailService {
 
     await this.sendEmail({
       to,
-      subject: 'Verify your Korella account',
+      subject: 'Verify your SolidSeed account',
       html,
-      text: `Hi ${name},\n\nWelcome to Korella! Please verify your email address by visiting:\n${verificationLink}\n\nThis link will expire in 24 hours.\n\nIf you didn't create a Korella account, please ignore this email.\n\nThanks,\nThe Korella Team`,
+      text: `Hi ${name},\n\nWelcome to SolidSeed! Please verify your email address by visiting:\n${verificationLink}\n\nThis link will expire in 24 hours.\n\nIf you didn't create a SolidSeed account, please ignore this email.\n\nThanks,\nThe SolidSeed Team`,
     });
   }
 
@@ -278,9 +278,9 @@ export class EmailService {
 
     await this.sendEmail({
       to,
-      subject: 'Reset your Korella password',
+      subject: 'Reset your SolidSeed password',
       html,
-      text: `Hi ${name},\n\nWe received a request to reset your password for your Korella account.\n\nReset your password by visiting:\n${resetLink}\n\nThis link will expire in 1 hour.\n\nIf you didn't request a password reset, you can safely ignore this email.\n\nThanks,\nThe Korella Team`,
+      text: `Hi ${name},\n\nWe received a request to reset your password for your SolidSeed account.\n\nReset your password by visiting:\n${resetLink}\n\nThis link will expire in 1 hour.\n\nIf you didn't request a password reset, you can safely ignore this email.\n\nThanks,\nThe SolidSeed Team`,
     });
   }
 
@@ -303,9 +303,9 @@ export class EmailService {
 
     await this.sendEmail({
       to,
-      subject: 'Your Korella password was changed',
+      subject: 'Your SolidSeed password was changed',
       html,
-      text: `Hi ${name},\n\nYour Korella account password was successfully changed.\n\nIf you made this change, no further action is needed.\n\nIf you didn't change your password, please contact our support team immediately at support@korella.com.\n\nThanks,\nThe Korella Team`,
+      text: `Hi ${name},\n\nYour SolidSeed account password was successfully changed.\n\nIf you made this change, no further action is needed.\n\nIf you didn't change your password, please contact our support team immediately at support@solidseed.app.\n\nThanks,\nThe SolidSeed Team`,
     });
   }
 
@@ -334,9 +334,9 @@ export class EmailService {
 
     await this.sendEmail({
       to,
-      subject: 'Security alert: Your Korella account was locked',
+      subject: 'Security alert: Your SolidSeed account was locked',
       html,
-      text: `Hi ${name},\n\nWe detected multiple failed login attempts on your Korella account. To protect your account, we've temporarily locked it for 30 minutes.\n\nYour account will automatically unlock at ${formattedUnlockTime} (UTC).\n\nIf this wasn't you, we recommend resetting your password immediately:\n${resetLink}\n\nIf you have any concerns, contact our support team at support@korella.com.\n\nThanks,\nThe Korella Team`,
+      text: `Hi ${name},\n\nWe detected multiple failed login attempts on your SolidSeed account. To protect your account, we've temporarily locked it for 30 minutes.\n\nYour account will automatically unlock at ${formattedUnlockTime} (UTC).\n\nIf this wasn't you, we recommend resetting your password immediately:\n${resetLink}\n\nIf you have any concerns, contact our support team at support@solidseed.app.\n\nThanks,\nThe SolidSeed Team`,
     });
   }
 }

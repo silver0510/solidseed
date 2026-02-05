@@ -13,7 +13,7 @@ github: null
 
 ## Overview
 
-This epic establishes the complete local development environment for Korella CRM. The implementation focuses on creating a working Next.js 15 application with all third-party services configured, tested, and documented. The goal is to reach a state where `npm run dev` starts successfully with all 8 external services (Supabase, Google OAuth, Resend, Sentry, Vercel, etc.) properly integrated and validated.
+This epic establishes the complete local development environment for SolidSeed CRM. The implementation focuses on creating a working Next.js 15 application with all third-party services configured, tested, and documented. The goal is to reach a state where `npm run dev` starts successfully with all 8 external services (Supabase, Google OAuth, Resend, Sentry, Vercel, etc.) properly integrated and validated.
 
 **Key Deliverable**: A fully functional development environment where feature development (User Authentication, Client Hub) can begin immediately without infrastructure blockers.
 
@@ -211,7 +211,7 @@ supabase db push --dry-run
 
 **OAuth Configuration** (Google):
 
-- GCP Project: "Korella CRM"
+- GCP Project: "SolidSeed CRM"
 - OAuth Consent Screen: External, Development mode
 - Authorized Redirect URI: `http://localhost:3000/api/auth/callback/google`
 - Scopes: `email`, `profile`

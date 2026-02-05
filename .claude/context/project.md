@@ -9,11 +9,11 @@ author: Claude Code PM System
 
 ## What We're Building
 
-**Korella** is a mobile-first CRM platform for real estate professionals that enables agents, brokers, and loan officers to manage client relationships, documents, and communications - with complete data ownership and portability.
+**SolidSeed** is a mobile-first CRM platform for real estate professionals that enables agents, brokers, and loan officers to manage client relationships, documents, and communications - with complete data ownership and portability.
 
 ### Elevator Pitch
 
-"Korella is FollowUpBoss reimagined for mobile - half the price, with data you actually own. Built specifically for independent real estate agents who need their client data accessible anywhere, anytime."
+"SolidSeed is FollowUpBoss reimagined for mobile - half the price, with data you actually own. Built specifically for independent real estate agents who need their client data accessible anywhere, anytime."
 
 ### Core Value Propositions
 

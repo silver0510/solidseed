@@ -24,7 +24,7 @@ export const supabase = createClient(
     },
     global: {
       headers: {
-        'x-application-name': 'korella-crm',
+        'x-application-name': 'solidseed-crm',
       },
     },
   }

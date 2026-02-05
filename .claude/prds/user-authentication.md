@@ -9,7 +9,7 @@ created: 2026-01-06T07:34:59Z
 
 ## Executive Summary
 
-The User Authentication system is the foundational security layer for Korella CRM, enabling real estate agents to securely register, login, and access their client management platform. This feature provides a frictionless yet secure authentication experience with multiple login options (email/password, Google, Microsoft) while maintaining strong security standards.
+The User Authentication system is the foundational security layer for SolidSeed CRM, enabling real estate agents to securely register, login, and access their client management platform. This feature provides a frictionless yet secure authentication experience with multiple login options (email/password, Google, Microsoft) while maintaining strong security standards.
 
 **Value Proposition**: Enable real estate professionals to quickly and securely access their CRM from any device, with minimal friction during registration and login, while maintaining enterprise-grade security standards.
 
@@ -44,10 +44,10 @@ Real estate agents need secure, reliable access to their client data without the
 
 ### Primary User Personas
 
-**Persona 1: Sarah - New Agent Trying Korella**
+**Persona 1: Sarah - New Agent Trying SolidSeed**
 
 - 35 years old, independent real estate agent
-- Heard about Korella from colleague, wants to try it
+- Heard about SolidSeed from colleague, wants to try it
 - Uses Gmail for business communication
 - Primarily works from iPhone during property showings
 - Frustrated with lengthy registration processes
@@ -74,9 +74,9 @@ Real estate agents need secure, reliable access to their client data without the
 
 #### Journey 1: First-Time Registration with Email/Password
 
-**Scenario**: Sarah discovers Korella and wants to sign up for a trial.
+**Scenario**: Sarah discovers SolidSeed and wants to sign up for a trial.
 
-1. Sarah visits Korella landing page and clicks "Start Free Trial"
+1. Sarah visits SolidSeed landing page and clicks "Start Free Trial"
 2. System displays registration form with fields: Name, Email, Password
 3. Sarah enters her name and work email address
 4. Sarah creates password (system shows strength indicator in real-time)
@@ -100,14 +100,14 @@ Real estate agents need secure, reliable access to their client data without the
 
 **Scenario**: Jennifer wants to sign up using her Google account for faster access.
 
-1. Jennifer visits Korella and clicks "Start Free Trial"
+1. Jennifer visits SolidSeed and clicks "Start Free Trial"
 2. System displays registration options: "Continue with Email" or "Continue with Google"
 3. Jennifer clicks "Continue with Google"
 4. System redirects to Google OAuth consent screen
 5. Jennifer selects her Google work account
 6. Google asks for permission to share profile info (name, email)
 7. Jennifer approves access
-8. Google redirects back to Korella with auth token
+8. Google redirects back to SolidSeed with auth token
 9. System creates account using Google email (already verified)
 10. System displays brief profile completion form (if needed)
 11. Jennifer completes profile and clicks "Get Started"
@@ -124,7 +124,7 @@ Real estate agents need secure, reliable access to their client data without the
 
 **Scenario**: Michael logs in on his desktop and wants to stay logged in.
 
-1. Michael visits Korella login page
+1. Michael visits SolidSeed login page
 2. System displays login form with email, password, and "Remember me" checkbox
 3. Michael enters email and password
 4. Michael checks "Remember me" checkbox
@@ -133,7 +133,7 @@ Real estate agents need secure, reliable access to their client data without the
 7. System stores secure session token in browser
 8. Michael is redirected to dashboard
 9. Michael closes browser and reopens 2 days later
-10. Michael visits Korella - automatically logged in (session still valid)
+10. Michael visits SolidSeed - automatically logged in (session still valid)
 11. Michael continues work without re-authentication
 
 **Pain Points Addressed**:

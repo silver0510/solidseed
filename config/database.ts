@@ -1,5 +1,5 @@
 /**
- * Database Configuration for Korella CRM
+ * Database Configuration for SolidSeed CRM
  *
  * This module provides database configuration and connection utilities
  * for the authentication system using Supabase PostgreSQL.
@@ -96,7 +96,7 @@ export const supabaseClientOptions = {
   },
   global: {
     headers: {
-      'x-application-name': 'korella-crm',
+      'x-application-name': 'solidseed-crm',
     },
   },
 } as const;

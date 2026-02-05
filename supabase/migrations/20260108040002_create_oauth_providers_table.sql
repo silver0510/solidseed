@@ -1,4 +1,4 @@
--- Migration: Create oauth_providers table for Korella CRM authentication
+-- Migration: Create oauth_providers table for SolidSeed CRM authentication
 -- This table maps OAuth provider accounts (Google, Microsoft) to users
 -- Enables social login and account linking
 

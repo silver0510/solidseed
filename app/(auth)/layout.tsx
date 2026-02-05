@@ -13,7 +13,7 @@ export default function AuthLayout({
             {children}
           </div>
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Korella CRM. All rights reserved.
+            &copy; {new Date().getFullYear()} SolidSeed CRM. All rights reserved.
           </p>
         </div>
       </div>

@@ -239,7 +239,7 @@ author: Claude Code PM System
 **Google OAuth 2.0**
 
 - **Status**: ✅ Configured and operational
-- GCP project created: "Korella CRM"
+- GCP project created: "SolidSeed CRM"
 - OAuth consent screen configured (External user type)
 - Scopes: email, profile, openid
 - Client ID and secret stored in .env.local
@@ -602,7 +602,7 @@ Error:
 ## Directory Structure
 
 ```
-korella/
+solidseed/
 ├── .claude/                      # Project management (CCPM)
 │   ├── commands/                 # Slash commands
 │   ├── context/                  # Context files (5 total)

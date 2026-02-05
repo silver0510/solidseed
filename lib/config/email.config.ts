@@ -1,7 +1,7 @@
 /**
  * Email Service Configuration
  *
- * Centralized configuration for the Korella email service.
+ * Centralized configuration for the SolidSeed email service.
  * Uses Resend as the email provider.
  */
 
@@ -11,8 +11,8 @@ export const emailConfig = {
 
   // Sender information
   from: {
-    name: 'Korella CRM',
-    email: process.env.RESEND_FROM_EMAIL || 'noreply@korella.com',
+    name: 'SolidSeed CRM',
+    email: process.env.RESEND_FROM_EMAIL || 'noreply@solidseed.app',
     get formatted() {
       return `${this.name} <${this.email}>`;
     },
@@ -20,7 +20,7 @@ export const emailConfig = {
 
   // Support email
   support: {
-    email: 'support@korella.com',
+    email: 'support@solidseed.app',
   },
 
   // Retry configuration for failed email sends

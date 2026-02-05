@@ -396,17 +396,17 @@ vercel --prod
 #### Step 1: Build Docker Image
 
 ```bash
-docker build -t korella-auth:latest .
+docker build -t solidseed-auth:latest .
 ```
 
 #### Step 2: Run Container
 
 ```bash
 docker run -d \
-  --name korella-auth \
+  --name solidseed-auth \
   -p 3000:3000 \
   --env-file .env.local \
-  korella-auth:latest
+  solidseed-auth:latest
 ```
 
 #### Step 3: Configure Reverse Proxy (nginx)
@@ -444,13 +444,13 @@ sudo apt-get install -y nodejs
 npm install -g pm2
 
 # Deploy
-git clone https://github.com/your-org/korella.git
-cd korella
+git clone https://github.com/your-org/solidseed.git
+cd solidseed
 npm install
 npm run build
 
 # Start with PM2
-pm2 start npm --name "korella" -- start
+pm2 start npm --name "solidseed" -- start
 pm2 save
 pm2 startup
 ```
@@ -550,7 +550,7 @@ artillery run tests/load/load-test.yml
 npm install -g @sentry/cli
 
 # Configure project
-sentry-cli init -D korella-auth
+sentry-cli init -D solidseed-auth
 
 # Verify error tracking
 # Trigger test error from app
@@ -584,13 +584,13 @@ sentry-cli init -D korella-auth
 
 ```bash
 # View logs in production
-pm2 logs korella
+pm2 logs solidseed
 
 # Or with Vercel
 vercel logs
 
 # Or with Docker
-docker logs -f korella-auth
+docker logs -f solidseed-auth
 ```
 
 #### Database Logs
@@ -665,11 +665,11 @@ ORDER BY created_at DESC;
 vercel rollback <deployment-url>
 
 # PM2
-pm2 rollback korella
+pm2 rollback solidseed
 
 # Docker
-docker stop korella-auth
-docker run -d --name korella-auth-rollback korella-auth:previous-version
+docker stop solidseed-auth
+docker run -d --name solidseed-auth-rollback solidseed-auth:previous-version
 ```
 
 ### Database Rollback
@@ -702,7 +702,7 @@ curl -X POST https://app.your-domain.com/api/auth/login \
   -d '{"email":"test@example.com","password":"oldpassword"}'
 
 # Monitor logs
-pm2 logs korella --lines 100
+pm2 logs solidseed --lines 100
 ```
 
 ---
@@ -831,14 +831,14 @@ LOG_DB_QUERIES=true npm run dev
 
 ```bash
 # Check logs
-pm2 logs korella --lines 500
+pm2 logs solidseed --lines 500
 
 # Database logs in Supabase Dashboard
 # Error tracking in Sentry Dashboard
 # Performance metrics in monitoring tool
 
 # Documentation:
-# https://korella.com/docs
+# https://solidseed.app/docs
 # https://better-auth.com/docs
 # https://supabase.com/docs
 ```

@@ -12,7 +12,7 @@ interface QueryProviderProps {
  * React Query Provider
  *
  * Provides QueryClient to all child components.
- * Configured with sensible defaults for the Korella CRM.
+ * Configured with sensible defaults for the SolidSeed CRM.
  */
 export function QueryProvider({ children }: QueryProviderProps) {
   const [queryClient] = useState(

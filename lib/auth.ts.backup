@@ -1,5 +1,5 @@
 /**
- * Better Auth Configuration for Korella CRM
+ * Better Auth Configuration for SolidSeed CRM
  *
  * This module configures Better Auth with:
  * - PostgreSQL database adapter (Supabase)

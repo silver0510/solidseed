@@ -1,4 +1,4 @@
--- Migration: Create password_resets table for Korella CRM authentication
+-- Migration: Create password_resets table for SolidSeed CRM authentication
 -- This table stores temporary password reset tokens
 -- Tokens expire after 1 hour for security
 

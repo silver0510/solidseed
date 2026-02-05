@@ -1,4 +1,4 @@
-# Korella CRM
+# SolidSeed CRM
 
 Modern CRM platform designed for real estate professionals (realtors, agents, and loan officers).
 
@@ -6,8 +6,8 @@ Modern CRM platform designed for real estate professionals (realtors, agents, an
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/your-username/korella.git
-cd korella
+git clone https://github.com/your-username/solidseed.git
+cd solidseed
 
 # 2. Install dependencies
 npm install
@@ -72,7 +72,7 @@ npm run dev
 1. **Create Google Cloud Project**
    - Go to [Google Cloud Console](https://console.cloud.google.com/)
    - Click "Select a project" → "New Project"
-   - Project name: "Korella CRM"
+   - Project name: "SolidSeed CRM"
    - Click "Create"
 
 2. **Enable APIs**
@@ -83,7 +83,7 @@ npm run dev
 3. **Configure OAuth Consent Screen**
    - Go to "APIs & Services" → "OAuth consent screen"
    - User Type: **External** (for development/testing)
-   - App name: `Korella CRM`
+   - App name: `SolidSeed CRM`
    - User support email: your-email@example.com
    - Scopes: Add the following:
      - `.../auth/userinfo.email`
@@ -95,7 +95,7 @@ npm run dev
    - Go to "APIs & Services" → "Credentials"
    - Click "Create Credentials" → "OAuth client ID"
    - Application type: **Web application**
-   - Name: `Korella CRM - Web Client`
+   - Name: `SolidSeed CRM - Web Client`
    - Authorized JavaScript origins:
      - `http://localhost:3000`
      - `http://localhost:3001`
@@ -114,14 +114,14 @@ npm run dev
 
 1. **Update OAuth Consent Screen**
    - Add production URLs:
-     - Homepage: `https://korella.app`
-     - Privacy policy: `https://korella.app/privacy`
-     - Terms of service: `https://korella.app/terms`
+     - Homepage: `https://solidseed.app`
+     - Privacy policy: `https://solidseed.app/privacy`
+     - Terms of service: `https://solidseed.app/terms`
 
 2. **Update Redirect URIs**
    - Add production URIs:
-     - `https://korella.app/api/auth/callback/google`
-     - `https://www.korella.app/api/auth/callback/google`
+     - `https://solidseed.app/api/auth/callback/google`
+     - `https://www.solidseed.app/api/auth/callback/google`
 
 3. **Submit for Verification** (if External user type)
    - Required for production use with External user type
@@ -136,7 +136,7 @@ Better Auth expects redirect URIs in this format:
 
 Where `APP_URL` is:
 - Development: `http://localhost:3000`
-- Production: `https://korella.app`
+- Production: `https://solidseed.app`
 
 #### Testing OAuth Flow
 
@@ -173,7 +173,7 @@ Where `APP_URL` is:
 2. **Create API Key**
    - Go to "API Keys" section
    - Click "Create API Key"
-   - Name: "Korella CRM - Development"
+   - Name: "SolidSeed CRM - Development"
    - Copy the API key (starts with `re_`)
 
 3. **Add to Environment Variables**
@@ -190,7 +190,7 @@ Where `APP_URL` is:
 1. **Add Your Domain**
    - Go to "Domains" in Resend dashboard
    - Click "Add Domain"
-   - Enter your domain: `korella.app`
+   - Enter your domain: `solidseed.app`
 
 2. **Configure DNS Records**
    - Add the following DNS records to your domain:
@@ -204,7 +204,7 @@ Where `APP_URL` is:
 
 4. **Update Environment Variable**
    ```bash
-   RESEND_FROM_EMAIL=noreply@korella.app
+   RESEND_FROM_EMAIL=noreply@solidseed.app
    ```
 
 ### Testing Email Service
@@ -249,7 +249,7 @@ curl -X POST http://localhost:3000/api/test/email \
 2. **Create New Project**
    - Click "Projects" → "Create Project"
    - Platform: **Next.js**
-   - Project name: `korella-crm`
+   - Project name: `solidseed-crm`
    - Alert frequency: Choose your preference
 
 3. **Copy DSN**
@@ -372,7 +372,7 @@ vercel dev
    vercel env add JWT_SECRET production
    vercel env add APP_URL production
 
-   # Set APP_URL to: https://korella.app
+   # Set APP_URL to: https://solidseed.app
    ```
 
 #### Deploy to Preview
@@ -416,7 +416,7 @@ Project settings are in `vercel.json`:
 **Production variables** (set in Vercel dashboard or CLI):
 
 - All variables from `.env.local`
-- `APP_URL` = `https://korella.app`
+- `APP_URL` = `https://solidseed.app`
 - `NODE_ENV` = `production` (automatic)
 
 **Preview variables** (optional):
@@ -432,7 +432,7 @@ Before deploying to production:
 - [ ] Database migrations applied to production database
 - [ ] Supabase production project configured
 - [ ] OAuth redirect URIs updated for production domain
-- [ ] Domain configured in Vercel (korella.app)
+- [ ] Domain configured in Vercel (solidseed.app)
 - [ ] DNS records pointed to Vercel
 - [ ] SSL certificate verified
 - [ ] Sentry configured for production
@@ -459,7 +459,7 @@ Before deploying to production:
    ```
 
 3. **Test production site**
-   - Visit https://korella.app
+   - Visit https://solidseed.app
    - Test authentication flow
    - Test database connectivity
    - Verify OAuth works

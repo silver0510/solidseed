@@ -1,7 +1,7 @@
 /**
  * Client Hub Feature
  *
- * Centralized client management for Korella CRM.
+ * Centralized client management for SolidSeed CRM.
  * Provides API services, types, and utilities for managing clients,
  * tags, notes, tasks, and documents.
  *

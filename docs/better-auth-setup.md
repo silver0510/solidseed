@@ -1,6 +1,6 @@
 # Better Auth Setup Guide
 
-This guide explains how Better Auth is configured and integrated into Korella CRM.
+This guide explains how Better Auth is configured and integrated into SolidSeed CRM.
 
 ## Overview
 

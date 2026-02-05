@@ -160,7 +160,7 @@ For removed tables (if migration has DROP):
 #### 4. Update Header
 
 ```dbml
-// Korella CRM Database Schema
+// SolidSeed CRM Database Schema
 // Generated from Supabase migrations
 // Last synced: {current_datetime}
 ```
@@ -189,13 +189,13 @@ For each migration file (sorted by timestamp):
 #### 3. Generate DBML Structure
 
 ```dbml
-// Korella CRM Database Schema
+// SolidSeed CRM Database Schema
 // Generated from Supabase migrations
 // Last synced: {current_datetime}
 
-Project korella {
+Project solidseed {
   database_type: 'PostgreSQL'
-  note: 'Korella CRM - Real Estate Professional Platform'
+  note: 'SolidSeed CRM - Real Estate Professional Platform'
 }
 
 // Tables from migrations...

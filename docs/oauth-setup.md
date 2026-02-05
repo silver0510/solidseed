@@ -1,6 +1,6 @@
 # OAuth Provider Setup Guide
 
-This guide provides step-by-step instructions for setting up OAuth authentication with Google and Microsoft for the Korella CRM application.
+This guide provides step-by-step instructions for setting up OAuth authentication with Google and Microsoft for the SolidSeed CRM application.
 
 ## Table of Contents
 
@@ -20,7 +20,7 @@ Before setting up OAuth providers, ensure you have:
 
 - [ ] A Google account with access to [Google Cloud Console](https://console.cloud.google.com/)
 - [ ] A Microsoft account with access to [Azure Portal](https://portal.azure.com/)
-- [ ] Korella application running locally (`npm run dev`)
+- [ ] SolidSeed application running locally (`npm run dev`)
 - [ ] SSL certificates for production domains (required for OAuth)
 
 ---
@@ -33,7 +33,7 @@ Before setting up OAuth providers, ensure you have:
 2. Click the project dropdown at the top of the page
 3. Click **New Project**
 4. Enter project details:
-   - **Project name**: `Korella CRM`
+   - **Project name**: `SolidSeed CRM`
    - **Organization**: Select your organization (or leave as "No organization")
    - **Location**: Select appropriate folder or leave as default
 5. Click **Create**
@@ -61,21 +61,21 @@ Before setting up OAuth providers, ensure you have:
 **App Information:**
 | Field | Value |
 |-------|-------|
-| App name | `Korella CRM` |
-| User support email | `support@korella.com` |
-| App logo | Upload Korella logo (optional) |
+| App name | `SolidSeed CRM` |
+| User support email | `support@solidseed.app` |
+| App logo | Upload SolidSeed logo (optional) |
 
 **App Domain:**
 | Field | Value |
 |-------|-------|
-| Application home page | `https://korella.com` |
-| Application privacy policy link | `https://korella.com/privacy` |
-| Application terms of service link | `https://korella.com/terms` |
+| Application home page | `https://solidseed.app` |
+| Application privacy policy link | `https://solidseed.app/privacy` |
+| Application terms of service link | `https://solidseed.app/terms` |
 
 **Developer Contact Information:**
 | Field | Value |
 |-------|-------|
-| Email addresses | `dev@korella.com` |
+| Email addresses | `dev@solidseed.app` |
 
 5. Click **Save and Continue**
 
@@ -107,20 +107,20 @@ Before setting up OAuth providers, ensure you have:
 | Field | Value |
 |-------|-------|
 | Application type | `Web application` |
-| Name | `Korella Web App` |
+| Name | `SolidSeed Web App` |
 
 4. Add **Authorized JavaScript origins**:
    ```
    http://localhost:3000
-   https://staging.korella.com
-   https://app.korella.com
+   https://staging.solidseed.app
+   https://app.solidseed.app
    ```
 
 5. Add **Authorized redirect URIs**:
    ```
    http://localhost:3000/api/auth/callback/google
-   https://staging.korella.com/api/auth/callback/google
-   https://app.korella.com/api/auth/callback/google
+   https://staging.solidseed.app/api/auth/callback/google
+   https://app.solidseed.app/api/auth/callback/google
    ```
 
 6. Click **Create**
@@ -155,7 +155,7 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 
 | Field | Value |
 |-------|-------|
-| Name | `Korella CRM` |
+| Name | `SolidSeed CRM` |
 | Supported account types | `Accounts in any organizational directory and personal Microsoft accounts` |
 | Redirect URI (optional) | Leave blank for now |
 
@@ -183,12 +183,12 @@ http://localhost:3000/api/auth/callback/microsoft
 
 **Staging:**
 ```
-https://staging.korella.com/api/auth/callback/microsoft
+https://staging.solidseed.app/api/auth/callback/microsoft
 ```
 
 **Production:**
 ```
-https://app.korella.com/api/auth/callback/microsoft
+https://app.solidseed.app/api/auth/callback/microsoft
 ```
 
 5. Under **Implicit grant and hybrid flows**, ensure both options are **unchecked** (we use authorization code flow)
@@ -224,7 +224,7 @@ https://app.korella.com/api/auth/callback/microsoft
 
 | Field | Value |
 |-------|-------|
-| Description | `Korella Web App Secret` |
+| Description | `SolidSeed Web App Secret` |
 | Expires | `24 months` (recommended) or custom |
 
 4. Click **Add**
@@ -273,8 +273,8 @@ BETTER_AUTH_URL=http://localhost:3000
 | Environment | BETTER_AUTH_URL |
 |-------------|-----------------|
 | Development | `http://localhost:3000` |
-| Staging | `https://staging.korella.com` |
-| Production | `https://app.korella.com` |
+| Staging | `https://staging.solidseed.app` |
+| Production | `https://app.solidseed.app` |
 
 ### Vercel Environment Variables
 
@@ -356,7 +356,7 @@ When deploying to Vercel, add these environment variables in the Vercel dashboar
 
 #### "This app isn't verified"
 - Normal during development with external user type
-- Click "Advanced" > "Go to Korella CRM (unsafe)" to continue testing
+- Click "Advanced" > "Go to SolidSeed CRM (unsafe)" to continue testing
 - Submit for verification before production launch
 
 ### Microsoft OAuth Issues
@@ -459,7 +459,7 @@ MICROSOFT_CLIENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 MICROSOFT_CLIENT_SECRET=xxx
 
 # Application
-BETTER_AUTH_URL=https://app.korella.com
+BETTER_AUTH_URL=https://app.solidseed.app
 ```
 
 ---
@@ -469,4 +469,4 @@ BETTER_AUTH_URL=https://app.korella.com
 - [Google OAuth 2.0 Documentation](https://developers.google.com/identity/protocols/oauth2)
 - [Microsoft Identity Platform Documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/)
 - [Better Auth Documentation](https://www.better-auth.com/docs)
-- [Korella CRM PRD - User Authentication](../.claude/prds/user-authentication.md)
+- [SolidSeed CRM PRD - User Authentication](../.claude/prds/user-authentication.md)

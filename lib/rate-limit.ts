@@ -1,5 +1,5 @@
 /**
- * Rate Limiting Utilities for Korella CRM
+ * Rate Limiting Utilities for SolidSeed CRM
  *
  * This module provides rate limiting functionality for API endpoints.
  * Uses in-memory storage with Redis as an optional backend.

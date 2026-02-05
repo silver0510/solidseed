@@ -9,7 +9,7 @@ author: Claude Code PM System
 
 ## Overview
 
-This guide establishes coding standards, documentation conventions, and style preferences for the Korella CRM project. These standards ensure consistency, maintainability, and quality across all project artifacts.
+This guide establishes coding standards, documentation conventions, and style preferences for the SolidSeed CRM project. These standards ensure consistency, maintainability, and quality across all project artifacts.
 
 ## Documentation Standards
 

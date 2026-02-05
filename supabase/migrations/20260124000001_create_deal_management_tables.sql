@@ -1,7 +1,7 @@
 -- =============================================================================
 -- DEAL MANAGEMENT MIGRATION
 -- =============================================================================
--- Creates tables for deal/transaction tracking in Korella CRM
+-- Creates tables for deal/transaction tracking in SolidSeed CRM
 -- Tables: deal_types, deals, deal_milestones, deal_documents, deal_activities
 -- Author: Task 001 - Database Schema and Migrations
 -- Created: 2026-01-24

@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
     } else {
       result = await EmailService.sendEmail({
         to,
-        subject: 'Test Email from Korella CRM',
-        html: '<h1>Test Email</h1><p>This is a test email from Korella CRM.</p>',
-        text: 'This is a test email from Korella CRM.',
+        subject: 'Test Email from SolidSeed CRM',
+        html: '<h1>Test Email</h1><p>This is a test email from SolidSeed CRM.</p>',
+        text: 'This is a test email from SolidSeed CRM.',
       });
     }
 

@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This guide provides step-by-step instructions for deploying the Korella Authentication System to production. It covers infrastructure setup, security configuration, monitoring, and post-deployment verification.
+This guide provides step-by-step instructions for deploying the SolidSeed Authentication System to production. It covers infrastructure setup, security configuration, monitoring, and post-deployment verification.
 
 **Estimated Time:** 2-3 hours
 **Difficulty:** Intermediate
@@ -57,7 +57,7 @@ This guide provides step-by-step instructions for deploying the Korella Authenti
 # Go to: https://app.supabase.com
 # Click: New Project
 # Fill in:
-# - Name: korella-production
+# - Name: solidseed-production
 # - Database Password: [generate strong password]
 # - Region: [select closest to users]
 
@@ -164,7 +164,7 @@ SENTRY_DSN=https://xxxxxxxxxx@xxxx.ingest.sentry.io/xxxxxx
 # 3. Navigate: APIs & Services > Credentials
 # 4. Create OAuth 2.0 Client ID
 #    - Application type: Web application
-#    - Name: Korella Production
+#    - Name: SolidSeed Production
 # 5. Add authorized redirect URIs:
 #    https://app.your-domain.com/api/auth/callback/google
 # 6. Copy Client ID and Client Secret
@@ -177,7 +177,7 @@ SENTRY_DSN=https://xxxxxxxxxx@xxxx.ingest.sentry.io/xxxxxx
 # 1. Go to: https://portal.azure.com
 # 2. Navigate: Azure Active Directory > App registrations
 # 3. New registration:
-#    - Name: Korella Production
+#    - Name: SolidSeed Production
 #    - Supported account types: Accounts in any organizational directory and personal Microsoft accounts
 #    - Redirect URI: Web > https://app.your-domain.com/api/auth/callback/microsoft
 # 4. Register application
@@ -276,7 +276,7 @@ npm install -g vercel
 vercel login
 
 # 3. Link project
-cd /path/to/korella
+cd /path/to/solidseed
 vercel link
 
 # 4. Deploy to preview (staging)
@@ -426,7 +426,7 @@ artillery run tests/load/load-test-config.yml \
 
 # 2. Create new project
 # Framework: Next.js
-# Name: korella-production
+# Name: solidseed-production
 
 # 3. Install Sentry SDK
 npm install @sentry/nextjs
@@ -723,9 +723,9 @@ RATE_LIMIT_REGISTER_WINDOW=3600
 ```markdown
 ### Technical Support
 
-- DevOps: devops@korella.com
-- Security: security@korella.com
-- Database: dba@korella.com
+- DevOps: devops@solidseed.app
+- Security: security@solidseed.app
+- Database: dba@solidseed.app
 
 ### External Support
 

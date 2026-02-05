@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Korella** is a modern CRM platform designed specifically for real estate professionals (realtors, agents, and loan officers). It serves as a replacement for FollowUpBoss, focusing on:
+**SolidSeed** is a modern CRM platform designed specifically for real estate professionals (realtors, agents, and loan officers). It serves as a replacement for FollowUpBoss, focusing on:
 
 - **Client Hub**: Centralized client management with profiles, documents, notes, tasks, and tag-based organization
 - **Email Marketing**: Integrated communication tracking and automation (planned)

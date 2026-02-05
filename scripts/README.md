@@ -54,12 +54,12 @@ npm run db:seed-users
 
 | Email                    | Password        | Tier       | Verified | Status |
 |-------------------------|-----------------|------------|----------|--------|
-| admin@korella.com       | Admin123!       | enterprise | ✓        | active |
-| pro@korella.com         | ProUser123!     | pro        | ✓        | active |
-| trial@korella.com       | Trial123!       | trial      | ✓        | active |
-| free@korella.com        | FreeUser123!    | free       | ✓        | active |
-| unverified@korella.com  | Unverified123!  | trial      | ✗        | active |
-| locked@korella.com      | Locked123!      | free       | ✓        | locked |
+| admin@solidseed.app       | Admin123!       | enterprise | ✓        | active |
+| pro@solidseed.app         | ProUser123!     | pro        | ✓        | active |
+| trial@solidseed.app       | Trial123!       | trial      | ✓        | active |
+| free@solidseed.app        | FreeUser123!    | free       | ✓        | active |
+| unverified@solidseed.app  | Unverified123!  | trial      | ✗        | active |
+| locked@solidseed.app      | Locked123!      | free       | ✓        | locked |
 
 **Use case:** Quickly populate database with test accounts for different scenarios.
 
@@ -92,7 +92,7 @@ npm run db:reset-auth:seed
 npm run db:reset-auth:seed
 
 # Now you can login with any test user
-# Example: admin@korella.com / Admin123!
+# Example: admin@solidseed.app / Admin123!
 ```
 
 ### Testing Registration Flow
@@ -112,10 +112,10 @@ npm run db:clear-auth
 npm run db:reset-auth:seed
 
 # Login with different accounts:
-# - admin@korella.com (enterprise tier, full access)
-# - trial@korella.com (trial tier, 7 days remaining)
-# - unverified@korella.com (email not verified)
-# - locked@korella.com (account locked for 30 min)
+# - admin@solidseed.app (enterprise tier, full access)
+# - trial@solidseed.app (trial tier, 7 days remaining)
+# - unverified@solidseed.app (email not verified)
+# - locked@solidseed.app (account locked for 30 min)
 ```
 
 ### Testing Password Reset Flow
@@ -126,7 +126,7 @@ npm run db:seed-users
 
 # Test forgot password:
 # 1. Go to /forgot-password
-# 2. Enter: admin@korella.com
+# 2. Enter: admin@solidseed.app
 # 3. Check console logs for reset token (in dev)
 # 4. Use token to reset password
 ```
@@ -225,7 +225,7 @@ npm run dev
 
 # Login as admin
 # → Go to /login
-# → Email: admin@korella.com
+# → Email: admin@solidseed.app
 # → Password: Admin123!
 
 # Test email verification
@@ -235,12 +235,12 @@ npm run dev
 
 # Test password reset
 # → Go to /forgot-password
-# → Email: pro@korella.com
+# → Email: pro@solidseed.app
 # → Check console for reset link
 
 # Test locked account
 # → Go to /login
-# → Email: locked@korella.com
+# → Email: locked@solidseed.app
 # → See error: "Account is locked"
 
 # 4. When done, clear all test data

@@ -332,7 +332,7 @@ function SidebarContent({ onClose, isCollapsed }: { onClose?: () => void; isColl
           {isCollapsed ? (
             <Image
               src="/icons/icon-500x500.png"
-              alt="Korella Logo"
+              alt="SolidSeed Logo"
               width={40}
               height={40}
               className="rounded-lg"
@@ -340,8 +340,8 @@ function SidebarContent({ onClose, isCollapsed }: { onClose?: () => void; isColl
             />
           ) : (
             <Image
-              src={isDark ? "/icons/icon.png" : "/icons/icon-dark.png"}
-              alt="Korella Logo"
+              src={isDark ? "/icons/icon-text-light.png" : "/icons/icon-text.png"}
+              alt="SolidSeed Logo"
               width={140}
               height={54}
               // className="h-9 w-auto"

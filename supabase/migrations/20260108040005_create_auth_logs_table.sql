@@ -1,4 +1,4 @@
--- Migration: Create auth_logs table for Korella CRM authentication
+-- Migration: Create auth_logs table for SolidSeed CRM authentication
 -- This table stores authentication events for security auditing
 -- Data retention: 7 days (purge job handles cleanup)
 

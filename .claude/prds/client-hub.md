@@ -9,7 +9,7 @@ created: 2026-01-06T04:47:14Z
 
 ## Executive Summary
 
-The Client Hub is the central nervous system of Korella CRM, designed specifically for real estate professionals (realtors, agents, and loan officers) to manage all client information and interactions in one place. This feature providing a mobile-first, modern interface for managing thousands of client relationships while building toward an integrated email marketing and communication platform.
+The Client Hub is the central nervous system of SolidSeed CRM, designed specifically for real estate professionals (realtors, agents, and loan officers) to manage all client information and interactions in one place. This feature providing a mobile-first, modern interface for managing thousands of client relationships while building toward an integrated email marketing and communication platform.
 
 **Value Proposition**: Enable real estate professionals to maintain comprehensive client profiles, track interactions, manage documents, and organize tasks—all essential for building and maintaining strong client relationships that drive retention and repeat business.
 
@@ -72,7 +72,7 @@ Real estate professionals struggle with fragmented client information scattered 
 
 **Scenario**: Sarah meets potential buyers at an open house and wants to capture their information immediately.
 
-1. Sarah opens Korella on her phone during the open house
+1. Sarah opens SolidSeed on her phone during the open house
 2. Clicks "Add New Client" button
 3. Enters name, email, phone while talking with prospects
 4. Adds tag "Open House - 123 Main St - Jan 2026"
@@ -342,7 +342,7 @@ Real estate professionals struggle with fragmented client information scattered 
 
 **Data Quality**: 8. **Profile Accuracy**: Less than 5% duplicate clients 9. **Data Portability**: 100% of agents able to export their client data successfully
 
-**Business Metrics**: 10. **User Retention**: 90% of users continue using Korella after 3 months 11. **Feature Satisfaction**: Net Promoter Score (NPS) of 40+ for Client Hub 12. **Conversion from FollowUpBoss**: 30% of FollowUpBoss users who trial Korella convert to paid subscription
+**Business Metrics**: 10. **User Retention**: 90% of users continue using SolidSeed after 3 months 11. **Feature Satisfaction**: Net Promoter Score (NPS) of 40+ for Client Hub 12. **Conversion from FollowUpBoss**: 30% of FollowUpBoss users who trial SolidSeed convert to paid subscription
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: project-setup
-description: Infrastructure and development environment setup for Korella CRM
+description: Infrastructure and development environment setup for SolidSeed CRM
 status: backlog
 created: 2026-01-07T02:41:27Z
 ---
@@ -9,7 +9,7 @@ created: 2026-01-07T02:41:27Z
 
 ## Executive Summary
 
-Before implementing any features of Korella CRM, we need a fully configured development environment with all necessary third-party services, API credentials, and local infrastructure. This PRD defines the complete setup process to go from an empty directory to a running Next.js application with database, authentication, email, and monitoring services configured and tested.
+Before implementing any features of SolidSeed CRM, we need a fully configured development environment with all necessary third-party services, API credentials, and local infrastructure. This PRD defines the complete setup process to go from an empty directory to a running Next.js application with database, authentication, email, and monitoring services configured and tested.
 
 **Value Proposition**: Establishes the foundation for rapid feature development with all services integrated, tested, and documented.
 
@@ -19,7 +19,7 @@ Before implementing any features of Korella CRM, we need a fully configured deve
 
 ### What problem are we solving?
 
-Currently, the Korella CRM project exists only as planning documents in `.claude/` directory. Before any feature implementation can begin (User Authentication, Client Hub), we need:
+Currently, the SolidSeed CRM project exists only as planning documents in `.claude/` directory. Before any feature implementation can begin (User Authentication, Client Hub), we need:
 
 1. **Development Infrastructure** - A working Next.js application with all dependencies installed
 2. **Database & Storage** - Supabase project with connection established
@@ -72,7 +72,7 @@ SO THAT I can create database migrations and store application data
 **Acceptance Criteria:**
 
 - Supabase account created (free tier)
-- New project created with name "korella-crm"
+- New project created with name "solidseed-crm"
 - Supabase CLI installed globally (`npm install -g supabase`)
 - Local project initialized (`supabase init`)
 - Remote project linked (`supabase link`)
@@ -118,7 +118,7 @@ SO THAT users can sign in with their Google accounts
 **Acceptance Criteria:**
 
 - Google Cloud Platform account created
-- New GCP project created: "Korella CRM"
+- New GCP project created: "SolidSeed CRM"
 - OAuth consent screen configured (external, development mode)
 - OAuth 2.0 Client ID created (Web application)
 - Authorized redirect URIs added: `http://localhost:3000/api/auth/callback/google`
@@ -159,7 +159,7 @@ SO THAT I can monitor errors and performance in development
 **Acceptance Criteria:**
 
 - Sentry account created (free tier: 5K events/month)
-- New project created: "korella-crm" (Next.js platform)
+- New project created: "solidseed-crm" (Next.js platform)
 - DSN (Data Source Name) obtained
 - `@sentry/nextjs` installed
 - Sentry initialized in Next.js (`sentry.client.config.ts`, `sentry.server.config.ts`)
@@ -184,7 +184,7 @@ SO THAT I can deploy to staging and production later
 - Project linked to Vercel (`vercel link`)
 - Can run `vercel dev` successfully
 - Preview deployment tested (via `vercel`)
-- Custom domain availability verified for `app.korella.com`
+- Custom domain availability verified for `app.solidseed.app`
 
 **Note:** Actual staging/production deployment deferred to later epic
 
@@ -616,7 +616,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ### Directory Structure After Setup
 
 ```
-Korella/
+SolidSeed/
 ├── .claude/                  # (existing) Project management
 ├── .next/                    # (generated) Next.js build output
 ├── node_modules/             # (generated) Dependencies

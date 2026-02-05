@@ -54,11 +54,10 @@ export default function HomePage() {
           <Link href="/" className="flex items-center gap-2">
             {mounted && (
               <Image
-                src={resolvedTheme === "dark" ? "/icons/icon.png" : "/icons/icon-dark.png"}
-                alt="Korella"
-                width={120}
-                height={40}
-                className="h-10 w-auto"
+                src={resolvedTheme === "dark" ? "/icons/icon-text-light.png" : "/icons/icon-text.png"}
+                alt="SolidSeed"
+                width={148}
+                height={60}
                 priority
               />
             )}
@@ -157,7 +156,7 @@ export default function HomePage() {
                     </div>
                     <div className="flex-1 flex justify-center">
                       <div className="bg-background rounded px-3 py-1 text-xs text-muted-foreground">
-                        app.korella.com/dashboard
+                        app.solidseed.app/dashboard
                       </div>
                     </div>
                   </div>
@@ -519,12 +518,12 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <Badge variant="outline" className="mb-4">Why Korella?</Badge>
+              <Badge variant="outline" className="mb-4">Why SolidSeed?</Badge>
               <h2 className="text-3xl md:text-4xl font-bold mb-6">
                 Built for Real Estate, Not Retrofitted
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
-                Unlike generic CRMs, every feature in Korella was designed with real estate
+                Unlike generic CRMs, every feature in SolidSeed was designed with real estate
                 workflows in mind. From showing schedules to closing checklists, we speak your language.
               </p>
 
@@ -608,7 +607,7 @@ export default function HomePage() {
                 Ready to Transform Your Business?
               </h2>
               <p className="text-xl text-primary-foreground/80 mb-8">
-                Join hundreds of successful real estate professionals using Korella.
+                Join hundreds of successful real estate professionals using SolidSeed.
                 Start your free 14-day trial today.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -638,7 +637,7 @@ export default function HomePage() {
               {mounted && (
                 <Image
                   src={resolvedTheme === "dark" ? "/icons/icon.png" : "/icons/icon-dark.png"}
-                  alt="Korella"
+                  alt="SolidSeed"
                   width={100}
                   height={32}
                   className="h-8 w-auto"
@@ -657,7 +656,7 @@ export default function HomePage() {
               </Link>
             </div>
             <p className="text-sm text-muted-foreground">
-              2024 Korella. All rights reserved.
+              2024 SolidSeed. All rights reserved.
             </p>
           </div>
         </div>

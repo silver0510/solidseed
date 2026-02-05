@@ -1,4 +1,4 @@
--- Migration: Create users table for Korella CRM authentication
+-- Migration: Create users table for SolidSeed CRM authentication
 -- This table stores core user account information
 -- Compatible with Better Auth library through field mapping
 
@@ -84,7 +84,7 @@ CREATE TRIGGER update_users_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 -- Add comments for documentation
-COMMENT ON TABLE users IS 'Core user accounts for Korella CRM authentication';
+COMMENT ON TABLE users IS 'Core user accounts for SolidSeed CRM authentication';
 COMMENT ON COLUMN users.id IS 'UUID primary key (PostgreSQL native, auto-generated)';
 COMMENT ON COLUMN users.email IS 'User email address, used for login';
 COMMENT ON COLUMN users.password_hash IS 'Bcrypt hashed password, null for OAuth-only accounts';

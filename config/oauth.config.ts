@@ -1,5 +1,5 @@
 /**
- * OAuth Provider Configuration for Korella CRM
+ * OAuth Provider Configuration for SolidSeed CRM
  *
  * This module provides OAuth configuration for Google social login provider.
  *

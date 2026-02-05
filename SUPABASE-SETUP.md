@@ -1,6 +1,6 @@
 # Supabase Setup Guide
 
-Complete guide for setting up Supabase for the Korella CRM project, covering both development and production environments.
+Complete guide for setting up Supabase for the SolidSeed CRM project, covering both development and production environments.
 
 ## Table of Contents
 
@@ -29,7 +29,7 @@ Complete guide for setting up Supabase for the Korella CRM project, covering bot
 
 2. **Configure Project**
    - Organization: Select or create organization
-   - Name: `korella-crm-dev` (or `korella-crm-prod` for production)
+   - Name: `solidseed-crm-dev` (or `solidseed-crm-prod` for production)
    - Database Password: Generate strong password (save securely!)
    - Region: Choose closest to your users (e.g., `East US (North Virginia)` for US East Coast)
    - Pricing Plan: Free (development) or Pro (production)
@@ -243,7 +243,7 @@ Supabase Dashboard → Authentication → Settings:
 
 **General Settings:**
 
-- Site URL: `http://localhost:3000` (dev) or `https://korella.app` (prod)
+- Site URL: `http://localhost:3000` (dev) or `https://solidseed.app` (prod)
 - Additional Redirect URLs:
   ```
   http://localhost:3000/api/auth/callback
@@ -310,7 +310,7 @@ Same variables as development, but with production values:
 
 ```bash
 SUPABASE_URL=https://your-prod-project-id.supabase.co
-APP_URL=https://korella.app
+APP_URL=https://solidseed.app
 NODE_ENV=production
 ```
 
@@ -320,7 +320,7 @@ NODE_ENV=production
 
 Follow same steps as development, but:
 
-- Project name: `korella-crm-prod`
+- Project name: `solidseed-crm-prod`
 - Choose Pro plan for better performance
 - Enable Point-in-Time Recovery (PITR)
 - Configure daily backups

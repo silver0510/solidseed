@@ -342,7 +342,7 @@ COMMIT;
 
 ```typescript
 /**
- * Better Auth Configuration for Korella CRM
+ * Better Auth Configuration for SolidSeed CRM
  *
  * Simplified architecture using direct PostgreSQL connection:
  * - PostgreSQL connection via pg Pool (no Prisma)

@@ -32,7 +32,7 @@
 - [ ] API rate limits configured
 
 ### DNS & Domain
-- [ ] Domain purchased (korella.app)
+- [ ] Domain purchased (solidseed.app)
 - [ ] Domain added to Vercel
 - [ ] DNS records configured
 - [ ] SSL certificate verified
@@ -63,7 +63,7 @@ vercel --prod
 
 ### Verification
 
-- [ ] Site loads: https://korella.app
+- [ ] Site loads: https://solidseed.app
 - [ ] Authentication works (email/password)
 - [ ] OAuth works (Google)
 - [ ] Database reads/writes working

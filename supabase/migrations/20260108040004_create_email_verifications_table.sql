@@ -1,4 +1,4 @@
--- Migration: Create email_verifications table for Korella CRM authentication
+-- Migration: Create email_verifications table for SolidSeed CRM authentication
 -- This table stores temporary email verification tokens
 -- Tokens expire after 24 hours for security
 

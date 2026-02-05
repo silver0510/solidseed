@@ -1,5 +1,5 @@
 /**
- * Email Service Integration for Korella CRM
+ * Email Service Integration for SolidSeed CRM
  *
  * This module provides email sending functionality using Resend.
  * It handles email verification, password resets, and security alerts.
@@ -83,7 +83,7 @@ export async function sendEmailVerificationEmail(params: EmailVerificationParams
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: params.to,
-      subject: 'Verify Your Email Address - Korella CRM',
+      subject: 'Verify Your Email Address - SolidSeed CRM',
       html: `
         <!DOCTYPE html>
         <html>
@@ -94,17 +94,17 @@ export async function sendEmailVerificationEmail(params: EmailVerificationParams
           </head>
           <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Korella CRM!</h1>
+              <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to SolidSeed CRM!</h1>
             </div>
             <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
               <p style="font-size: 16px; margin-bottom: 20px;">Hi ${params.userName},</p>
-              <p style="font-size: 16px; margin-bottom: 20px;">Thank you for signing up for Korella CRM! Please verify your email address to activate your account.</p>
+              <p style="font-size: 16px; margin-bottom: 20px;">Thank you for signing up for SolidSeed CRM! Please verify your email address to activate your account.</p>
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${params.verificationLink}" style="display: inline-block; background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;">Verify Email Address</a>
               </div>
               <p style="font-size: 14px; color: #666; margin-bottom: 10px;">This link will expire in 24 hours.</p>
-              <p style="font-size: 14px; color: #666; margin-bottom: 20px;">If you didn't create an account with Korella CRM, you can safely ignore this email.</p>
-              <p style="font-size: 14px; color: #666;">Best regards,<br>The Korella CRM Team</p>
+              <p style="font-size: 14px; color: #666; margin-bottom: 20px;">If you didn't create an account with SolidSeed CRM, you can safely ignore this email.</p>
+              <p style="font-size: 14px; color: #666;">Best regards,<br>The SolidSeed CRM Team</p>
             </div>
           </body>
         </html>
@@ -140,7 +140,7 @@ export async function sendPasswordResetEmail(params: PasswordResetParams): Promi
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: params.to,
-      subject: 'Reset Your Password - Korella CRM',
+      subject: 'Reset Your Password - SolidSeed CRM',
       html: `
         <!DOCTYPE html>
         <html>
@@ -162,7 +162,7 @@ export async function sendPasswordResetEmail(params: PasswordResetParams): Promi
               <p style="font-size: 14px; color: #666; margin-bottom: 10px;">This link will expire in 1 hour.</p>
               <p style="font-size: 14px; color: #666; margin-bottom: 10px;">If you didn't request a password reset, you can safely ignore this email.</p>
               <p style="font-size: 14px; color: #666; margin-bottom: 20px;">For your security, please don't share this link with anyone.</p>
-              <p style="font-size: 14px; color: #666;">Best regards,<br>The Korella CRM Team</p>
+              <p style="font-size: 14px; color: #666;">Best regards,<br>The SolidSeed CRM Team</p>
             </div>
           </body>
         </html>
@@ -198,7 +198,7 @@ export async function sendPasswordChangedEmail(params: PasswordChangedParams): P
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: params.to,
-      subject: 'Password Changed Successfully - Korella CRM',
+      subject: 'Password Changed Successfully - SolidSeed CRM',
       html: `
         <!DOCTYPE html>
         <html>
@@ -216,7 +216,7 @@ export async function sendPasswordChangedEmail(params: PasswordChangedParams): P
               <p style="font-size: 16px; margin-bottom: 20px;">Your password was successfully changed on ${params.changedAt.toLocaleString()}.</p>
               <p style="font-size: 14px; color: #666; margin-bottom: 10px;">If you didn't make this change, please contact our support team immediately.</p>
               <p style="font-size: 14px; color: #666; margin-bottom: 20px;">For your security, you may want to review your recent account activity.</p>
-              <p style="font-size: 14px; color: #666;">Best regards,<br>The Korella CRM Team</p>
+              <p style="font-size: 14px; color: #666;">Best regards,<br>The SolidSeed CRM Team</p>
             </div>
           </body>
         </html>
@@ -253,7 +253,7 @@ export async function sendAccountLockoutAlertEmail(params: AccountLockoutAlertPa
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: params.to,
-      subject: 'Security Alert: Account Locked - Korella CRM',
+      subject: 'Security Alert: Account Locked - SolidSeed CRM',
       html: `
         <!DOCTYPE html>
         <html>
@@ -283,7 +283,7 @@ export async function sendAccountLockoutAlertEmail(params: AccountLockoutAlertPa
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${appUrl}/forgot-password" style="display: inline-block; background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;">Reset Password</a>
               </div>
-              <p style="font-size: 14px; color: #666;">Best regards,<br>The Korella CRM Security Team</p>
+              <p style="font-size: 14px; color: #666;">Best regards,<br>The SolidSeed CRM Security Team</p>
             </div>
           </body>
         </html>

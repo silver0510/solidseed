@@ -26,7 +26,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Korella CRM',
+  title: 'SolidSeed CRM',
   description: 'Modern CRM platform for real estate professionals',
   manifest: '/manifest.json',
   icons: {
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Korella CRM',
+    title: 'SolidSeed CRM',
   },
 };
 

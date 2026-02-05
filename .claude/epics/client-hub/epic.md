@@ -11,7 +11,7 @@ github: [Will be updated when synced to GitHub]
 
 ## Overview
 
-Client Hub is the centralized client management platform for Korella CRM, enabling real estate professionals to manage client profiles, documents, notes, and tasks from a mobile-first interface. The implementation leverages the existing Better Auth authentication system, Supabase PostgreSQL database, and Supabase Storage for document management, with a focus on data portability and GDPR compliance.
+Client Hub is the centralized client management platform for SolidSeed CRM, enabling real estate professionals to manage client profiles, documents, notes, and tasks from a mobile-first interface. The implementation leverages the existing Better Auth authentication system, Supabase PostgreSQL database, and Supabase Storage for document management, with a focus on data portability and GDPR compliance.
 
 ## Architecture Decisions
 

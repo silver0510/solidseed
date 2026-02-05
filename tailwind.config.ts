@@ -32,7 +32,7 @@ const config: Config = {
           900: '#1E3A8A',
         },
         secondary: '#3B82F6',
-        cta: '#F97316',
+        cta: '#EE4143',
         background: '#F8FAFC',
         'text-primary': '#1E293B',
         'text-secondary': '#475569',

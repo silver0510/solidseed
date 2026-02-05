@@ -1,5 +1,5 @@
 /**
- * Password Validation Utilities for Korella CRM
+ * Password Validation Utilities for SolidSeed CRM
  *
  * This module provides password validation functions and complexity rules
  * for user authentication and password management.

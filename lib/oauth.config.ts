@@ -4,7 +4,7 @@ import { z } from 'zod';
  * OAuth Provider Configuration
  *
  * This file defines the OAuth configuration structure for Google provider
- * used with Better Auth in the Korella CRM application.
+ * used with Better Auth in the SolidSeed CRM application.
  *
  * @see https://www.better-auth.com/docs/authentication/social
  * @see docs/oauth-setup.md for setup instructions

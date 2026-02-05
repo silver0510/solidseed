@@ -11,7 +11,7 @@ github: [Will be updated when synced to GitHub]
 
 ## Overview
 
-Implement a secure, mobile-first authentication system for Korella CRM using Better Auth library. The system will support email/password registration with email verification, Google and Microsoft OAuth social login, JWT-based session management, and comprehensive security features including account lockout, password reset, and authentication logging.
+Implement a secure, mobile-first authentication system for SolidSeed CRM using Better Auth library. The system will support email/password registration with email verification, Google and Microsoft OAuth social login, JWT-based session management, and comprehensive security features including account lockout, password reset, and authentication logging.
 
 **Key Technology Decisions:**
 
@@ -463,7 +463,7 @@ CREATE INDEX idx_users_email_verified ON users(email_verified);
 **Email Service Configuration:**
 
 - Provider: SendGrid, Mailgun, or similar
-- From address: noreply@korella.com (verified domain)
+- From address: noreply@solidseed.app (verified domain)
 - Template variables: {user_name}, {verification_link}, {reset_link}, etc.
 - Tracking: delivery status, open rates
 
@@ -481,22 +481,22 @@ JWT_SECRET=<secure-random-256-bit-key>
 # OAuth - Google
 GOOGLE_CLIENT_ID=<from Google Cloud Console>
 GOOGLE_CLIENT_SECRET=<from Google Cloud Console>
-GOOGLE_REDIRECT_URI=https://app.korella.com/api/auth/oauth/google/callback
+GOOGLE_REDIRECT_URI=https://app.solidseed.app/api/auth/oauth/google/callback
 
 # OAuth - Microsoft
 MICROSOFT_CLIENT_ID=<from Azure Portal>
 MICROSOFT_CLIENT_SECRET=<from Azure Portal>
-MICROSOFT_REDIRECT_URI=https://app.korella.com/api/auth/oauth/microsoft/callback
+MICROSOFT_REDIRECT_URI=https://app.solidseed.app/api/auth/oauth/microsoft/callback
 
 # Email Service
 EMAIL_SERVICE_API_KEY=<SendGrid/Mailgun API key>
-EMAIL_FROM_ADDRESS=noreply@korella.com
+EMAIL_FROM_ADDRESS=noreply@solidseed.app
 
 # Rate Limiting
 REDIS_URL=redis://localhost:6379 (optional, falls back to in-memory)
 
 # App
-APP_URL=https://app.korella.com
+APP_URL=https://app.solidseed.app
 ```
 
 #### OAuth Provider Setup

@@ -93,7 +93,7 @@ After Task 008 completes, the entire deal management epic will be:
 
 ```bash
 # Watch Task 008 agent output
-tail -f /private/tmp/claude/-Users-nghiapham-Documents-Work-Projects-korella/tasks/abbe838.output
+tail -f /private/tmp/claude/-Users-nghiapham-Documents-Work-Projects-solidseed/tasks/abbe838.output
 
 # Check latest commits
 git log --oneline -10
