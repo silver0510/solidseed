@@ -649,6 +649,18 @@ export default function HomePage() {
 
             <div className="relative">
               <div className="rounded-xl border bg-card shadow-xl overflow-hidden">
+                <div className="border-b bg-muted/50 px-4 flex items-center gap-2">
+                  <div className="flex gap-1.5">
+                    <div className="h-2 w-2 rounded-full bg-red-500" />
+                    <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                  </div>
+                  <div className="flex-1 flex justify-center">
+                    <div className="bg-background rounded px-3 py-1 text-xs text-muted-foreground">
+                      solidseed.app
+                    </div>
+                  </div>
+                </div>
                 <div className="aspect-square">
                   <Image
                     src="/homepage/mobile-view.png"
