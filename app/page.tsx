@@ -138,9 +138,9 @@ export default function HomePage() {
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8" asChild>
+              {/* <Button size="lg" variant="outline" className="text-lg px-8" asChild>
                 <Link href="#demo">See It In Action</Link>
-              </Button>
+              </Button> */}
             </div>
 
             {/* Floating Feature Cards */}
@@ -156,7 +156,7 @@ export default function HomePage() {
                     </div>
                     <div className="flex-1 flex justify-center">
                       <div className="bg-background rounded px-3 py-1 text-xs text-muted-foreground">
-                        app.solidseed.app/dashboard
+                        solidseed.app/dashboard
                       </div>
                     </div>
                   </div>

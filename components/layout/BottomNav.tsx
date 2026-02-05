@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, CheckCircle2 } from 'lucide-react';
+import { Home, Users, CheckCircle2, Briefcase, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -26,10 +26,22 @@ const navigation: NavItem[] = [
     activeIcon: <Users className="h-6 w-6" fill="currentColor" strokeWidth={0} />,
   },
   {
+    name: 'Deals',
+    href: '/deals',
+    icon: <Briefcase className="h-6 w-6" strokeWidth={1.5} />,
+    activeIcon: <Briefcase className="h-6 w-6" fill="currentColor" strokeWidth={0} />,
+  },
+  {
     name: 'Tasks',
     href: '/tasks',
     icon: <CheckCircle2 className="h-6 w-6" strokeWidth={1.5} />,
     activeIcon: <CheckCircle2 className="h-6 w-6" fill="currentColor" strokeWidth={0} />,
+  },
+  {
+    name: 'Reports',
+    href: '/reports',
+    icon: <BarChart3 className="h-6 w-6" strokeWidth={1.5} />,
+    activeIcon: <BarChart3 className="h-6 w-6" fill="currentColor" strokeWidth={0} />,
   },
 ];
 
@@ -46,7 +58,7 @@ export function BottomNav() {
               key={item.name}
               href={item.href}
               className={cn(
-                'flex flex-col items-center justify-center gap-0.5 px-3 py-2 min-w-nav-item min-h-nav-item rounded-lg transition-colors',
+                'flex flex-col items-center justify-center gap-0.5 px-2 py-2 min-h-nav-item rounded-lg transition-colors',
                 isActive
                   ? 'text-primary'
                   : 'text-muted-foreground hover:text-foreground'

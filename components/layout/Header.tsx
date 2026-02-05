@@ -18,6 +18,7 @@ function getPageTitle(pathname: string): string {
     '/clients': 'Clients',
     '/deals': 'Deals',
     '/tasks': 'Tasks',
+    '/reports': 'Reports',
     '/settings': 'Settings',
   };
 

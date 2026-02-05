@@ -28,6 +28,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
   type ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from 'recharts';
@@ -95,26 +97,24 @@ function StatCard({
 }) {
   return (
     <Card className="transition-shadow hover:shadow-md">
-      <CardContent className="p-4 lg:p-6">
+      <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="mt-2 text-2xl lg:text-3xl font-bold tabular-nums">{value}</p>
+            <p className="mt-1 text-2xl font-semibold">{value}</p>
             {subtitle && (
               <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
             )}
           </div>
-          <div
-            className={`flex h-10 w-10 lg:h-12 lg:w-12 items-center justify-center rounded-lg ${
-              variant === 'success'
-                ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
-                : variant === 'info'
-                ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                : variant === 'warning'
-                ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
-                : 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
-            }`}
-          >
+          <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+            variant === 'success'
+              ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+              : variant === 'info'
+              ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+              : variant === 'warning'
+              ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
+              : 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
+          }`}>
             {icon}
           </div>
         </div>
@@ -153,8 +153,12 @@ const formatPeriodLabel = (period: string, periodType: string): string => {
 // Chart config
 const chartConfig = {
   won_value: {
-    label: 'Won Value',
-    color: 'hsl(var(--chart-1))',
+    label: 'Deal Value',
+    color: 'var(--chart-1)',
+  },
+  commission_earned: {
+    label: 'Commission',
+    color: 'var(--chart-2)',
   },
 } satisfies ChartConfig;
 
@@ -181,19 +185,24 @@ export default function ReportsPage() {
   const byType = reportsData?.by_type || [];
 
   // Prepare chart data (reverse to show oldest first for better visualization)
-  const chartData = [...byPeriod].reverse().map((p) => ({
-    period: formatPeriodLabel(p.period, periodType),
-    won_value: p.won_value,
-    won_count: p.won_count,
-  }));
+  const maxSlots = periodType === 'year' ? 5 : periodType === 'quarter' ? 8 : 12;
+  const chartData = [
+    ...[...byPeriod].reverse().map((p) => ({
+      period: formatPeriodLabel(p.period, periodType),
+      won_value: p.won_value,
+      won_count: p.won_count,
+      commission_earned: p.commission_earned,
+    })),
+    ...Array.from({ length: Math.max(0, maxSlots - byPeriod.length) }, () => ({
+      period: '',
+      won_value: 0,
+      won_count: 0,
+      commission_earned: 0,
+    })),
+  ];
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-semibold">Reports</h1>
-        <p className="text-muted-foreground">Your career statistics and performance metrics</p>
-      </div>
 
       {/* All-Time Summary Cards */}
       <div>
@@ -204,38 +213,38 @@ export default function ReportsPage() {
             value={isLoading ? '...' : formatCurrency(allTime?.total_won_value || 0)}
             subtitle={`${allTime?.total_won_count || 0} deals closed`}
             variant="success"
-            icon={<Trophy className="h-5 w-5 lg:h-6 lg:w-6" strokeWidth={1.5} />}
+            icon={<Trophy className="h-5 w-5" strokeWidth={1.5} />}
           />
           <StatCard
             title="Commission Earned"
             value={isLoading ? '...' : formatCurrency(allTime?.total_commission_earned || 0)}
             subtitle="Lifetime earnings"
             variant="default"
-            icon={<DollarSign className="h-5 w-5 lg:h-6 lg:w-6" strokeWidth={1.5} />}
+            icon={<DollarSign className="h-5 w-5" strokeWidth={1.5} />}
           />
           <StatCard
             title="Win Rate"
             value={isLoading ? '...' : `${allTime?.win_rate || 0}%`}
             subtitle={`${allTime?.total_lost_count || 0} deals lost`}
             variant="info"
-            icon={<Percent className="h-5 w-5 lg:h-6 lg:w-6" strokeWidth={1.5} />}
+            icon={<Percent className="h-5 w-5" strokeWidth={1.5} />}
           />
           <StatCard
             title="Avg. Deal Size"
             value={isLoading ? '...' : formatCurrency(allTime?.average_deal_size || 0)}
             subtitle={`~${allTime?.average_days_to_close || 0} days to close`}
             variant="warning"
-            icon={<TrendingUp className="h-5 w-5 lg:h-6 lg:w-6" strokeWidth={1.5} />}
+            icon={<TrendingUp className="h-5 w-5" strokeWidth={1.5} />}
           />
         </div>
       </div>
 
       {/* Performance Over Time */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-4 pb-2">
           <div>
             <CardTitle className="text-base font-semibold">Performance Over Time</CardTitle>
-            <CardDescription>Won deals value by period</CardDescription>
+            <CardDescription>Deal value and commission by period</CardDescription>
           </div>
           <Select
             value={periodType}
@@ -252,19 +261,19 @@ export default function ReportsPage() {
           </Select>
         </CardHeader>
         <Separator />
-        <CardContent className="pt-6">
+        <CardContent className="px-4 py-0">
           {isLoading ? (
-            <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+            <div className="h-dropdown flex items-center justify-center text-muted-foreground">
               Loading chart...
             </div>
-          ) : chartData.length === 0 ? (
-            <div className="h-[300px] flex flex-col items-center justify-center text-muted-foreground">
+          ) : byPeriod.length === 0 ? (
+            <div className="h-dropdown flex flex-col items-center justify-center text-muted-foreground">
               <Calendar className="h-12 w-12 mb-2 opacity-50" />
               <p>No data available yet</p>
             </div>
           ) : (
-            <ChartContainer config={chartConfig} className="h-[300px] w-full">
-              <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
+            <ChartContainer config={chartConfig} className="h-dropdown w-full">
+              <BarChart data={chartData} margin={{ top: 20, right: 60, left: 10, bottom: 20 }} barSize={24} barGap={4}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
                   dataKey="period"
@@ -272,8 +281,18 @@ export default function ReportsPage() {
                   axisLine={false}
                   tickMargin={8}
                   fontSize={12}
+                  interval={0}
                 />
                 <YAxis
+                  yAxisId="left"
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  fontSize={12}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
@@ -282,9 +301,17 @@ export default function ReportsPage() {
                 <ChartTooltip
                   content={<ChartTooltipContent />}
                 />
+                <ChartLegend content={<ChartLegendContent />} />
                 <Bar
+                  yAxisId="left"
                   dataKey="won_value"
                   fill="var(--color-won_value)"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  yAxisId="right"
+                  dataKey="commission_earned"
+                  fill="var(--color-commission_earned)"
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>
