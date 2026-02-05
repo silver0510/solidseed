@@ -141,11 +141,11 @@ const formatPeriodLabel = (period: string, periodType: string): string => {
     return period;
   }
   if (periodType === 'quarter') {
-    const [year, quarter] = period.split('-');
+    const [year, quarter] = period.split('-') as [string, string];
     return `${quarter} ${year}`;
   }
   // month: YYYY-MM
-  const [year, month] = period.split('-');
+  const [year, month] = period.split('-') as [string, string];
   const date = new Date(parseInt(year), parseInt(month) - 1);
   return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 };
