@@ -201,6 +201,14 @@ export async function POST(request: Request) {
 
   // --- send email via Resend (existing EmailService with retry) ---
   const ownerEmail = process.env.CONTACT_OWNER_EMAIL;
+  if (!ownerEmail) {
+    console.error("[contact] CONTACT_OWNER_EMAIL is not set");
+    return NextResponse.json(
+      { error: "Server configuration error." },
+      { status: 500 }
+    );
+  }
+
   const subjectLabel = SUBJECT_LABELS[cleanSubject] ?? "General Inquiry";
 
   try {

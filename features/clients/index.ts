@@ -202,10 +202,6 @@ export type { ClientDealsWidgetProps } from './components/ClientDealsWidget';
 export { DealBadge } from './components/DealBadge';
 export type { DealBadgeProps } from './components/DealBadge';
 
-// Metric Sheets
-export { NeedFollowupSheet } from './components/NeedFollowupSheet';
-export { BirthdaysSoonSheet } from './components/BirthdaysSoonSheet';
-
 // =============================================================================
 // HOOK EXPORTS
 // =============================================================================
