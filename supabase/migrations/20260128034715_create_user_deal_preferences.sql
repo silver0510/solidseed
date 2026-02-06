@@ -30,28 +30,8 @@ CREATE TRIGGER update_user_deal_preferences_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- Enable Row Level Security
-ALTER TABLE user_deal_preferences ENABLE ROW LEVEL SECURITY;
-
--- Policy: Users can only view their own preferences
-CREATE POLICY user_deal_preferences_select_policy ON user_deal_preferences
-  FOR SELECT
-  USING (auth.uid()::text = user_id::text);
-
--- Policy: Users can only insert their own preferences
-CREATE POLICY user_deal_preferences_insert_policy ON user_deal_preferences
-  FOR INSERT
-  WITH CHECK (auth.uid()::text = user_id::text);
-
--- Policy: Users can only update their own preferences
-CREATE POLICY user_deal_preferences_update_policy ON user_deal_preferences
-  FOR UPDATE
-  USING (auth.uid()::text = user_id::text);
-
--- Policy: Users can only delete their own preferences
-CREATE POLICY user_deal_preferences_delete_policy ON user_deal_preferences
-  FOR DELETE
-  USING (auth.uid()::text = user_id::text);
+-- NOTE: RLS policies removed - authorization handled at application level
+-- via Better Auth and service layer (using service role key)
 
 -- Comment for documentation
 COMMENT ON TABLE user_deal_preferences IS 'Stores user preferences for enabled deal types. Used for onboarding flow and dashboard filtering.';
