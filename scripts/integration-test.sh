@@ -77,18 +77,8 @@ else
 fi
 echo ""
 
-# Test monitoring service
-echo "6️⃣  Testing monitoring service..."
-MONITORING_STATUS=$(echo $HEALTH | jq -r '.services.monitoring.status')
-if [ "$MONITORING_STATUS" = "healthy" ] || [ "$MONITORING_STATUS" = "degraded" ]; then
-  echo -e "${GREEN}✅ Monitoring service configured${NC}"
-else
-  echo -e "${YELLOW}⚠️  Monitoring service not configured (optional)${NC}"
-fi
-echo ""
-
 # Test environment validation
-echo "7️⃣  Testing environment validation..."
+echo "6️⃣  Testing environment validation..."
 if npm run validate-env > /dev/null 2>&1; then
   echo -e "${GREEN}✅ Environment variables validated${NC}"
 else
@@ -111,5 +101,4 @@ echo "Next steps:"
 echo "  1. Test OAuth flow manually (Google sign-in)"
 echo "  2. Send test email via /api/test/email"
 echo "  3. Upload test file via /api/test/storage"
-echo "  4. Review Sentry dashboard for test events"
 echo ""

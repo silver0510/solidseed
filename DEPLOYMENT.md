@@ -15,7 +15,6 @@
 - [ ] Production database URL set
 - [ ] OAuth credentials updated for production domain
 - [ ] Resend domain verified
-- [ ] Sentry production project configured
 
 ### Database
 - [ ] All migrations applied to production
@@ -27,7 +26,6 @@
 ### Third-Party Services
 - [ ] Google OAuth redirect URIs include production domain
 - [ ] Resend domain verified and active
-- [ ] Sentry DSN configured for production
 - [ ] Supabase Storage buckets created
 - [ ] API rate limits configured
 
@@ -69,11 +67,9 @@ vercel --prod
 - [ ] Database reads/writes working
 - [ ] File uploads working
 - [ ] Email sending working
-- [ ] Error tracking in Sentry
 
 ### Monitoring
 
-- [ ] Sentry receiving errors
 - [ ] Analytics configured (if any)
 - [ ] Performance monitoring enabled
 - [ ] Logs accessible in Vercel dashboard
@@ -102,4 +98,3 @@ vercel promote <previous-deployment-url>
 
 - Vercel Support: vercel.com/support
 - Supabase Support: supabase.com/support
-- Sentry Support: sentry.io/support

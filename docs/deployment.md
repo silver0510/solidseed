@@ -143,13 +143,6 @@ RESEND_FROM_EMAIL=noreply@your-domain.com
 REDIS_URL=redis://localhost:6379
 ```
 
-#### Optional: Sentry (for error tracking)
-
-```bash
-SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
-NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
-```
-
 ### Step 3: Verify Configuration
 
 ```bash
@@ -543,20 +536,6 @@ artillery run tests/load/load-test.yml
 
 ### Application Monitoring
 
-#### Sentry Setup
-
-```bash
-# Install Sentry CLI
-npm install -g @sentry/cli
-
-# Configure project
-sentry-cli init -D solidseed-auth
-
-# Verify error tracking
-# Trigger test error from app
-# Check Sentry dashboard
-```
-
 #### Metrics to Track
 
 1. **Authentication Metrics**
@@ -834,7 +813,6 @@ LOG_DB_QUERIES=true npm run dev
 pm2 logs solidseed --lines 500
 
 # Database logs in Supabase Dashboard
-# Error tracking in Sentry Dashboard
 # Performance metrics in monitoring tool
 
 # Documentation:
@@ -856,7 +834,6 @@ pm2 logs solidseed --lines 500
 - [ ] SSL certificate obtained
 - [ ] Domain DNS configured
 - [ ] Monitoring tools set up
-- [ ] Error tracking configured
 - [ ] Backup strategy in place
 - [ ] Rollback plan documented
 

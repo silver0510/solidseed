@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/db';
 import { env, isProduction } from '@/lib/env';
-import * as Sentry from '@sentry/nextjs';
 
 interface ServiceStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -18,7 +17,6 @@ interface HealthCheckResponse {
     database: ServiceStatus;
     storage: ServiceStatus;
     email: ServiceStatus;
-    monitoring: ServiceStatus;
   };
   system: {
     uptime: number;
@@ -122,34 +120,6 @@ async function checkEmail(): Promise<ServiceStatus> {
   }
 }
 
-async function checkMonitoring(): Promise<ServiceStatus> {
-  const start = Date.now();
-  try {
-    if (!env.SENTRY_DSN) {
-      return {
-        status: 'degraded',
-        message: 'Sentry not configured (optional)',
-        latency: Date.now() - start,
-      };
-    }
-
-    // Test Sentry by capturing a test message
-    Sentry.captureMessage('Health check test', 'debug');
-
-    return {
-      status: 'healthy',
-      message: 'Monitoring service active',
-      latency: Date.now() - start,
-    };
-  } catch (error) {
-    return {
-      status: 'degraded',
-      error: error instanceof Error ? error.message : 'Unknown error',
-      latency: Date.now() - start,
-    };
-  }
-}
-
 function getSystemInfo() {
   const usage = process.memoryUsage();
   return {
@@ -165,15 +135,10 @@ function getSystemInfo() {
 export async function GET() {
   try {
     // Run all health checks in parallel
-    const [database, storage, email, monitoring] = await Promise.all([
-      checkDatabase(),
-      checkStorage(),
-      checkEmail(),
-      checkMonitoring(),
-    ]);
+    const [database, storage, email] = await Promise.all([checkDatabase(), checkStorage(), checkEmail()]);
 
     // Determine overall status
-    const services = { database, storage, email, monitoring };
+    const services = { database, storage, email };
     const statuses = Object.values(services).map((s) => s.status);
 
     let overallStatus: 'healthy' | 'degraded' | 'unhealthy';
@@ -199,7 +164,6 @@ export async function GET() {
     return NextResponse.json(response, { status: statusCode });
   } catch (error) {
     console.error('Health check error:', error);
-    Sentry.captureException(error);
 
     return NextResponse.json(
       {

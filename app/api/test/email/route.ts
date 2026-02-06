@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EmailService } from '@/lib/email';
-import * as Sentry from '@sentry/nextjs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,7 +39,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Email test error:', error);
-    Sentry.captureException(error);
 
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to send email' },
@@ -50,15 +48,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  try {
-    // Test Sentry error tracking
-    throw new Error('Test Sentry error from email endpoint');
-  } catch (error) {
-    Sentry.captureException(error);
-
-    return NextResponse.json({
-      success: true,
-      message: 'Test error sent to Sentry',
-    });
-  }
+  return NextResponse.json({
+    success: true,
+    message: 'Email test endpoint ready. Use POST to send test emails.',
+  });
 }

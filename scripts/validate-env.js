@@ -17,13 +17,7 @@ const requiredVars = [
   'BETTER_AUTH_SECRET',
 ];
 
-const optionalVars = [
-  'SENTRY_DSN',
-  'NEXT_PUBLIC_SENTRY_DSN',
-  'SENTRY_AUTH_TOKEN',
-  'SENTRY_ORG',
-  'SENTRY_PROJECT',
-];
+const optionalVars = [];
 
 console.log('🔍 Validating environment variables...\n');
 

@@ -20,13 +20,6 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().startsWith('re_'),
   RESEND_FROM_EMAIL: z.string().email().default('onboarding@resend.dev'),
 
-  // Sentry Monitoring
-  SENTRY_DSN: z.string().url().optional(),
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
-  SENTRY_AUTH_TOKEN: z.string().optional(),
-  SENTRY_ORG: z.string().optional(),
-  SENTRY_PROJECT: z.string().optional(),
-
   // Authentication
   BETTER_AUTH_SECRET: z.string().min(32),
 
