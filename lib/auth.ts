@@ -49,7 +49,7 @@ import {
  * Get database URL from environment
  * Better Auth connects directly to PostgreSQL via pg Pool
  */
-const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+const databaseUrl = process.env.SUPABASE_DATABASE_URL;
 
 if (!databaseUrl) {
   throw new Error('SUPABASE_DATABASE_URL or DATABASE_URL environment variable is required');
@@ -96,6 +96,15 @@ export const auth = betterAuth({
   // Base Configuration
   // -------------------------------------------------------------------------
   baseURL: process.env.BETTER_AUTH_URL || process.env.APP_URL || 'http://localhost:3000',
+
+  // -------------------------------------------------------------------------
+  // Trusted Origins - Required for OAuth redirects to work properly
+  // -------------------------------------------------------------------------
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+    process.env.APP_URL || 'http://localhost:3000',
+    'http://localhost:3000',
+  ].filter((origin, index, self) => self.indexOf(origin) === index), // Remove duplicates
 
   // -------------------------------------------------------------------------
   // User Model Configuration (Custom Fields Mapping)

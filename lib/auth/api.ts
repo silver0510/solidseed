@@ -218,9 +218,23 @@ export async function changePassword(data: ChangePasswordData): Promise<AuthResp
  * Checks Better Auth session from cookies
  */
 export async function getCurrentUser(): Promise<AuthResponse> {
-  return request<AuthResponse>('/api/auth/session', {
-    credentials: 'include', // Important: include cookies in request
-  });
+  try {
+    const response = await fetch('/api/auth/session', {
+      credentials: 'include', // Important: include cookies in request
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    // For session check, 401 is not an error - it means not authenticated
+    // Return the response without throwing
+    return data;
+  } catch {
+    // Network error or other failure
+    return { success: false, error: 'Failed to check session', user: undefined };
+  }
 }
 
 /**
@@ -247,11 +261,14 @@ export async function initiateOAuth(provider: 'google'): Promise<void> {
   // Import dynamically to avoid SSR issues
   const { authClient } = await import('./client');
 
+  // Build the full callback URL to ensure proper redirect after OAuth
+  const callbackURL = `${window.location.origin}/dashboard`;
+
   // Use Better Auth client to initiate OAuth flow
   // This will redirect to the OAuth provider
   await authClient.signIn.social({
     provider,
-    callbackURL: '/dashboard',
+    callbackURL,
   });
 }
 
