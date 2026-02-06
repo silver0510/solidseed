@@ -49,7 +49,7 @@ import {
  * Get database URL from environment
  * Better Auth connects directly to PostgreSQL via pg Pool
  */
-const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || 'postgresql://postgres.renpowxmbkprtwjklbcb:AL39FVvSiDsz6Ho8@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres';
+const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
 if (!databaseUrl) {
   throw new Error('SUPABASE_DATABASE_URL or DATABASE_URL environment variable is required');

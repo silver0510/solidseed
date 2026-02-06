@@ -200,7 +200,7 @@ export async function POST(request: Request) {
   }
 
   // --- send email via Resend (existing EmailService with retry) ---
-  const ownerEmail = process.env.CONTACT_OWNER_EMAIL ?? "nghiapham.itwork@gmail.com";
+  const ownerEmail = process.env.CONTACT_OWNER_EMAIL;
   const subjectLabel = SUBJECT_LABELS[cleanSubject] ?? "General Inquiry";
 
   try {
