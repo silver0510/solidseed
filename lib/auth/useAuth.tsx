@@ -46,15 +46,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadUser = async () => {
       try {
+        console.log('[useAuth] Fetching current user...');
         // First, try to get current user from API (this will check cookies)
         const response = await getCurrentUser();
+        console.log('[useAuth] API response:', { success: response.success, hasUser: !!response.user });
 
         if (response.user) {
+          console.log('[useAuth] User found, setting user state');
           setUser(response.user);
           setIsLoading(false);
           return;
         }
 
+        console.log('[useAuth] No user from API, checking localStorage token');
         // If API call succeeded but no user, check localStorage token as fallback
         const token = getAuthToken();
 

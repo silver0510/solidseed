@@ -90,21 +90,30 @@ export const auth = betterAuth({
       // Our database schema uses: id UUID PRIMARY KEY DEFAULT gen_random_uuid()
       generateId: false,
     },
+    // Cookie configuration for production
+    cookiePrefix: 'better-auth',
+    // Use secure cookies in production
+    useSecureCookies: process.env.NODE_ENV === 'production',
   },
 
   // -------------------------------------------------------------------------
   // Base Configuration
   // -------------------------------------------------------------------------
-  baseURL: process.env.BETTER_AUTH_URL || process.env.APP_URL || 'http://localhost:3000',
+  baseURL: process.env.BETTER_AUTH_URL || process.env.APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'),
 
   // -------------------------------------------------------------------------
   // Trusted Origins - Required for OAuth redirects to work properly
   // -------------------------------------------------------------------------
   trustedOrigins: [
-    process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-    process.env.APP_URL || 'http://localhost:3000',
+    process.env.BETTER_AUTH_URL,
+    process.env.APP_URL,
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+    // Production domains
+    'https://www.solidseed.app',
+    'https://solidseed.app',
+    // Development
     'http://localhost:3000',
-  ].filter((origin, index, self) => self.indexOf(origin) === index), // Remove duplicates
+  ].filter((origin): origin is string => origin !== null && origin !== undefined),
 
   // -------------------------------------------------------------------------
   // User Model Configuration (Custom Fields Mapping)
@@ -210,6 +219,11 @@ export const auth = betterAuth({
     },
     // Session expiration configuration
     expiresIn: 60 * 60 * 24 * securityConstants.DEFAULT_JWT_EXPIRATION_DAYS, // 3 days in seconds
+    // Cookie configuration for production
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5, // 5 minutes cache
+    },
   },
 
   // -------------------------------------------------------------------------
