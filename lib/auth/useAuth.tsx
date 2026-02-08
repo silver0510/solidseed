@@ -36,11 +36,13 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  console.log(`[AuthProvider ${Date.now()}] Rendering, pathname will be checked`);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  console.log(`[AuthProvider ${Date.now()}] pathname:`, pathname, 'isLoading:', isLoading, 'user:', !!user);
 
   // Fetch current user on mount
   useEffect(() => {
