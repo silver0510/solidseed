@@ -9,16 +9,10 @@ import { auth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    // Log cookies for debugging (remove in production)
-    const cookies = request.headers.get('cookie');
-    console.log('[Session] Cookies received:', cookies ? 'Yes' : 'No');
-
     // Get session from Better Auth (checks cookies automatically)
     const session = await auth.api.getSession({
       headers: request.headers,
     });
-
-    console.log('[Session] Session found:', !!session, 'User:', !!session?.user);
 
     if (!session || !session.user) {
       return NextResponse.json(

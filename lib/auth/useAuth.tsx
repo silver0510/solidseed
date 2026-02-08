@@ -7,7 +7,7 @@
  */
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/auth/utils';
 import {
   getAuthToken,
@@ -36,13 +36,10 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  console.log(`[AuthProvider ${Date.now()}] Rendering, pathname will be checked`);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const pathname = usePathname();
-  console.log(`[AuthProvider ${Date.now()}] pathname:`, pathname, 'isLoading:', isLoading, 'user:', !!user);
 
   // Fetch current user on mount
   useEffect(() => {
@@ -50,24 +47,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const loadUser = async () => {
       try {
-        console.log('[useAuth] Fetching current user...');
         // First, try to get current user from API (this will check cookies)
         const response = await getCurrentUser();
-        console.log('[useAuth] API response:', { success: response.success, hasUser: !!response.user });
 
         if (!isMounted) {
-          console.log('[useAuth] Component unmounted, skipping state update');
           return;
         }
 
         if (response.user) {
-          console.log('[useAuth] User found, setting user state');
           setUser(response.user);
           setIsLoading(false);
           return;
         }
 
-        console.log('[useAuth] No user from API, checking localStorage token');
         // If API call succeeded but no user, check localStorage token as fallback
         const token = getAuthToken();
 
@@ -91,8 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(null);
         }
         setIsLoading(false);
-      } catch (err) {
-        console.error('[useAuth] Error loading user:', err);
+      } catch {
         if (!isMounted) return;
 
         // If fetching fails, try localStorage token
