@@ -219,6 +219,7 @@ export async function changePassword(data: ChangePasswordData): Promise<AuthResp
  */
 export async function getCurrentUser(): Promise<AuthResponse> {
   try {
+    console.log('[getCurrentUser] Fetching session...');
     const response = await fetch('/api/auth/session', {
       credentials: 'include', // Important: include cookies in request
       headers: {
@@ -226,13 +227,16 @@ export async function getCurrentUser(): Promise<AuthResponse> {
       },
     });
 
+    console.log('[getCurrentUser] Response status:', response.status);
     const data = await response.json();
+    console.log('[getCurrentUser] Response data:', JSON.stringify(data));
 
     // For session check, 401 is not an error - it means not authenticated
     // Return the response without throwing
     return data;
-  } catch {
+  } catch (error) {
     // Network error or other failure
+    console.error('[getCurrentUser] Error:', error);
     return { success: false, error: 'Failed to check session', user: undefined };
   }
 }
