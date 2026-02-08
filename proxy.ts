@@ -46,7 +46,9 @@ export async function proxy(request: NextRequest) {
   // For protected routes, check authentication and onboarding
   if (isProtectedRoute) {
     // Get token from cookies
-    const token = request.cookies.get('better-auth.session_token')?.value ||
+    // In production, Better Auth uses __Secure- prefix for cookies
+    const token = request.cookies.get('__Secure-better-auth.session_token')?.value ||
+                  request.cookies.get('better-auth.session_token')?.value ||
                   request.cookies.get('session_token')?.value;
 
     // If no token at all, redirect to login
