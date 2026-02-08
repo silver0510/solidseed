@@ -15,14 +15,14 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const pathname = usePathname();
   const hasRedirectedRef = useRef(false);
 
-  // Debug logging - log every render
-  console.log('[ProtectedRoute] Render:', { isLoading, isAuthenticated, user: !!user, pathname });
+  // Debug logging - log every render with timestamp
+  console.log(`[ProtectedRoute ${Date.now()}] Render:`, { isLoading, isAuthenticated, user: !!user, pathname });
 
   useEffect(() => {
     // Only redirect if loading is complete and user is not authenticated
     // Use ref to prevent multiple redirects
     if (!isLoading && !isAuthenticated && !hasRedirectedRef.current) {
-      console.log('[ProtectedRoute] Not authenticated, redirecting to login');
+      console.log(`[ProtectedRoute ${Date.now()}] Not authenticated, redirecting to login`);
       hasRedirectedRef.current = true;
       const loginUrl = `/login?redirect=${encodeURIComponent(pathname)}`;
       router.push(loginUrl);
@@ -36,6 +36,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // Show loading spinner while checking authentication
   if (isLoading) {
+    console.log(`[ProtectedRoute ${Date.now()}] Still loading, showing spinner`);
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
@@ -48,10 +49,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // If authenticated, render children
   if (isAuthenticated) {
+    console.log(`[ProtectedRoute ${Date.now()}] Authenticated, rendering children`);
     return <>{children}</>;
   }
 
   // Not authenticated and not loading - show redirecting message
+  console.log(`[ProtectedRoute ${Date.now()}] Not authenticated, showing redirect message`);
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="flex flex-col items-center gap-4">
