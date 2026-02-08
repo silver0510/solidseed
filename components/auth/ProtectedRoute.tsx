@@ -15,10 +15,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const pathname = usePathname();
   const hasRedirectedRef = useRef(false);
 
-  // Debug logging
-  useEffect(() => {
-    console.log('[ProtectedRoute] State:', { isLoading, isAuthenticated, user: !!user });
-  }, [isLoading, isAuthenticated, user]);
+  // Debug logging - log every render
+  console.log('[ProtectedRoute] Render:', { isLoading, isAuthenticated, user: !!user, pathname });
 
   useEffect(() => {
     // Only redirect if loading is complete and user is not authenticated

@@ -44,12 +44,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Fetch current user on mount
   useEffect(() => {
+    let isMounted = true;
+
     const loadUser = async () => {
       try {
         console.log('[useAuth] Fetching current user...');
         // First, try to get current user from API (this will check cookies)
         const response = await getCurrentUser();
         console.log('[useAuth] API response:', { success: response.success, hasUser: !!response.user });
+
+        if (!isMounted) {
+          console.log('[useAuth] Component unmounted, skipping state update');
+          return;
+        }
 
         if (response.user) {
           console.log('[useAuth] User found, setting user state');
@@ -81,7 +88,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setUser(null);
         }
+        setIsLoading(false);
       } catch (err) {
+        console.error('[useAuth] Error loading user:', err);
+        if (!isMounted) return;
+
         // If fetching fails, try localStorage token
         const token = getAuthToken();
         if (token && !isTokenExpired(token)) {
@@ -100,12 +111,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           removeAuthToken();
           setUser(null);
         }
-      } finally {
         setIsLoading(false);
       }
     };
 
     loadUser();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Login method
