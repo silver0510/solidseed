@@ -15,7 +15,7 @@
 
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon, Pencil, X, Check } from 'lucide-react';
+import { Pencil, X, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,9 +29,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils/cn';
+import { DatePicker } from '@/components/ui/date-picker';
 import { useDealMutations } from '../../hooks/useDealMutations';
 import type { DealWithRelations } from '../../types';
 
@@ -482,34 +480,13 @@ export function DetailsTab({ deal }: DetailsTabProps) {
 
       case 'date':
         return (
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className={cn(
-                  'w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm h-10',
-                  'hover:bg-accent hover:text-accent-foreground',
-                  'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                  !value && 'text-muted-foreground'
-                )}
-              >
-                <span>{value ? format(new Date(value), 'PPP') : 'Pick a date'}</span>
-                <CalendarIcon className="h-4 w-4 opacity-50" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
-              <Calendar
-                mode="single"
-                selected={value ? new Date(value) : undefined}
-                onSelect={(date) => {
-                  handleFieldChange(fieldName, date ? format(date, 'yyyy-MM-dd') : '');
-                }}
-                captionLayout="dropdown"
-                startMonth={new Date(2020, 0)}
-                endMonth={new Date(2100, 11)}
-              />
-            </PopoverContent>
-          </Popover>
+          <DatePicker
+            value={value}
+            onChange={(date) => handleFieldChange(fieldName, date)}
+            placeholder="Pick a date"
+            fromYear={2020}
+            toYear={2100}
+          />
         );
 
       case 'enum':
@@ -702,38 +679,13 @@ export function DetailsTab({ deal }: DetailsTabProps) {
           <div className="space-y-2">
             <Label htmlFor="expected_close_date" className="text-muted-foreground text-sm">Expected Close Date</Label>
             {isEditing ? (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className={cn(
-                      'w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm h-10',
-                      'hover:bg-accent hover:text-accent-foreground',
-                      'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                      !formData.expected_close_date && 'text-muted-foreground'
-                    )}
-                  >
-                    <span>
-                      {formData.expected_close_date
-                        ? format(new Date(formData.expected_close_date), 'PPP')
-                        : 'Pick a date'}
-                    </span>
-                    <CalendarIcon className="h-4 w-4 opacity-50" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
-                  <Calendar
-                    mode="single"
-                    selected={formData.expected_close_date ? new Date(formData.expected_close_date) : undefined}
-                    onSelect={(date) => {
-                      handleFieldChange('expected_close_date', date ? format(date, 'yyyy-MM-dd') : '');
-                    }}
-                    captionLayout="dropdown"
-                    startMonth={new Date(2020, 0)}
-                    endMonth={new Date(2100, 11)}
-                  />
-                </PopoverContent>
-              </Popover>
+              <DatePicker
+                value={formData.expected_close_date}
+                onChange={(date) => handleFieldChange('expected_close_date', date)}
+                placeholder="Pick a date"
+                fromYear={2020}
+                toYear={2100}
+              />
             ) : (
               <p className="text-sm font-medium">
                 {formData.expected_close_date ? format(new Date(formData.expected_close_date), 'PPP') : '-'}

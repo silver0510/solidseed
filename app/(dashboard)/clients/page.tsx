@@ -126,6 +126,10 @@ export default function ClientsPage() {
       queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
       setIsDialogOpen(false);
     },
+    onError: (error: Error) => {
+      // Error will be displayed by the form
+      console.error('Failed to create client:', error);
+    },
   });
 
   const updateClientMutation = useMutation({

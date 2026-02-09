@@ -13,7 +13,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,8 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { DatePicker } from '@/components/ui/date-picker';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
 import { cn } from '@/lib/utils/cn';
 import type { DealType, CreateDealInput } from '@/features/deals/types';
@@ -918,40 +917,14 @@ function NewDealContent() {
                   name="expected_close_date"
                   control={control}
                   render={({ field }) => (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          disabled={isSubmitting}
-                          className={cn(
-                            'w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm h-10',
-                            'hover:bg-accent hover:text-accent-foreground',
-                            'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                            'disabled:cursor-not-allowed disabled:opacity-50',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                          aria-label="Select expected close date"
-                        >
-                          <span>
-                            {field.value ? format(new Date(field.value), 'PPP') : 'Pick a date'}
-                          </span>
-                          <CalendarIcon className="h-4 w-4 opacity-50" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
-                        <Calendar
-                          mode="single"
-                          selected={field.value ? new Date(field.value) : undefined}
-                          onSelect={(date) => {
-                            field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
-                          }}
-                          disabled={isSubmitting}
-                          captionLayout="dropdown"
-                          startMonth={new Date(2020, 0)}
-                          endMonth={new Date(2100, 11)}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <DatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      disabled={isSubmitting}
+                      placeholder="Pick a date"
+                      fromYear={2020}
+                      toYear={2100}
+                    />
                   )}
                 />
                 {errors.expected_close_date && (

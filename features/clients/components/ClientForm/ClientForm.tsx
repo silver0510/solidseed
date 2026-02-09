@@ -17,7 +17,7 @@
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCallback, useEffect, Suspense } from 'react';
+import { useCallback, useEffect, Suspense, useState } from 'react';
 import { FormInput } from '@/components/auth/FormInput';
 import { Button } from '@/components/auth/Button';
 import { cn } from '@/lib/utils/cn';
@@ -29,10 +29,7 @@ import {
 import type { ClientWithCounts, ClientFormData } from '@/features/clients/types';
 import { StatusSelect } from '../StatusSelect/StatusSelect';
 import { TagSelect } from '../TagSelect/TagSelect';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { DatePicker } from '@/components/ui/date-picker';
 
 // =============================================================================
 // TYPES
@@ -98,6 +95,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     reValidateMode: 'onChange',
   });
 
+  // Error state for API errors
+  const [apiError, setApiError] = useState<string | null>(null);
+
   // Combined loading state
   const isLoading = externalIsSubmitting ?? formIsSubmitting;
 
@@ -129,27 +129,46 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
   const handleFormSubmit = useCallback(
     async (data: ClientFormSchemaType) => {
-      // Transform schema type to ClientFormData
-      const formData: ClientFormData = {
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        status_id: data.status_id,
-        tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
-        birthday: data.birthday || undefined,
-        address: data.address || undefined,
-      };
+      // Clear previous API errors
+      setApiError(null);
 
-      await onSubmit(formData);
+      try {
+        // Transform schema type to ClientFormData
+        const formData: ClientFormData = {
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          status_id: data.status_id,
+          tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
+          birthday: data.birthday || undefined,
+          address: data.address || undefined,
+        };
+
+        await onSubmit(formData);
+      } catch (error) {
+        // Capture API errors and display them
+        if (error instanceof Error) {
+          setApiError(error.message);
+        } else {
+          setApiError('An unexpected error occurred. Please try again.');
+        }
+      }
     },
     [onSubmit]
   );
 
   const handleCancel = useCallback(() => {
+    setApiError(null);
     if (onCancel) {
       onCancel();
     }
   }, [onCancel]);
+
+  const clearApiError = useCallback(() => {
+    if (apiError) {
+      setApiError(null);
+    }
+  }, [apiError]);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -169,6 +188,17 @@ export const ClientForm: React.FC<ClientFormProps> = ({
       noValidate
       aria-label={isEditMode ? 'Edit client form' : 'Create client form'}
     >
+      {/* API Error Message */}
+      {apiError && (
+        <div
+          className="rounded-md bg-destructive/10 border border-destructive/20 p-3"
+          role="alert"
+          aria-live="polite"
+        >
+          <p className="text-sm text-destructive font-medium">{apiError}</p>
+        </div>
+      )}
+
       {/* Form Fields Container */}
       <div
         className="space-y-5"
@@ -201,7 +231,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           error={errors.email?.message}
           aria-invalid={errors.email ? 'true' : 'false'}
           aria-describedby={errors.email ? 'email-error' : undefined}
-          {...register('email')}
+          {...register('email', {
+            onChange: clearApiError,
+          })}
         />
 
         {/* Phone Field - Required */}
@@ -218,7 +250,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
             error={errors.phone?.message}
             aria-invalid={errors.phone ? 'true' : 'false'}
             aria-describedby={errors.phone ? 'phone-error' : 'phone-hint'}
-            {...register('phone')}
+            {...register('phone', {
+              onChange: clearApiError,
+            })}
           />
           {!errors.phone && (
             <p id="phone-hint" className="text-xs text-gray-500">
@@ -278,40 +312,14 @@ export const ClientForm: React.FC<ClientFormProps> = ({
             name="birthday"
             control={control}
             render={({ field }) => (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    disabled={isLoading}
-                    className={cn(
-                      'w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm h-11',
-                      'hover:bg-accent hover:text-accent-foreground',
-                      'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                      'disabled:cursor-not-allowed disabled:opacity-50',
-                      !field.value && 'text-muted-foreground'
-                    )}
-                    aria-label="Select birthday"
-                  >
-                    <span>
-                      {field.value ? format(new Date(field.value), 'PPP') : 'Pick a date'}
-                    </span>
-                    <CalendarIcon className="h-4 w-4 opacity-50" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
-                  <Calendar
-                    mode="single"
-                    selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={(date) => {
-                      field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
-                    }}
-                    disabled={isLoading}
-                    captionLayout="dropdown"
-                    startMonth={new Date(1900, 0)}
-                    endMonth={new Date(2100, 11)}
-                  />
-                </PopoverContent>
-              </Popover>
+              <DatePicker
+                value={field.value}
+                onChange={field.onChange}
+                disabled={isLoading}
+                placeholder="Pick a date"
+                fromYear={1920}
+                toYear={2015}
+              />
             )}
           />
           {errors.birthday && (

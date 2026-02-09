@@ -35,8 +35,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { DatePicker } from '@/components/ui/date-picker';
 import { CalendarIcon, Pencil, Trash2, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -274,30 +273,13 @@ export function ChecklistTab({ deal }: ChecklistTabProps) {
 
             <div>
               <Label htmlFor="due-date">Due Date (Optional)</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="due-date"
-                    variant="outline"
-                    className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !newItem.due_date && 'text-muted-foreground'
-                    )}
-                  >
-                    {newItem.due_date ? format(newItem.due_date, 'PPP') : 'Pick a date'}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={newItem.due_date}
-                    onSelect={(date) => setNewItem({ ...newItem, due_date: date })}
-                    captionLayout="dropdown"
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <DatePicker
+                value={newItem.due_date}
+                onChange={(date) => setNewItem({ ...newItem, due_date: date ? new Date(date) : undefined })}
+                placeholder="Pick a date"
+                fromYear={2020}
+                toYear={2100}
+              />
               {newItem.due_date && (
                 <Button
                   variant="ghost"
@@ -346,30 +328,13 @@ export function ChecklistTab({ deal }: ChecklistTabProps) {
 
               <div>
                 <Label htmlFor="edit-date">Due Date (Optional)</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="edit-date"
-                      variant="outline"
-                      className={cn(
-                        'w-full justify-start text-left font-normal',
-                        !editingItem.date && 'text-muted-foreground'
-                      )}
-                    >
-                      {editingItem.date ? format(editingItem.date, 'PPP') : 'Pick a date'}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={editingItem.date}
-                      onSelect={(date) => setEditingItem({ ...editingItem, date })}
-                      captionLayout="dropdown"
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  value={editingItem.date}
+                  onChange={(date) => setEditingItem({ ...editingItem, date: date ? new Date(date) : undefined })}
+                  placeholder="Pick a date"
+                  fromYear={2020}
+                  toYear={2100}
+                />
                 {editingItem.date && (
                   <Button
                     variant="ghost"

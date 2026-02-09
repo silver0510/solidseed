@@ -30,8 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
   AlertCircleIcon,
   CalendarIcon,
@@ -42,7 +41,6 @@ import {
   UserIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import { getTaskDisplayInfo, formatDate } from '../../helpers';
 import type { TaskWithClient, UpdateTaskInput, TaskStatus, TaskPriority } from '../../types';
 
@@ -353,40 +351,14 @@ export const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
                 name="due_date"
                 control={control}
                 render={({ field }) => (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        disabled={isUpdating}
-                        className={cn(
-                          'w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm h-9',
-                          'hover:bg-accent hover:text-accent-foreground',
-                          'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                          'disabled:cursor-not-allowed disabled:opacity-50',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                        aria-label="Select due date"
-                      >
-                        <span>
-                          {field.value ? format(new Date(field.value), 'PPP') : 'Pick a date'}
-                        </span>
-                        <CalendarIcon className="h-4 w-4 opacity-50" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
-                      <Calendar
-                        mode="single"
-                        selected={field.value ? new Date(field.value) : undefined}
-                        onSelect={(date) => {
-                          field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
-                        }}
-                        disabled={isUpdating}
-                        captionLayout="dropdown"
-                        startMonth={new Date(2020, 0)}
-                        endMonth={new Date(2100, 11)}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isUpdating}
+                    placeholder="Pick a date"
+                    fromYear={2020}
+                    toYear={2100}
+                  />
                 )}
               />
               {errors.due_date && (
