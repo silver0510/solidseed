@@ -30,6 +30,7 @@ interface AuthContextValue {
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateUserProfile: (updates: Partial<User>) => void;
   clearError: () => void;
 }
 
@@ -55,7 +56,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (response.user) {
-          setUser(response.user);
+          // Add cache buster to image URL to force browser reload (only if image exists)
+          const userWithCacheBustedImage = response.user.image
+            ? {
+                ...response.user,
+                image: `${response.user.image}?t=${Date.now()}`,
+              }
+            : response.user;
+          setUser(userWithCacheBustedImage);
           setIsLoading(false);
           return;
         }
@@ -121,7 +129,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await login(credentials);
       if (response.user) {
-        setUser(response.user);
+        // Add cache buster to image URL to force browser reload (only if image exists)
+        const userWithCacheBustedImage = response.user.image
+          ? {
+              ...response.user,
+              image: `${response.user.image}?t=${Date.now()}`,
+            }
+          : response.user;
+        setUser(userWithCacheBustedImage);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed';
@@ -158,12 +173,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await getCurrentUser();
       if (response.user) {
-        setUser(response.user);
+        // Add cache buster to image URL to force browser reload (only if image exists)
+        const userWithCacheBustedImage = response.user.image
+          ? {
+              ...response.user,
+              image: `${response.user.image}?t=${Date.now()}`,
+            }
+          : response.user;
+        setUser(userWithCacheBustedImage);
       }
     } catch {
       // If refresh fails, token might be expired
       await handleLogout();
     }
+  };
+
+  // Update user profile directly (for immediate UI updates)
+  const updateUserProfile = (updates: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      return { ...prev, ...updates };
+    });
   };
 
   // Clear error
@@ -178,6 +208,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register: handleRegister,
     logout: handleLogout,
     refreshUser,
+    updateUserProfile,
     clearError,
   };
 

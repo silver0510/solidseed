@@ -159,7 +159,7 @@ function UserMenu({ onClose, isCollapsed }: { onClose?: () => void; isCollapsed?
           isCollapsed ? "justify-center" : "gap-3"
         )}>
           <Avatar className="h-8 w-8 rounded-lg">
-            {user?.image && <AvatarImage src={user.image} alt={displayName} />}
+            {user?.image && <AvatarImage key={user.image} src={user.image} alt={displayName} />}
             <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-medium">
               {initials}
             </AvatarFallback>
@@ -184,7 +184,7 @@ function UserMenu({ onClose, isCollapsed }: { onClose?: () => void; isCollapsed?
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <Avatar className="h-8 w-8 rounded-lg">
-              {user?.image && <AvatarImage src={user.image} alt={displayName} />}
+              {user?.image && <AvatarImage key={user.image} src={user.image} alt={displayName} />}
               <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-medium">
                 {initials}
               </AvatarFallback>

@@ -28,7 +28,7 @@ function getInitials(name: string | undefined | null, email: string | undefined 
 }
 
 export default function SettingsPage() {
-  const { user, isLoading: authLoading, refreshUser } = useAuth();
+  const { user, isLoading: authLoading, refreshUser, updateUserProfile } = useAuth();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = React.useState(true);
   const [isUploadingAvatar, setIsUploadingAvatar] = React.useState(false);
@@ -110,11 +110,13 @@ export default function SettingsPage() {
 
       if (result.success) {
         toast.success('Profile photo uploaded successfully');
-        setCurrentImage(result.url);
+        // Add cache buster to force browser to reload the image
+        const cacheBustedUrl = `${result.url}?t=${Date.now()}`;
+        setCurrentImage(cacheBustedUrl);
         setAvatarPreview(null);
         setSelectedFile(null);
-        // Refresh user data
-        refreshUser?.();
+        // Immediately update the auth context with new image (with cache buster)
+        updateUserProfile({ image: cacheBustedUrl });
       } else {
         toast.error(result.error || 'Failed to upload photo');
         setAvatarPreview(null);
@@ -197,7 +199,7 @@ export default function SettingsPage() {
               <div className="relative">
                 <Avatar className="h-20 w-20">
                   {displayImage ? (
-                    <AvatarImage src={displayImage} alt="Profile" />
+                    <AvatarImage key={displayImage} src={displayImage} alt="Profile" />
                   ) : null}
                   <AvatarFallback className="bg-primary text-primary-foreground text-xl font-medium">
                     {initials}
