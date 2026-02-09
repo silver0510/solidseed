@@ -486,6 +486,7 @@ export function DetailsTab({ deal }: DetailsTabProps) {
             placeholder="Pick a date"
             fromYear={2020}
             toYear={2100}
+            className="h-9 bg-transparent"
           />
         );
 
@@ -685,6 +686,7 @@ export function DetailsTab({ deal }: DetailsTabProps) {
                 placeholder="Pick a date"
                 fromYear={2020}
                 toYear={2100}
+                className="h-9 bg-transparent"
               />
             ) : (
               <p className="text-sm font-medium">

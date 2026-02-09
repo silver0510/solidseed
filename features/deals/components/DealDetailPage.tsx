@@ -13,8 +13,11 @@
 
 import { Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { SectionLoader } from '@/components/ui/SuspenseLoader';
 import { useDealDetail } from '../hooks/useDealDetail';
 import { OverviewTab } from './tabs/OverviewTab';
@@ -28,6 +31,7 @@ export interface DealDetailPageProps {
 }
 
 export function DealDetailPage({ dealId }: DealDetailPageProps) {
+  const router = useRouter();
   const { data: deal } = useDealDetail(dealId);
 
   // Status badge color
@@ -41,33 +45,42 @@ export function DealDetailPage({ dealId }: DealDetailPageProps) {
     return null;
   };
 
+  const handleBack = () => {
+    router.push('/deals');
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-semibold truncate">{deal.deal_name}</h1>
-          <Badge
-            variant="secondary"
-            className="text-xs font-medium shrink-0"
-            style={{
-              backgroundColor: `${deal.deal_type?.color || '#3b82f6'}15`,
-              color: deal.deal_type?.color || '#3b82f6',
-              borderColor: `${deal.deal_type?.color || '#3b82f6'}30`,
-            }}
-          >
-            {deal.deal_type.type_name}
-          </Badge>
-          {getStatusBadge()}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={handleBack}>
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-semibold truncate">{deal.deal_name}</h1>
+            <Badge
+              variant="secondary"
+              className="text-xs font-medium shrink-0"
+              style={{
+                backgroundColor: `${deal.deal_type?.color || '#3b82f6'}15`,
+                color: deal.deal_type?.color || '#3b82f6',
+                borderColor: `${deal.deal_type?.color || '#3b82f6'}30`,
+              }}
+            >
+              {deal.deal_type.type_name}
+            </Badge>
+            {getStatusBadge()}
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            <Link
+              href={`/clients/${deal.client_id}`}
+              className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+            >
+              {deal.client.name}
+            </Link>
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          <Link
-            href={`/clients/${deal.client_id}`}
-            className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
-          >
-            {deal.client.name}
-          </Link>
-        </p>
       </div>
 
       {/* Tabs */}

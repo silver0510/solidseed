@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/date-picker';
 import type { DealType, DealFormData } from '../types';
 
 export interface DealFormProps {
@@ -167,12 +168,11 @@ export function DealForm({
               {label}
               {fieldConfig.required && <span className="text-destructive ml-1">*</span>}
             </Label>
-            <Input
-              id={fieldName}
-              type="date"
+            <DatePicker
               value={value}
-              onChange={(e) => handleFieldChange(fieldName, e.target.value)}
-              required={fieldConfig.required}
+              onChange={(date) => handleFieldChange(fieldName, date || '')}
+              placeholder="Pick a date"
+              className="h-9 bg-transparent"
             />
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
@@ -283,16 +283,18 @@ export function DealForm({
                 <p className="text-sm text-destructive">{errors.commission_rate}</p>
               )}
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="expected_close_date">Expected Close Date</Label>
-            <Input
-              id="expected_close_date"
-              type="date"
-              value={formData.expected_close_date}
-              onChange={(e) => handleFieldChange('expected_close_date', e.target.value)}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="expected_close_date">Expected Close Date</Label>
+              <DatePicker
+                value={formData.expected_close_date}
+                onChange={(date) => handleFieldChange('expected_close_date', date || '')}
+                placeholder="Pick a date"
+                fromYear={new Date().getFullYear()}
+                toYear={new Date().getFullYear() + 5}
+                className="h-9 bg-transparent"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

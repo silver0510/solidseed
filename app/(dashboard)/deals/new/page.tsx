@@ -630,12 +630,10 @@ function NewDealContent() {
               {fieldName.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
               {fieldConfig.required && ' *'}
             </Label>
-            <Input
-              id={fieldName}
-              type="date"
+            <DatePicker
               value={(value as string) || ''}
-              onChange={(e) => {
-                setValue('deal_data', { ...dealData, [fieldName]: e.target.value });
+              onChange={(date) => {
+                setValue('deal_data', { ...dealData, [fieldName]: date || '' });
                 if (dynamicFieldErrors[fieldName]) {
                   setDynamicFieldErrors((prev) => {
                     const newErrors = { ...prev };
@@ -644,6 +642,8 @@ function NewDealContent() {
                   });
                 }
               }}
+              placeholder="Pick a date"
+              className="h-9 bg-transparent"
             />
             {dynamicFieldErrors[fieldName] && (
               <p className="text-sm text-destructive">{dynamicFieldErrors[fieldName]}</p>
@@ -924,6 +924,7 @@ function NewDealContent() {
                       placeholder="Pick a date"
                       fromYear={2020}
                       toYear={2100}
+                      className="h-9 bg-transparent"
                     />
                   )}
                 />
