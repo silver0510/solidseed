@@ -30,6 +30,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/date-picker';
+import { cn } from '@/lib/utils';
 import { useDealMutations } from '../../hooks/useDealMutations';
 import type { DealWithRelations } from '../../types';
 
