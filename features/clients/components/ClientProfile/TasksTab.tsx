@@ -6,15 +6,36 @@
  * @module features/clients/components/ClientProfile/TasksTab
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils/cn';
-import { Plus } from 'lucide-react';
+import {
+  Plus,
+  SearchIcon,
+  XIcon,
+  FilterIcon,
+  ChevronDownIcon,
+  CircleIcon,
+  PlayCircleIcon,
+  CheckCircle2Icon,
+  SignalIcon,
+  AlertCircleIcon,
+  ClockIcon,
+  CalendarIcon,
+} from 'lucide-react';
 import { TaskList } from '../TaskCard';
 import { TaskDetailsDialog } from '../TaskDetailsDialog';
 import { TaskForm } from '../TaskForm';
 import { taskApi } from '../../api/clientApi';
-import type { ClientTask, TaskStatus, CreateTaskInput, UpdateTaskInput } from '../../types';
+import { isPast, isToday } from '../../helpers';
+import type { ClientTask, TaskStatus, TaskPriority, CreateTaskInput, UpdateTaskInput } from '../../types';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +63,55 @@ export interface TasksTabProps {
   /** Additional CSS classes */
   className?: string;
 }
+
+type DueDateFilter = 'all' | 'overdue' | 'today' | 'upcoming';
+
+// =============================================================================
+// STATUS CONFIGURATION
+// =============================================================================
+
+const STATUS_CONFIG = {
+  todo: {
+    label: 'To Do',
+    icon: CircleIcon,
+    textColor: 'text-slate-600 dark:text-slate-400',
+  },
+  in_progress: {
+    label: 'In Progress',
+    icon: PlayCircleIcon,
+    textColor: 'text-blue-600 dark:text-blue-400',
+  },
+  closed: {
+    label: 'Closed',
+    icon: CheckCircle2Icon,
+    textColor: 'text-green-600 dark:text-green-400',
+  },
+} as const;
+
+// =============================================================================
+// FILTER OPTIONS
+// =============================================================================
+
+const STATUS_OPTIONS: Array<{ value: TaskStatus | 'all'; label: string }> = [
+  { value: 'all', label: 'All' },
+  { value: 'todo', label: 'To Do' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'closed', label: 'Closed' },
+];
+
+const PRIORITY_OPTIONS: Array<{ value: TaskPriority | 'all'; label: string }> = [
+  { value: 'all', label: 'All' },
+  { value: 'high', label: 'High' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'low', label: 'Low' },
+];
+
+const DUE_DATE_OPTIONS: Array<{ value: DueDateFilter; label: string }> = [
+  { value: 'all', label: 'All' },
+  { value: 'overdue', label: 'Overdue' },
+  { value: 'today', label: 'Today' },
+  { value: 'upcoming', label: 'Upcoming' },
+];
 
 // =============================================================================
 // COMPONENT
@@ -74,6 +144,12 @@ export const TasksTab: React.FC<TasksTabProps> = ({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<ClientTask | null>(null);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilters, setStatusFilters] = useState<TaskStatus[]>([]);
+  const [priorityFilters, setPriorityFilters] = useState<TaskPriority[]>([]);
+  const [dueDateFilters, setDueDateFilters] = useState<Exclude<DueDateFilter, 'all'>[]>([]);
 
   // Handle opening dialog for new task
   const handleAddTask = useCallback(() => {
@@ -170,22 +246,283 @@ export const TasksTab: React.FC<TasksTabProps> = ({
     setTaskToDelete(null);
   }, []);
 
+  // Filter tasks based on search, status, priority, and due date
+  const filteredTasks = useMemo(() => {
+    let filtered = tasks;
+
+    // Apply status filter (multi-select)
+    if (statusFilters.length > 0) {
+      filtered = filtered.filter((task) => statusFilters.includes(task.status));
+    }
+
+    // Apply priority filter (multi-select)
+    if (priorityFilters.length > 0) {
+      filtered = filtered.filter((task) => priorityFilters.includes(task.priority));
+    }
+
+    // Apply due date filters (multi-select)
+    if (dueDateFilters.length > 0) {
+      filtered = filtered.filter((task) => {
+        if (!task.due_date) {
+          return false;
+        }
+
+        return dueDateFilters.some((filter) => {
+          switch (filter) {
+            case 'overdue':
+              return isPast(task.due_date) && !isToday(task.due_date);
+            case 'today':
+              return isToday(task.due_date);
+            case 'upcoming':
+              return !isPast(task.due_date) && !isToday(task.due_date);
+            default:
+              return false;
+          }
+        });
+      });
+    }
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((task) =>
+        task.title.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  }, [tasks, searchQuery, statusFilters, priorityFilters, dueDateFilters]);
+
   return (
     <div className={cn('space-y-4', className)}>
-      {/* Add Task Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={handleAddTask}
-          className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          <span>Add Task</span>
-        </button>
+      {/* Filter Bar */}
+      <div className="flex flex-col sm:flex-row gap-2 p-2 bg-muted/50 rounded-lg">
+        {/* Search Input */}
+        <div className="relative flex-2">
+          <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="search"
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-8 pr-8 h-9 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-search-cancel-button]:hidden"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <XIcon className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Status Filter (Multi-select) */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 shrink-0 justify-between min-w-28"
+            >
+              <div className="flex items-center gap-1.5">
+                <FilterIcon className="h-3.5 w-3.5" />
+                <span className="text-sm">
+                  Status
+                  {statusFilters.length > 0 && ` (${statusFilters.length})`}
+                </span>
+              </div>
+              <ChevronDownIcon className="h-4 w-4 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-2" align="start">
+            <div className="space-y-1">
+              {STATUS_OPTIONS.filter(opt => opt.value !== 'all').map((option) => {
+                const config = STATUS_CONFIG[option.value as TaskStatus];
+                const Icon = config.icon;
+                return (
+                  <div key={option.value} className="flex items-center space-x-2 px-2 py-1.5 hover:bg-muted rounded-sm">
+                    <Checkbox
+                      id={`status-${option.value}`}
+                      checked={statusFilters.includes(option.value as TaskStatus)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setStatusFilters([...statusFilters, option.value as TaskStatus]);
+                        } else {
+                          setStatusFilters(statusFilters.filter(s => s !== option.value));
+                        }
+                      }}
+                    />
+                    <Icon className={cn('h-4 w-4', config.textColor)} />
+                    <Label
+                      htmlFor={`status-${option.value}`}
+                      className="text-sm cursor-pointer flex-1"
+                    >
+                      {option.label}
+                    </Label>
+                  </div>
+                );
+              })}
+              {statusFilters.length > 0 && (
+                <div className="pt-1 mt-1 border-t">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full h-7 text-xs"
+                    onClick={() => setStatusFilters([])}
+                  >
+                    Clear all
+                  </Button>
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Priority Filter (Multi-select) */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 shrink-0 justify-between min-w-28"
+            >
+              <div className="flex items-center gap-1.5">
+                <FilterIcon className="h-3.5 w-3.5" />
+                <span className="text-sm">
+                  Priority
+                  {priorityFilters.length > 0 && ` (${priorityFilters.length})`}
+                </span>
+              </div>
+              <ChevronDownIcon className="h-4 w-4 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-2" align="start">
+            <div className="space-y-1">
+              {PRIORITY_OPTIONS.filter(opt => opt.value !== 'all').map((option) => {
+                const priorityColors = {
+                  high: 'text-red-600 dark:text-red-400',
+                  medium: 'text-amber-600 dark:text-amber-400',
+                  low: 'text-blue-600 dark:text-blue-400',
+                };
+                const colorClass = priorityColors[option.value as TaskPriority] || '';
+                return (
+                  <div key={option.value} className="flex items-center space-x-2 px-2 py-1.5 hover:bg-muted rounded-sm">
+                    <Checkbox
+                      id={`priority-${option.value}`}
+                      checked={priorityFilters.includes(option.value as TaskPriority)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setPriorityFilters([...priorityFilters, option.value as TaskPriority]);
+                        } else {
+                          setPriorityFilters(priorityFilters.filter(p => p !== option.value));
+                        }
+                      }}
+                    />
+                    <SignalIcon className={cn('h-4 w-4', colorClass)} />
+                    <Label
+                      htmlFor={`priority-${option.value}`}
+                      className="text-sm cursor-pointer flex-1"
+                    >
+                      {option.label}
+                    </Label>
+                  </div>
+                );
+              })}
+              {priorityFilters.length > 0 && (
+                <div className="pt-1 mt-1 border-t">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full h-7 text-xs"
+                    onClick={() => setPriorityFilters([])}
+                  >
+                    Clear all
+                  </Button>
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Due Date Filter (Multi-select) */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 shrink-0 justify-between min-w-28"
+            >
+              <div className="flex items-center gap-1.5">
+                <FilterIcon className="h-3.5 w-3.5" />
+                <span className="text-sm">
+                  Due Date
+                  {dueDateFilters.length > 0 && ` (${dueDateFilters.length})`}
+                </span>
+              </div>
+              <ChevronDownIcon className="h-4 w-4 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-2" align="start">
+            <div className="space-y-1">
+              {DUE_DATE_OPTIONS.filter(opt => opt.value !== 'all').map((option) => {
+                const dueDateConfig = {
+                  overdue: { icon: AlertCircleIcon, color: 'text-red-600 dark:text-red-400' },
+                  today: { icon: ClockIcon, color: 'text-amber-600 dark:text-amber-400' },
+                  upcoming: { icon: CalendarIcon, color: 'text-blue-600 dark:text-blue-400' },
+                };
+                const config = dueDateConfig[option.value as Exclude<DueDateFilter, 'all'>];
+                const Icon = config.icon;
+                return (
+                  <div key={option.value} className="flex items-center space-x-2 px-2 py-1.5 hover:bg-muted rounded-sm">
+                    <Checkbox
+                      id={`due-date-${option.value}`}
+                      checked={dueDateFilters.includes(option.value as Exclude<DueDateFilter, 'all'>)}
+                      onCheckedChange={(checked) => {
+                        const value = option.value as Exclude<DueDateFilter, 'all'>;
+                        if (checked) {
+                          setDueDateFilters([...dueDateFilters, value]);
+                        } else {
+                          setDueDateFilters(dueDateFilters.filter(d => d !== value));
+                        }
+                      }}
+                    />
+                    <Icon className={cn('h-4 w-4', config.color)} />
+                    <Label
+                      htmlFor={`due-date-${option.value}`}
+                      className="text-sm cursor-pointer flex-1"
+                    >
+                      {option.label}
+                    </Label>
+                  </div>
+                );
+              })}
+              {dueDateFilters.length > 0 && (
+                <div className="pt-1 mt-1 border-t">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full h-7 text-xs"
+                    onClick={() => setDueDateFilters([])}
+                  >
+                    Clear all
+                  </Button>
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Add Task Button */}
+        <Button onClick={handleAddTask} variant="outline" size="sm" className="h-9 shrink-0">
+          <Plus className="h-4 w-4 mr-1" />
+          <span className="hidden sm:inline">Add Task</span>
+        </Button>
       </div>
 
       {/* Task List */}
       <TaskList
-        tasks={tasks}
+        tasks={filteredTasks}
         onStatusChange={handleStatusChange}
         onEdit={handleEdit}
         onDelete={handleDelete}

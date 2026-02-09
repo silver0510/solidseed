@@ -117,7 +117,7 @@ function countTasksByCategory(tasks: TaskWithClient[]) {
  * ```
  */
 export function useAllTasks(options: UseAllTasksOptions = {}): UseAllTasksReturn {
-  const { status = 'todo', priority = 'all' } = options;
+  const { status = 'all', priority = 'all' } = options;
   const queryClient = useQueryClient();
 
   // Build filters for the API
