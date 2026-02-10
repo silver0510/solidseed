@@ -98,6 +98,7 @@ export interface NotificationFilters {
   read?: boolean; // true = read only, false = unread only, undefined = all
   limit?: number;
   cursor?: string; // created_at for pagination
+  [key: string]: unknown; // Allow index signature for buildQueryString compatibility
 }
 
 /**

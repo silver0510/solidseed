@@ -248,7 +248,7 @@ export class NotificationService {
       for (const task of tasks || []) {
         const dueDate = new Date(task.due_date);
         const dueDateMidnight = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()); // Normalize to midnight
-        const clientName = (task.clients as { name: string } | null)?.name || 'Unknown Client';
+        const clientName = (task.clients as unknown as { name: string } | null)?.name || 'Unknown Client';
 
         // Check if overdue (past due date, before today)
         if (dueDateMidnight < today) {
