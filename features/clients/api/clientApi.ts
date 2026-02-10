@@ -27,6 +27,8 @@ import type {
   ClientDocument,
   DocumentDownloadResponse,
   ClientStats,
+  BulkImportRequest,
+  CSVImportResult,
 } from '../types';
 import type { Deal } from '@/features/deals/types';
 import { getBaseUrl, handleResponse, buildQueryString } from '@/lib/api/utils';
@@ -127,6 +129,20 @@ export const clientApi = {
     });
     const result = await handleResponse<{ success: boolean; data: ClientStats }>(response);
     return result.data;
+  },
+
+  /**
+   * Bulk import clients from CSV data
+   */
+  importClients: async (data: BulkImportRequest): Promise<CSVImportResult> => {
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/clients/import`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+    return handleResponse<CSVImportResult>(response);
   },
 };
 

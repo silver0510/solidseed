@@ -527,6 +527,78 @@ export class ClientService {
    * @returns Promise<boolean> True if deletion succeeded
    * @throws {Error} If database query fails
    */
+  /**
+   * Bulk create clients from CSV import
+   *
+   * Inserts clients one-by-one to handle individual duplicate errors gracefully.
+   * Auto-creates missing tags in user_tags before assigning them.
+   *
+   * @param clients - Array of client data to create
+   * @param userId - The authenticated user's ID
+   * @returns Object with created clients and per-row errors
+   */
+  async createClientsBulk(
+    clients: CreateClientInput[],
+    userId: string
+  ): Promise<{
+    created: Client[];
+    errors: Array<{ index: number; error: string }>;
+  }> {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+
+    // Collect all unique tag names from the batch
+    const allTagNames = new Set<string>();
+    clients.forEach((client) => {
+      client.tags?.forEach((tag) => allTagNames.add(tag));
+    });
+
+    // Auto-create missing tags in user_tags
+    if (allTagNames.size > 0) {
+      const { data: existingTags } = await this.supabase
+        .from('user_tags')
+        .select('name')
+        .eq('user_id', userId);
+
+      const existingTagNames = new Set(
+        existingTags?.map((t: { name: string }) => t.name) || []
+      );
+
+      const newTags = Array.from(allTagNames).filter(
+        (name) => !existingTagNames.has(name)
+      );
+
+      if (newTags.length > 0) {
+        const tagRecords = newTags.map((name) => ({
+          user_id: userId,
+          name,
+          color: '#6B7280', // Default gray
+        }));
+
+        await this.supabase.from('user_tags').insert(tagRecords);
+      }
+    }
+
+    // Insert clients one-by-one
+    const created: Client[] = [];
+    const errors: Array<{ index: number; error: string }> = [];
+
+    for (let i = 0; i < clients.length; i++) {
+      try {
+        const client = await this.createClient(clients[i]!, userId);
+        created.push(client);
+      } catch (error) {
+        errors.push({
+          index: i,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    }
+
+    return { created, errors };
+  }
+
   async softDeleteClient(id: string, userId: string): Promise<boolean> {
     if (!userId) {
       throw new Error('User ID is required');

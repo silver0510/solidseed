@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { clientApi, clientQueryKeys } from '@/features/clients/api/clientApi';
+import { CSVUploadDialog } from '@/features/clients/components/CSVUploadDialog';
 import type { ClientWithTags, ClientFormData } from '@/features/clients';
 import { Users, UserPlus, Clock, Cake, X } from 'lucide-react';
 
@@ -96,6 +97,7 @@ export default function ClientsPage() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [clientToDelete, setClientToDelete] = useState<ClientWithTags | null>(null);
   const [specialFilter, setSpecialFilter] = useState<SpecialFilter>(null);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   // Check for action=new query parameter to open dialog
   useEffect(() => {
@@ -264,6 +266,7 @@ export default function ClientsPage() {
           <ClientList
             onClientClick={handleClientClick}
             onAddClient={handleAddClient}
+            onImportClick={() => setIsImportDialogOpen(true)}
             onEditClient={handleEditClient}
             onDeleteClient={handleDeleteClient}
             specialFilter={specialFilter}
@@ -352,6 +355,12 @@ export default function ClientsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* CSV Import Dialog */}
+      <CSVUploadDialog
+        open={isImportDialogOpen}
+        onOpenChange={setIsImportDialogOpen}
+      />
 
     </div>
   );

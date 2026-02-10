@@ -282,6 +282,57 @@ export interface CSVExportOptions {
   includeDeleted?: boolean;
 }
 
+// =============================================================================
+// CSV IMPORT TYPES
+// =============================================================================
+
+/**
+ * Raw data for a single row parsed from CSV
+ */
+export interface ImportRowData {
+  name: string;
+  email: string;
+  phone: string;
+  birthday: string;
+  address: string;
+  tags: string;
+}
+
+/**
+ * A single row from CSV import with validation state
+ */
+export interface ImportRow {
+  /** Unique ID for React key */
+  id: string;
+  /** Row index (0-based, excluding header) */
+  rowIndex: number;
+  /** Raw data from CSV */
+  data: ImportRowData;
+  /** Whether this row passes validation */
+  isValid: boolean;
+  /** Field-level validation errors */
+  errors: Partial<Record<keyof ImportRowData, string>>;
+}
+
+/**
+ * Bulk import request body sent to the API
+ */
+export interface BulkImportRequest {
+  clients: Array<{
+    name: string;
+    email: string;
+    phone?: string;
+    birthday?: string;
+    address?: string;
+    tags?: string[];
+  }>;
+}
+
+/**
+ * Import filter tab values for the review table
+ */
+export type ImportFilterTab = 'all' | 'valid' | 'error';
+
 /**
  * Client needing follow-up (no notes in 30+ days)
  */

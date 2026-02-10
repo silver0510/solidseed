@@ -41,6 +41,7 @@ import {
   ArrowUpDownIcon,
   PencilIcon,
   Trash2Icon,
+  UploadIcon,
 } from 'lucide-react';
 import type { ClientWithTags, ClientSortField, SortDirection } from '../../types';
 
@@ -89,6 +90,8 @@ export interface ClientListProps {
   onClientClick?: (client: ClientWithTags) => void;
   /** Callback when Add Client button is clicked */
   onAddClient?: () => void;
+  /** Callback when Import button is clicked */
+  onImportClick?: () => void;
   /** Callback when Edit button is clicked */
   onEditClient?: (client: ClientWithTags) => void;
   /** Callback when Delete button is clicked */
@@ -127,6 +130,7 @@ function useDebouncedValue<T>(value: T, delay: number): T {
 export const ClientList: React.FC<ClientListProps> = ({
   onClientClick,
   onAddClient,
+  onImportClick,
   onEditClient,
   onDeleteClient,
   initialSearch = '',
@@ -405,6 +409,14 @@ export const ClientList: React.FC<ClientListProps> = ({
             Has Active Deals
           </label>
         </div>
+
+        {/* Import Button */}
+        {onImportClick && (
+          <Button onClick={onImportClick} variant="outline" size="sm" className="h-9 shrink-0">
+            <UploadIcon className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline">Import</span>
+          </Button>
+        )}
 
         {/* Add Client Button */}
         {onAddClient && (
