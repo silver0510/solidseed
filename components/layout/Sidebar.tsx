@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   SettingsIcon,
   BellIcon,
@@ -38,6 +38,9 @@ import {
 } from '@/components/ui/tooltip';
 import { useAuth } from '@/lib/auth/useAuth';
 import { cn } from '@/lib/utils';
+import { useNotifications, useNotificationMutations } from '@/features/notifications';
+import { formatDistanceToNow } from 'date-fns';
+import type { Notification } from '@/lib/types/notification';
 
 interface NavItem {
   name: string;
@@ -218,31 +221,30 @@ function UserMenu({ onClose, isCollapsed }: { onClose?: () => void; isCollapsed?
 }
 
 function NotificationsDropdown({ isCollapsed }: { isCollapsed?: boolean }) {
-  const notifications = [
-    {
-      id: '1',
-      title: 'New client added',
-      description: 'John Smith was added to your client list',
-      time: '5 min ago',
-      read: false,
-    },
-    {
-      id: '2',
-      title: 'Task due soon',
-      description: 'Follow up with Sarah Johnson is due tomorrow',
-      time: '1 hour ago',
-      read: false,
-    },
-    {
-      id: '3',
-      title: 'Document uploaded',
-      description: 'Contract.pdf was uploaded to Mike Brown\'s profile',
-      time: '2 hours ago',
-      read: true,
-    },
-  ];
+  const router = useRouter();
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // Fetch recent unread + read notifications (limit 10)
+  const { notifications, unreadCount, isLoading } = useNotifications({
+    filters: { limit: 10 },
+    polling: true,
+    pollingInterval: 60000, // Poll every 60 seconds
+  });
+
+  const { markAsRead, markAllAsRead } = useNotificationMutations();
+
+  // Handle notification click
+  const handleNotificationClick = (notification: Notification) => {
+    // Mark as read
+    if (!notification.read_at) {
+      markAsRead(notification.id);
+    }
+
+    // Navigate to action URL if available
+    const actionUrl = notification.metadata?.action_url as string | undefined;
+    if (actionUrl) {
+      router.push(actionUrl);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -255,7 +257,7 @@ function NotificationsDropdown({ isCollapsed }: { isCollapsed?: boolean }) {
             <BellIcon className="h-5 w-5" />
             {unreadCount > 0 && (
               <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
-                {unreadCount}
+                {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </span>
@@ -268,11 +270,25 @@ function NotificationsDropdown({ isCollapsed }: { isCollapsed?: boolean }) {
         side="right"
         sideOffset={8}
       >
-        <DropdownMenuLabel className="font-medium">
-          Notifications
-        </DropdownMenuLabel>
+        <div className="flex items-center justify-between px-3 py-2">
+          <DropdownMenuLabel className="p-0 font-medium">
+            Notifications
+          </DropdownMenuLabel>
+          {unreadCount > 0 && (
+            <button
+              onClick={() => markAllAsRead()}
+              className="text-xs text-primary hover:underline"
+            >
+              Mark all read
+            </button>
+          )}
+        </div>
         <DropdownMenuSeparator />
-        {notifications.length === 0 ? (
+        {isLoading ? (
+          <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+            Loading...
+          </div>
+        ) : notifications.length === 0 ? (
           <div className="px-2 py-4 text-center text-sm text-muted-foreground">
             No notifications
           </div>
@@ -281,29 +297,35 @@ function NotificationsDropdown({ isCollapsed }: { isCollapsed?: boolean }) {
             <DropdownMenuItem
               key={notification.id}
               className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+              onClick={() => handleNotificationClick(notification)}
             >
               <div className="flex w-full items-start justify-between gap-2">
                 <p className={cn(
                   "text-sm font-medium leading-tight",
-                  !notification.read && "text-foreground"
+                  !notification.read_at && "text-foreground"
                 )}>
                   {notification.title}
                 </p>
-                {!notification.read && (
+                {!notification.read_at && (
                   <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
                 )}
               </div>
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {notification.description}
-              </p>
+              {notification.message && (
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                  {notification.message}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground/70">
-                {notification.time}
+                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
               </p>
             </DropdownMenuItem>
           ))
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="justify-center text-sm text-primary hover:text-primary cursor-pointer">
+        <DropdownMenuItem
+          className="justify-center text-sm text-primary hover:text-primary cursor-pointer"
+          onClick={() => router.push('/notifications')}
+        >
           View all notifications
         </DropdownMenuItem>
       </DropdownMenuContent>

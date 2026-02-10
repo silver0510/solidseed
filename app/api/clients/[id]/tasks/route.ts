@@ -13,6 +13,7 @@ import { TaskService } from '@/services/TaskService';
 import { createTaskSchema } from '@/lib/validation/task';
 import { getSessionUser } from '@/lib/auth/session';
 import { logActivityAsync } from '@/services/ActivityLogService';
+import { notifyAsync } from '@/services/NotificationService';
 import { z } from 'zod';
 
 // Initialize TaskService
@@ -102,6 +103,25 @@ export async function POST(
       },
       user.id
     );
+
+    // Notify assigned user (if different from creator)
+    if (task.assigned_to !== user.id) {
+      notifyAsync({
+        user_id: task.assigned_to,
+        type: 'task.assigned',
+        category: 'task',
+        title: 'New Task Assigned',
+        message: `You have been assigned: "${task.title}"`,
+        entity_type: 'task',
+        entity_id: task.id,
+        metadata: {
+          task_title: task.title,
+          client_id: clientId,
+          assigned_by: user.id,
+          action_url: `/clients/${clientId}?tab=tasks`,
+        },
+      });
+    }
 
     return NextResponse.json(task, { status: 201 });
   } catch (error) {

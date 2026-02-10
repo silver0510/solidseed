@@ -421,6 +421,46 @@ Table client_tasks {
   note: 'Task management with due dates and priorities'
 }
 
+// In-app notifications for task alerts, deal updates, and system messages
+Table notifications {
+  id uuid [pk, default: `gen_random_uuid()`, note: 'UUID primary key (PostgreSQL native, auto-generated)']
+
+  user_id uuid [not null, ref: > users.id, note: 'Notification recipient (CASCADE delete)']
+
+  // Extensible type system
+  type varchar(100) [not null, note: 'Notification type: task.due_soon, task.overdue, task.assigned, task.completed, deal.stage_changed, etc.']
+  category varchar(50) [not null, default: 'general', note: 'Category: task, deal, client, system, general']
+
+  // Content
+  title text [not null, note: 'Notification title/heading']
+  message text [note: 'Optional detailed message']
+
+  // Polymorphic entity reference
+  entity_type varchar(50) [note: 'Entity type: task, deal, client']
+  entity_id uuid [note: 'Reference to entity (not enforced FK for flexibility)']
+
+  // Flexible metadata
+  metadata jsonb [default: '{}', note: 'Type-specific data: client_name, due_date, action_url, etc.']
+
+  // State tracking
+  read_at timestamptz [note: 'When notification was marked as read']
+  dismissed_at timestamptz [note: 'When notification was dismissed (future use)']
+
+  // Timestamps
+  created_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (user_id, read_at) [name: 'idx_notifications_user_unread', note: 'WHERE read_at IS NULL']
+    (user_id, created_at) [name: 'idx_notifications_user_created']
+    (entity_type, entity_id) [name: 'idx_notifications_entity']
+    type [name: 'idx_notifications_type']
+    (user_id, type, entity_id) [name: 'idx_notifications_dedup', note: 'Deduplication for lazy evaluation']
+  }
+
+  note: 'In-app notifications for task alerts, deal updates, and system messages'
+}
+
 // =============================================================================
 // TABLE GROUPS
 // =============================================================================
@@ -441,6 +481,10 @@ TableGroup client_hub {
   client_documents
   client_notes
   client_tasks
+}
+
+TableGroup notifications_system {
+  notifications
 }
 
 // =============================================================================

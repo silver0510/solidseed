@@ -13,6 +13,7 @@ import { TaskService } from '@/services/TaskService';
 import { updateTaskSchema } from '@/lib/validation/task';
 import { getSessionUser } from '@/lib/auth/session';
 import { logActivityAsync } from '@/services/ActivityLogService';
+import { notifyAsync } from '@/services/NotificationService';
 import { z } from 'zod';
 
 // Initialize TaskService
@@ -70,6 +71,25 @@ export async function PATCH(
         },
         user.id
       );
+
+      // Notify task creator (if different from completer)
+      if (task.created_by !== user.id) {
+        notifyAsync({
+          user_id: task.created_by,
+          type: 'task.completed',
+          category: 'task',
+          title: 'Task Completed',
+          message: `"${task.title}" has been completed`,
+          entity_type: 'task',
+          entity_id: task.id,
+          metadata: {
+            task_title: task.title,
+            client_id: clientId,
+            completed_by: user.id,
+            action_url: `/clients/${clientId}?tab=tasks`,
+          },
+        });
+      }
     }
 
     return NextResponse.json(task, { status: 200 });
